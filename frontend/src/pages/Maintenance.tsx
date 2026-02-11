@@ -1,14 +1,38 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 
-const services = [
+interface ServiceDetail {
+  title: string;
+  desc: string;
+  icon: JSX.Element;
+  details: string[];
+  includes?: string[];
+  note?: string;
+}
+
+const services: ServiceDetail[] = [
   {
     title: 'Annual Inspections',
     desc: 'Comprehensive annual inspections to keep your aircraft airworthy and compliant with FAA regulations.',
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
     ),
+    details: [
+      'Required every 12 calendar months for all certificated aircraft under 14 CFR Part 91.',
+      'Our IA-certified mechanics perform a thorough top-to-bottom inspection covering airframe, engine, propeller, and all aircraft systems.',
+      'We document all findings in detail and work with you on any discrepancies before returning the aircraft to service.',
+    ],
+    includes: [
+      'Complete airframe structural inspection',
+      'Engine and propeller examination',
+      'Flight control rigging and cable tension checks',
+      'Landing gear, brakes, and tire inspection',
+      'Avionics and electrical system check',
+      'Logbook entries and AD compliance review',
+      'Detailed written report of all findings',
+    ],
   },
   {
     title: '100-Hour Inspections',
@@ -16,6 +40,20 @@ const services = [
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
     ),
+    details: [
+      'Identical in scope to an annual inspection, but required every 100 hours of operation for aircraft used for hire — including flight training.',
+      'Our team ensures minimal downtime so your aircraft is back in service quickly.',
+      'We track hours and can set up reminders so you never miss an inspection window.',
+    ],
+    includes: [
+      'Same comprehensive scope as annual inspection',
+      'Engine compression checks',
+      'Oil filter cut and analysis',
+      'Brake and tire wear measurement',
+      'All flight control surfaces and hinges',
+      'AD compliance verification',
+      'Priority scheduling for training fleet',
+    ],
   },
   {
     title: 'Oil Changes',
@@ -23,6 +61,20 @@ const services = [
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
     ),
+    details: [
+      'Recommended every 50 hours or 4 months — whichever comes first. Regular oil changes are the single best thing you can do for engine longevity.',
+      'We include oil filter inspection (cut and examine) and optional oil analysis to detect early signs of internal wear, corrosion, or contamination.',
+      'Quick turnaround — most oil changes completed same day.',
+    ],
+    includes: [
+      'Drain and replace engine oil (Aeroshell or equivalent)',
+      'Oil filter removal, cut, and visual inspection',
+      'Optional oil sample for spectrometric analysis',
+      'Check for metal particles or contamination',
+      'Top off other fluids as needed',
+      'Update engine logbook',
+    ],
+    note: 'Oil analysis is one of the best early warning systems for engine health. We recommend it every change.',
   },
   {
     title: 'Engine Overhaul',
@@ -30,13 +82,43 @@ const services = [
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
     ),
+    details: [
+      'When your engine reaches TBO (Time Between Overhaul) or shows signs of wear, a major overhaul restores it to like-new condition.',
+      'We work with trusted overhaul shops and can coordinate the entire process — from removal to reinstallation and test flight.',
+      'Options include factory overhaul, field overhaul, or exchange programs depending on your budget and timeline.',
+    ],
+    includes: [
+      'Engine removal and disassembly',
+      'Complete inspection of all internal components',
+      'Replacement of worn cylinders, bearings, and seals',
+      'Crankshaft inspection and reconditioning',
+      'Reassembly to factory tolerances',
+      'Test run and break-in procedures',
+      'Fresh logbook entries with new TBO times',
+    ],
+    note: 'We can discuss overhaul vs. exchange options to find the best fit for your aircraft and budget.',
   },
   {
-    title: 'Avionics',
-    desc: 'Installation, repair, and upgrades for your avionics systems. Stay current with modern navigation.',
+    title: 'Custom Needs',
+    desc: 'Have a unique project or special requirement? We work with you to find the right solution.',
     icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>
+      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
     ),
+    details: [
+      'Every aircraft and owner has unique needs. Whether it is an avionics upgrade, a custom modification, a ferry flight inspection, or something else entirely — talk to us.',
+      'We have experience with STCs, field approvals, and working with the FAA on non-standard projects.',
+      'If we cannot do it in-house, we will connect you with the right specialist and help coordinate the work.',
+    ],
+    includes: [
+      'Avionics installation and upgrades (GPS, ADS-B, autopilot)',
+      'Custom panel work and instrument upgrades',
+      'STC installations and field approvals',
+      'Corrosion treatment and prevention',
+      'Interior refurbishment coordination',
+      'Ferry flight and relocation inspections',
+      'Consultation on modifications and upgrades',
+    ],
+    note: 'Contact us to discuss your specific project. We are happy to provide a free consultation and estimate.',
   },
   {
     title: 'Pre-Buy Inspections',
@@ -44,6 +126,22 @@ const services = [
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
     ),
+    details: [
+      'Buying an aircraft is a major investment. A pre-buy inspection gives you a clear, honest picture of the aircraft\'s true condition before you commit.',
+      'We go beyond a standard annual inspection scope — checking for hidden corrosion, previous damage repairs, AD compliance history, and overall airworthiness.',
+      'Our detailed written report gives you the information you need to negotiate with confidence or walk away if needed.',
+    ],
+    includes: [
+      'Comprehensive airframe and engine inspection',
+      'Logbook review and AD compliance audit',
+      'Corrosion inspection (especially hidden areas)',
+      'Previous damage and repair quality assessment',
+      'Engine compression and oil analysis',
+      'Avionics and electrical system evaluation',
+      'Detailed written report with photos',
+      'Honest assessment and recommendation',
+    ],
+    note: 'We work for you, the buyer — not the seller. Our goal is to give you the full picture so you can make an informed decision.',
   },
 ];
 
@@ -79,6 +177,12 @@ const trustIndicators = [
 ];
 
 export default function Maintenance() {
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  const toggle = (i: number) => {
+    setExpanded(expanded === i ? null : i);
+  };
+
   return (
     <div className="pt-24">
       <SectionWrapper>
@@ -95,10 +199,88 @@ export default function Maintenance() {
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, i) => (
-            <GlassCard key={i} delay={i * 100}>
-              <div className="mb-4">{service.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-2">{service.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">{service.desc}</p>
+            <GlassCard
+              key={i}
+              delay={i * 100}
+              className={`cursor-pointer transition-all duration-300 ${expanded === i ? '!border-gold/40 md:col-span-2 lg:col-span-3' : 'hover:!border-gold/30'}`}
+            >
+              <div onClick={() => toggle(i)}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="mb-4">{service.icon}</div>
+                    <h3 className={`text-xl font-semibold mb-2 transition-colors ${expanded === i ? 'text-gold' : 'text-white'}`}>
+                      {service.title}
+                    </h3>
+                    <p className="text-slate-400 text-sm leading-relaxed">{service.desc}</p>
+                  </div>
+                  <svg
+                    className={`w-5 h-5 text-gold flex-shrink-0 mt-1 transition-transform duration-300 ${expanded === i ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Expanded Detail */}
+              <div className={`overflow-hidden transition-all duration-500 ${expanded === i ? 'max-h-[1000px] mt-6' : 'max-h-0'}`}>
+                <div className="border-t border-white/10 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Left: description */}
+                    <div>
+                      <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-aviation-blue" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                        Overview
+                      </h4>
+                      <div className="space-y-3">
+                        {service.details.map((d, j) => (
+                          <p key={j} className="text-slate-300 text-sm leading-relaxed">{d}</p>
+                        ))}
+                      </div>
+                      {service.note && (
+                        <div className="mt-4 bg-gold/5 border border-gold/20 rounded-xl p-4">
+                          <p className="text-gold/90 text-sm leading-relaxed italic">{service.note}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: includes checklist */}
+                    {service.includes && (
+                      <div>
+                        <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          What's Included
+                        </h4>
+                        <ul className="space-y-2.5">
+                          {service.includes.map((item, j) => (
+                            <li key={j} className="flex items-start gap-2.5 text-sm text-slate-300">
+                              <svg className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CTA inside expanded */}
+                  <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center gap-4">
+                    <Link to="/contact" className="btn-gold text-sm">
+                      Request This Service
+                    </Link>
+                    <a href="tel:+12036170645" className="btn-blue text-sm inline-flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+                      Call (203) 617-0645
+                    </a>
+                  </div>
+                </div>
+              </div>
             </GlassCard>
           ))}
         </div>
