@@ -6,6 +6,7 @@ import SectionWrapper from '../components/SectionWrapper';
 const programs = [
   {
     title: 'Private Pilot License (PPL)',
+    slug: '/training/ppl',
     desc: 'Your journey starts here. Learn to fly single-engine aircraft and earn your wings. The PPL is the foundation for all your future aviation goals.',
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
@@ -14,6 +15,7 @@ const programs = [
   },
   {
     title: 'Instrument Rating',
+    slug: '/training/instrument',
     desc: 'Master the art of flying in all weather conditions with precision instrument training. Essential for serious pilots.',
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" /></svg>
@@ -22,6 +24,7 @@ const programs = [
   },
   {
     title: 'Commercial Pilot License',
+    slug: '/training/commercial',
     desc: 'Turn your passion into a career. Earn your commercial certificate and get paid to fly.',
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
@@ -30,6 +33,7 @@ const programs = [
   },
   {
     title: 'Multi-Engine Rating',
+    slug: '/training/multi-engine',
     desc: 'Expand your capabilities with twin-engine aircraft training. Essential for airline and charter careers.',
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
@@ -38,6 +42,7 @@ const programs = [
   },
   {
     title: 'Discovery Flight',
+    slug: '/training/discovery',
     desc: '$249 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
@@ -47,6 +52,7 @@ const programs = [
   },
   {
     title: 'Flight Simulator',
+    slug: '/training/simulator',
     desc: 'Full-motion simulator for risk-free practice and instrument training. Build proficiency without the clock running on aircraft rental.',
     icon: (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" /></svg>
@@ -139,26 +145,34 @@ export default function Training() {
         {/* Programs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {programs.map((program, i) => (
-            <GlassCard key={i} delay={i * 100} className={program.featured ? '!border-gold/30 relative' : ''}>
-              {program.featured && (
-                <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
-                  MOST POPULAR
+            <Link key={i} to={program.slug} className="block group">
+              <GlassCard delay={i * 100} className={`h-full ${program.featured ? '!border-gold/30 relative' : ''}`}>
+                {program.featured && (
+                  <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
+                    MOST POPULAR
+                  </div>
+                )}
+                <div className="mb-4">{program.icon}</div>
+                <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold transition-colors">{program.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed mb-4">{program.desc}</p>
+                <ul className="space-y-2 mb-4">
+                  {program.highlights.map((h, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
+                      <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex items-center gap-1 text-aviation-blue text-sm font-medium group-hover:text-gold transition-colors mt-auto">
+                  <span>Learn More</span>
+                  <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-              )}
-              <div className="mb-4">{program.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">{program.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed mb-4">{program.desc}</p>
-              <ul className="space-y-2">
-                {program.highlights.map((h, j) => (
-                  <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
-                    <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-            </GlassCard>
+              </GlassCard>
+            </Link>
           ))}
         </div>
       </SectionWrapper>
