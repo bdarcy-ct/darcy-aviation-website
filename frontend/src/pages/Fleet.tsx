@@ -16,11 +16,22 @@ interface Aircraft {
   available: number;
 }
 
-const typeIcons: Record<string, string> = {
-  'Single Engine': '🛩️',
-  'Twin Engine': '✈️',
-  'Simulator': '🖥️',
-};
+const PlaneIcon = ({ className = "w-16 h-16" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+  </svg>
+);
+
+const ComputerIcon = ({ className = "w-16 h-16" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
+  </svg>
+);
+
+function getTypeIcon(type: string) {
+  if (type === 'Simulator') return <ComputerIcon />;
+  return <PlaneIcon />;
+}
 
 export default function Fleet() {
   const [fleet, setFleet] = useState<Aircraft[]>([]);
@@ -51,7 +62,9 @@ export default function Fleet() {
               {/* Image placeholder with gradient */}
               <div className="h-48 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
-                <span className="text-6xl relative z-10">{typeIcons[aircraft.type] || '✈️'}</span>
+                <div className="relative z-10 w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-aviation-blue">
+                  {getTypeIcon(aircraft.type)}
+                </div>
                 <div className="absolute top-4 right-4 z-10">
                   <span className="bg-aviation-blue/20 border border-aviation-blue/50 text-aviation-blue text-xs font-medium px-3 py-1 rounded-full">
                     {aircraft.type}

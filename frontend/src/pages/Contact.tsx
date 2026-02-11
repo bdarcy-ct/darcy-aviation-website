@@ -63,7 +63,7 @@ export default function Contact() {
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       ),
       label: 'Hours',
-      value: '7 Days/Week, 9AM–5PM',
+      value: '7 Days/Week, 9AM\u20135PM',
     },
   ];
 
@@ -139,7 +139,9 @@ export default function Contact() {
 
               {status === 'success' ? (
                 <div className="text-center py-12">
-                  <div className="text-5xl mb-4">✅</div>
+                  <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  </div>
                   <h3 className="text-xl font-semibold text-white mb-2">Message Sent!</h3>
                   <p className="text-slate-300">{statusMsg}</p>
                   <button onClick={() => setStatus('idle')} className="btn-blue mt-6">
@@ -194,9 +196,14 @@ export default function Contact() {
                   <button
                     type="submit"
                     disabled={status === 'loading'}
-                    className="btn-gold w-full !py-4 text-lg disabled:opacity-50"
+                    className="btn-gold w-full !py-4 text-lg disabled:opacity-50 inline-flex items-center justify-center gap-2"
                   >
-                    {status === 'loading' ? 'Sending...' : '📨 Send Message'}
+                    {status === 'loading' ? 'Sending...' : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+                        Send Message
+                      </>
+                    )}
                   </button>
                 </form>
               )}
