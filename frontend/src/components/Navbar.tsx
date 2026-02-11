@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import WeatherBadge from './WeatherBadge';
 
 const navLinks = [
   { path: '/', label: 'Home' },
@@ -45,6 +46,7 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <WeatherBadge />
             <Link to="/book" className="btn-gold ml-4 !px-6 !py-2 text-sm">
               Book Now
             </Link>

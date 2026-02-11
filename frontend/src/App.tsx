@@ -2,7 +2,8 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import BackgroundBlobs from './components/BackgroundBlobs';
+import WeatherBackground from './components/WeatherBackground';
+import { WeatherProvider } from './contexts/WeatherContext';
 import Home from './pages/Home';
 import Training from './pages/Training';
 import PPL from './pages/training/PPL';
@@ -28,8 +29,9 @@ function ScrollToTop() {
 
 export default function App() {
   return (
+    <WeatherProvider>
     <div className="relative min-h-screen">
-      <BackgroundBlobs />
+      <WeatherBackground />
       <ScrollToTop />
       <Navbar />
       <main className="relative z-10">
@@ -52,5 +54,6 @@ export default function App() {
       </main>
       <Footer />
     </div>
+    </WeatherProvider>
   );
 }
