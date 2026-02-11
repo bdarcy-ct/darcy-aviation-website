@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  color: #ffffff;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+/* Glass card utility */
+@layer components {
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl;
+  }
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:bg-white/15 hover:border-white/25 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1;
+  }
+  .glass-nav {
+    @apply bg-white/5 backdrop-blur-xl border-b border-white/10;
+  }
+  .btn-gold {
+    @apply bg-gradient-to-r from-gold-dark via-gold to-gold-light text-navy-900 font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-gold/30 hover:scale-105 active:scale-95;
+  }
+  .btn-blue {
+    @apply bg-aviation-blue/20 border border-aviation-blue/50 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:bg-aviation-blue/30 hover:border-aviation-blue hover:shadow-lg hover:shadow-aviation-blue/20;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-white mb-4;
+  }
+  .section-subtitle {
+    @apply text-slate-400 text-lg max-w-2xl mx-auto;
+  }
+}
+
+/* Animated background blobs */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+.blob-blue {
+  background: #3b82f6;
+}
+.blob-gold {
+  background: #d4af37;
+}
+.blob-purple {
+  background: #8b5cf6;
+}
+
+/* Fade in animation for scroll */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Timeline styles */
+.timeline-line {
+  background: linear-gradient(180deg, #3b82f6 0%, #d4af37 100%);
+}
