@@ -1,5 +1,6 @@
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
+import SEOHead from '../components/SEOHead';
 
 const ShieldIcon = () => (
   <svg className="w-10 h-10 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -81,6 +82,11 @@ const team = [
 export default function About() {
   return (
     <div className="pt-24">
+      <SEOHead
+        title="About Us"
+        description="Learn about Darcy Aviation — founded in 2019 at Danbury Municipal Airport (KDXR), Connecticut. Meet our team of experienced flight instructors and mechanics."
+        path="/about"
+      />
       {/* About Hero */}
       <SectionWrapper>
         <div className="text-center mb-16">

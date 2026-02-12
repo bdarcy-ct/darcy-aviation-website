@@ -32,6 +32,7 @@ interface TrainingDetailPageProps {
     details: string;
   };
   costNote: string;
+  hideCostQuote?: boolean;
   fleet: FleetItem[];
   faqs: FAQ[];
   ctaText: string;
@@ -93,6 +94,7 @@ export default function TrainingDetailPage({
   curriculum,
   timeline,
   costNote,
+  hideCostQuote,
   fleet,
   faqs,
   ctaText,
@@ -218,14 +220,16 @@ export default function TrainingDetailPage({
               Cost Estimate
             </h2>
             <p className="text-slate-300 leading-relaxed mb-4">{costNote}</p>
-            <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-              <p className="text-sm text-slate-400">
-                Every student's journey is unique. Contact us for a personalized cost breakdown based on your goals and schedule.
-              </p>
-              <Link to="/contact" className="text-gold text-sm font-medium hover:underline mt-2 inline-block">
-                Request a Quote
-              </Link>
-            </div>
+            {!hideCostQuote && (
+              <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                <p className="text-sm text-slate-400">
+                  Every student's journey is unique. Contact us for a personalized cost breakdown based on your goals and schedule.
+                </p>
+                <Link to="/contact" className="text-gold text-sm font-medium hover:underline mt-2 inline-block">
+                  Request a Quote
+                </Link>
+              </div>
+            )}
           </GlassCard>
         </div>
       </SectionWrapper>

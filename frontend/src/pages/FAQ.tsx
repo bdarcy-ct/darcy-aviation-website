@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
+import SEOHead from '../components/SEOHead';
 
 const faqs = [
   {
@@ -86,6 +87,11 @@ export default function FAQ() {
 
   return (
     <div className="pt-24">
+      <SEOHead
+        title="FAQ"
+        description="Frequently asked questions about flight training, costs, scheduling, and aircraft maintenance at Darcy Aviation in Danbury, CT."
+        path="/faq"
+      />
       <SectionWrapper>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">

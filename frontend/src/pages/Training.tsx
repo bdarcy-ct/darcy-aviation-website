@@ -2,8 +2,19 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
+import SEOHead from '../components/SEOHead';
 
 const programs = [
+  {
+    title: 'Discovery Flight',
+    slug: '/training/discovery',
+    desc: '$249 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
+    icon: (
+      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+    ),
+    highlights: ['30-min flight time', 'You fly the plane', 'No experience needed'],
+    featured: true,
+  },
   {
     title: 'Private Pilot License (PPL)',
     slug: '/training/ppl',
@@ -39,16 +50,6 @@ const programs = [
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
     ),
     highlights: ['Twin-engine proficiency', 'Engine-out procedures', 'Systems management'],
-  },
-  {
-    title: 'Discovery Flight',
-    slug: '/training/discovery',
-    desc: '$249 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
-    icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-    ),
-    highlights: ['30-min flight time', 'You fly the plane', 'No experience needed'],
-    featured: true,
   },
   {
     title: 'Flight Simulator',
@@ -130,6 +131,11 @@ export default function Training() {
 
   return (
     <div className="pt-24">
+      <SEOHead
+        title="Flight Training Programs"
+        description="Professional flight training at Darcy Aviation — Private Pilot, Instrument Rating, Commercial Pilot, Multi-Engine Rating, and discovery flights. Train 7 days/week at KDXR."
+        path="/training"
+      />
       {/* Hero */}
       <SectionWrapper>
         <div className="text-center mb-16">

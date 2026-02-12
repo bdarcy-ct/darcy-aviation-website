@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
+import SEOHead from '../components/SEOHead';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -69,6 +70,11 @@ export default function Contact() {
 
   return (
     <div className="pt-24">
+      <SEOHead
+        title="Contact Us"
+        description="Get in touch with Darcy Aviation — call (203) 617-0645, email admin@darcyaviation.com, or visit us at 1 Wallingford Rd, Danbury, CT 06810 (KDXR)."
+        path="/contact"
+      />
       <SectionWrapper>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">

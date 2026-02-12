@@ -73,6 +73,7 @@ export default function DiscoveryFlight() {
         details: 'Plan for about one hour total, including the pre-flight briefing, 30 minutes of flight time, and a post-flight debrief. Arrive 15 minutes early. Weather permitting, flights operate seven days a week.',
       }}
       costNote="Discovery Flights are priced at $249. This includes the aircraft, fuel, instructor, and your 30 minutes of flight time. No hidden fees. Gift certificates are available — contact us to purchase one for someone special."
+      hideCostQuote
       fleet={[
         {
           name: 'Cessna 172 Skyhawk',

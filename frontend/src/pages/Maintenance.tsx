@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
+import SEOHead from '../components/SEOHead';
 
 interface ServiceDetail {
   title: string;
@@ -185,6 +186,11 @@ export default function Maintenance() {
 
   return (
     <div className="pt-24">
+      <SEOHead
+        title="Aircraft Maintenance"
+        description="FAA-certified aircraft maintenance at Darcy Aviation — annual inspections, 100-hour inspections, oil changes, engine overhauls, avionics, and pre-buy inspections for Cessna and Piper aircraft."
+        path="/maintenance"
+      />
       <SectionWrapper>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">

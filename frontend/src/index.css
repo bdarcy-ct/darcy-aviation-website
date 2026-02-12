@@ -17,6 +17,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Dropdown option styling (dark bg for all selects) */
+select option {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -55,6 +61,23 @@ body {
   .section-subtitle {
     @apply text-slate-400 text-lg max-w-2xl mx-auto;
   }
+}
+
+/* Skip to content (accessibility) */
+.skip-to-content {
+  @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-gold focus:text-navy-900 focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold;
+}
+
+/* Focus ring for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth image loading */
+img {
+  transition: opacity 0.3s ease;
 }
 
 /* Animated background blobs */

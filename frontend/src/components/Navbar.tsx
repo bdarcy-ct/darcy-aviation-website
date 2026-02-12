@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import WeatherBadge from './WeatherBadge';
 
 const navLinks = [
   { path: '/', label: 'Home' },
+  { path: '/experiences', label: 'Experiences' },
   { path: '/training', label: 'Training' },
   { path: '/fleet', label: 'Fleet' },
   { path: '/maintenance', label: 'Maintenance' },
@@ -12,23 +13,53 @@ const navLinks = [
   { path: '/contact', label: 'Contact' },
 ];
 
+function isActive(pathname: string, linkPath: string): boolean {
+  if (linkPath === '/') return pathname === '/';
+  return pathname === linkPath || pathname.startsWith(linkPath + '/');
+}
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Add subtle shadow on scroll
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   return (
-    <nav className="glass-nav fixed top-0 left-0 right-0 z-50">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled ? 'bg-navy-900/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20' : 'bg-white/5 backdrop-blur-xl border-b border-white/10'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-aviation-blue to-gold flex items-center justify-center font-bold text-navy-900 text-lg transition-transform group-hover:scale-110">
-              DA
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-white font-bold text-lg">Darcy Aviation</span>
-              <span className="block text-slate-400 text-xs -mt-1">KDXR • Danbury, CT</span>
-            </div>
+          <Link to="/" className="flex items-center gap-2 group" aria-label="Darcy Aviation Home">
+            <img
+              src="/logo-geo.png"
+              alt="Darcy Aviation"
+              className="h-12 md:h-14 w-auto transition-transform group-hover:scale-105"
+              width={56}
+              height={56}
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -37,8 +68,8 @@ export default function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  location.pathname === link.path
+                className={`px-3 xl:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive(location.pathname, link.path)
                     ? 'bg-white/10 text-white'
                     : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
@@ -47,7 +78,7 @@ export default function Navbar() {
               </Link>
             ))}
             <WeatherBadge />
-            <Link to="/book" className="btn-gold ml-4 !px-6 !py-2 text-sm">
+            <Link to="/book" className="btn-gold ml-3 !px-5 !py-2 text-sm">
               Book Now
             </Link>
           </div>
@@ -56,6 +87,8 @@ export default function Navbar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isOpen}
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               {isOpen ? (
@@ -68,34 +101,43 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Nav */}
-      {isOpen && (
-        <div className="lg:hidden bg-navy-900/95 backdrop-blur-xl border-t border-white/10">
-          <div className="px-4 py-4 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  location.pathname === link.path
-                    ? 'bg-white/10 text-white'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+      {/* Mobile Nav - Full screen overlay */}
+      <div
+        className={`lg:hidden fixed inset-0 top-16 bg-navy-900/98 backdrop-blur-xl transition-all duration-300 ${
+          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
+        }`}
+      >
+        <div className={`px-4 py-6 space-y-1 transform transition-transform duration-300 ${
+          isOpen ? 'translate-y-0' : '-translate-y-4'
+        }`}>
+          {navLinks.map((link, i) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`block px-4 py-3.5 rounded-xl text-base font-medium transition-all ${
+                isActive(location.pathname, link.path)
+                  ? 'bg-white/10 text-white'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+              }`}
+              style={{ transitionDelay: isOpen ? `${i * 30}ms` : '0ms' }}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div className="pt-4">
             <Link
               to="/book"
-              onClick={() => setIsOpen(false)}
-              className="block text-center btn-gold mt-4 !py-3"
+              className="block text-center btn-gold !py-3.5 text-base"
             >
               Book Now
             </Link>
           </div>
+          {/* Mobile weather */}
+          <div className="pt-4 flex justify-center">
+            <WeatherBadge />
+          </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 }

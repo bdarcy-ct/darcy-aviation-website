@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
+import SEOHead from '../components/SEOHead';
 
 const PlaneIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -58,6 +60,10 @@ const GiftIcon = ({ className = "w-4 h-4 inline" }: { className?: string }) => (
 );
 
 export default function Book() {
+  const [searchParams] = useSearchParams();
+  const experienceTitle = searchParams.get('title') || 'Discovery Flight';
+  const experiencePrice = searchParams.get('price') || '$249';
+
   // Booking form state
   const [booking, setBooking] = useState({
     name: '', email: '', phone: '', preferred_date: '', preferred_time: '',
@@ -125,6 +131,11 @@ export default function Book() {
 
   return (
     <div className="pt-24">
+      <SEOHead
+        title={`Book ${experienceTitle}`}
+        description={`Book your ${experienceTitle.toLowerCase()} at Darcy Aviation — ${experiencePrice}. Premier flight experiences at Danbury Municipal Airport (KDXR), Connecticut.`}
+        path="/book"
+      />
       <SectionWrapper>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
@@ -132,7 +143,7 @@ export default function Book() {
             <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">Flight</span>
           </h1>
           <p className="section-subtitle">
-            Ready to take the controls? Book a discovery flight or get in touch with our team.
+            Ready to take to the skies? Book your {experienceTitle.toLowerCase()} or get in touch with our team.
           </p>
         </div>
 
@@ -144,8 +155,8 @@ export default function Book() {
                 <PlaneIcon />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">Discovery Flight</h2>
-                <p className="text-gold font-semibold">$249 per flight</p>
+                <h2 className="text-2xl font-bold text-white">{experienceTitle}</h2>
+                <p className="text-gold font-semibold">{experiencePrice} per flight</p>
               </div>
             </div>
 
@@ -249,7 +260,7 @@ export default function Book() {
                     {bookingStatus === 'loading' ? 'Submitting...' : (
                       <>
                         <PlaneIcon className="w-5 h-5" />
-                        Book Discovery Flight
+                        Book {experienceTitle}
                       </>
                     )}
                   </span>

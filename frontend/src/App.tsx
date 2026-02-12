@@ -18,6 +18,8 @@ import Book from './pages/Book';
 import About from './pages/About';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
+import Experiences from './pages/Experiences';
+import NotFound from './pages/NotFound';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -30,11 +32,11 @@ function ScrollToTop() {
 export default function App() {
   return (
     <WeatherProvider>
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen flex flex-col">
       <WeatherBackground />
       <ScrollToTop />
       <Navbar />
-      <main className="relative z-10">
+      <main id="main-content" className="relative z-10 flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/training" element={<Training />} />
@@ -46,10 +48,12 @@ export default function App() {
           <Route path="/training/simulator" element={<SimulatorPage />} />
           <Route path="/fleet" element={<Fleet />} />
           <Route path="/maintenance" element={<Maintenance />} />
+          <Route path="/experiences" element={<Experiences />} />
           <Route path="/book" element={<Book />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />

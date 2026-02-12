@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
+import SEOHead from '../components/SEOHead';
+import { CardSkeleton } from '../components/Skeleton';
 
 interface Aircraft {
   id: number;
@@ -35,16 +38,26 @@ function getTypeIcon(type: string) {
 
 export default function Fleet() {
   const [fleet, setFleet] = useState<Aircraft[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/fleet')
-      .then((res) => res.json())
-      .then(setFleet)
-      .catch(console.error);
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load fleet data');
+        return res.json();
+      })
+      .then((data) => { setFleet(data); setLoading(false); })
+      .catch((err) => { setError(err.message); setLoading(false); });
   }, []);
 
   return (
     <div className="pt-24">
+      <SEOHead
+        title="Our Fleet"
+        description="Explore Darcy Aviation's well-maintained fleet of Cessna and Piper aircraft plus our AATD full-motion flight simulator at Danbury Municipal Airport (KDXR)."
+        path="/fleet"
+      />
       <SectionWrapper>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
@@ -56,79 +69,105 @@ export default function Fleet() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {fleet.map((aircraft, i) => (
-            <GlassCard key={aircraft.id} delay={i * 150} className="!p-0 overflow-hidden">
-              {/* Image placeholder with gradient */}
-              <div className="h-48 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
-                <div className="relative z-10 w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-aviation-blue">
-                  {getTypeIcon(aircraft.type)}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+        ) : error ? (
+          <div className="glass-card p-8 text-center">
+            <svg className="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <h3 className="text-xl font-semibold text-white mb-2">Unable to Load Fleet</h3>
+            <p className="text-slate-400 mb-4">{error}</p>
+            <button onClick={() => window.location.reload()} className="btn-blue">
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {fleet.map((aircraft, i) => (
+              <GlassCard key={aircraft.id} delay={i * 150} className="!p-0 overflow-hidden">
+                {/* Image placeholder with gradient */}
+                <div className="h-48 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
+                  <div className="relative z-10 w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-aviation-blue">
+                    {getTypeIcon(aircraft.type)}
+                  </div>
+                  <div className="absolute top-4 right-4 z-10">
+                    <span className="bg-aviation-blue/20 border border-aviation-blue/50 text-aviation-blue text-xs font-medium px-3 py-1 rounded-full">
+                      {aircraft.type}
+                    </span>
+                  </div>
                 </div>
-                <div className="absolute top-4 right-4 z-10">
-                  <span className="bg-aviation-blue/20 border border-aviation-blue/50 text-aviation-blue text-xs font-medium px-3 py-1 rounded-full">
-                    {aircraft.type}
-                  </span>
+
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold text-white mb-2">{aircraft.name}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-6">{aircraft.description}</p>
+
+                  {/* Specs grid */}
+                  {aircraft.type !== 'Simulator' ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Engine</div>
+                        <div className="text-white font-medium text-sm">{aircraft.type}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Seats</div>
+                        <div className="text-white font-medium text-sm">{aircraft.seats}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Power</div>
+                        <div className="text-white font-medium text-sm">{aircraft.horsepower} HP</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Cruise</div>
+                        <div className="text-white font-medium text-sm">{aircraft.cruise_speed}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Type</div>
+                        <div className="text-white font-medium text-sm">AATD Certified</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Seats</div>
+                        <div className="text-white font-medium text-sm">{aircraft.seats}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {aircraft.range && aircraft.range !== 'N/A' && (
+                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                      <span className="text-slate-500 text-xs uppercase tracking-wider">Range</span>
+                      <span className="text-gold font-medium text-sm">{aircraft.range}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-white mb-2">{aircraft.name}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed mb-6">{aircraft.description}</p>
-
-                {/* Specs grid */}
-                {aircraft.type !== 'Simulator' ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Engine</div>
-                      <div className="text-white font-medium text-sm">{aircraft.type}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Seats</div>
-                      <div className="text-white font-medium text-sm">{aircraft.seats}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Power</div>
-                      <div className="text-white font-medium text-sm">{aircraft.horsepower} HP</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Cruise</div>
-                      <div className="text-white font-medium text-sm">{aircraft.cruise_speed}</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Type</div>
-                      <div className="text-white font-medium text-sm">Full Motion</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Seats</div>
-                      <div className="text-white font-medium text-sm">{aircraft.seats}</div>
-                    </div>
-                  </div>
-                )}
-
-                {aircraft.range && aircraft.range !== 'N/A' && (
-                  <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-slate-500 text-xs uppercase tracking-wider">Range</span>
-                    <span className="text-gold font-medium text-sm">{aircraft.range}</span>
-                  </div>
-                )}
-              </div>
-            </GlassCard>
-          ))}
-        </div>
+              </GlassCard>
+            ))}
+          </div>
+        )}
       </SectionWrapper>
 
       {/* Fleet info */}
       <SectionWrapper>
         <div className="glass-card p-8 md:p-12 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Our Commitment to Safety</h2>
-          <p className="text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-300 max-w-2xl mx-auto leading-relaxed mb-6">
             Every aircraft in our fleet undergoes rigorous maintenance and inspections by our FAA-certified A&P mechanics. 
             We maintain our Cessna and Piper aircraft to the highest standards, ensuring you can focus on learning while we handle the rest.
           </p>
+          <Link to="/maintenance" className="btn-blue inline-flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
+            Learn About Our Maintenance
+          </Link>
         </div>
       </SectionWrapper>
     </div>
