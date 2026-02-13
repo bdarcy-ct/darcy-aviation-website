@@ -5,6 +5,7 @@ import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
 import AnimatedCounter from '../components/AnimatedCounter';
 import { TestimonialSkeleton } from '../components/Skeleton';
+import VideoHero from '../components/VideoHero';
 
 interface Testimonial {
   id: number;
@@ -110,25 +111,14 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Hero gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-navy-900/80 via-navy-900/60 to-navy-900" />
-        
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-aviation-blue rounded-full filter blur-[128px] animate-pulse-glow" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gold rounded-full filter blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-500 rounded-full filter blur-[128px] animate-pulse-glow" style={{ animationDelay: '3s' }} />
-        </div>
+        {/* Looping hero videos */}
+        <VideoHero />
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           {/* 3D Logo */}
           <div className="mb-6">
-            <img
-              src="/logo-3d.png"
-              alt="Darcy Aviation Logo"
-              className="w-28 h-28 sm:w-36 sm:h-36 mx-auto drop-shadow-2xl animate-float object-contain"
-              loading="eager"
-            />
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-aviation-blue to-gold flex items-center justify-center text-white font-bold text-4xl sm:text-5xl mx-auto drop-shadow-2xl animate-float">DA</div>
+            <p className="text-gold text-xs tracking-[0.2em] uppercase mt-3 font-medium">Danbury, Connecticut</p>
           </div>
 
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-6 backdrop-blur-sm">

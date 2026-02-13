@@ -10,13 +10,11 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link to="/" className="flex items-center gap-3 mb-4 group">
-              <img
-                src="/logo-3d.png"
-                alt="Darcy Aviation"
-                className="w-10 h-10 rounded-xl object-contain transition-transform group-hover:scale-105 drop-shadow-lg"
-                loading="lazy"
-              />
-              <span className="text-white font-bold text-lg">Darcy Aviation</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-aviation-blue to-gold flex items-center justify-center text-white font-bold text-lg drop-shadow-lg">DA</div>
+              <div>
+                <span className="text-white font-bold text-lg">Darcy Aviation</span>
+                <div className="text-gold text-[10px] tracking-wider uppercase">Danbury, Connecticut</div>
+              </div>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-4">
               Premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Your home for aviation since 2019.
