@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 
-const HERO_VIDEOS = ['/videos/hero-1.mp4', '/videos/hero-2.mp4', '/videos/hero-3.mp4'];
+const HERO_VIDEOS = ['/videos/hero-3.mp4', '/videos/hero-2.mp4', '/videos/hero-1.mp4'];
 
 export default function VideoHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
