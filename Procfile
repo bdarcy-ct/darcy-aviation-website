@@ -1,1 +1,1 @@
-web: ls -la static/assets/ | head -5 && cp -r static/* frontend/dist/ && echo "Copied static to frontend/dist" && ls frontend/dist/index.html && cd backend && node dist/index.js
+web: cp -r static/* frontend/dist/ 2>/dev/null; cd backend && node dist/index.js
