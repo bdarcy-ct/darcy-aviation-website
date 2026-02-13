@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
@@ -36,6 +36,15 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [testimonials]);
 
+  const [tileImageIndex, setTileImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTileImageIndex((prev) => prev + 1);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   const services = [
     {
       icon: (
@@ -44,6 +53,7 @@ export default function Home() {
       title: 'Flight Training',
       desc: 'From Private Pilot to Commercial — structured programs with experienced CFIs who care about your success.',
       link: '/training',
+      images: ['/images/training/train-1.jpg', '/images/training/train-2.jpg', '/images/training/train-3.jpg', '/images/training/train-4.jpg', '/images/training/train-5.jpg'],
     },
     {
       icon: (
@@ -215,10 +225,27 @@ export default function Home() {
           <p className="section-subtitle">Everything you need to take to the skies</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {services.map((service, i) => (
+          {services.map((service: any, i: number) => (
             <Link key={i} to={service.link} className="block group h-full">
-              <GlassCard delay={i * 100} className="h-full">
-                <div className="text-aviation-blue mb-4 transition-transform group-hover:scale-110 group-hover:text-gold duration-300">{service.icon}</div>
+              <GlassCard delay={i * 100} className="h-full overflow-hidden">
+                {service.images && service.images.length > 0 && (
+                  <div className="relative w-full h-40 -mx-5 -mt-5 mb-4 overflow-hidden rounded-t-xl" style={{ width: 'calc(100% + 2.5rem)' }}>
+                    {service.images.map((src: string, imgIdx: number) => (
+                      <img
+                        key={src}
+                        src={src}
+                        alt={service.title}
+                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                          imgIdx === tileImageIndex % service.images.length ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      />
+                    ))}
+                    <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
+                  </div>
+                )}
+                {!service.images && (
+                  <div className="text-aviation-blue mb-4 transition-transform group-hover:scale-110 group-hover:text-gold duration-300">{service.icon}</div>
+                )}
                 <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-gold transition-colors">{service.title}</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">{service.desc}</p>
                 <span className="inline-flex items-center gap-1 text-gold text-sm mt-4 font-medium group-hover:gap-2 transition-all">
