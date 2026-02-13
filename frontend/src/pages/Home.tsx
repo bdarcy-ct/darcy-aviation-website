@@ -62,6 +62,7 @@ export default function Home() {
       title: 'Aircraft Maintenance',
       desc: 'FAA-certified A&P/IA mechanics. Annuals, 100-hour inspections, engine overhauls, and custom needs tailored to your aircraft.',
       link: '/maintenance',
+      images: ['/images/maintenance/maint-1.jpg', '/images/maintenance/maint-2.jpg', '/images/maintenance/maint-3.jpg', '/images/maintenance/maint-4.jpg', '/images/maintenance/maint-5.jpg'],
     },
     {
       icon: (
