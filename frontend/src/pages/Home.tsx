@@ -115,12 +115,6 @@ export default function Home() {
         <VideoHero />
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          {/* 3D Logo */}
-          <div className="mb-6">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-aviation-blue to-gold flex items-center justify-center text-white font-bold text-4xl sm:text-5xl mx-auto drop-shadow-2xl animate-float">DA</div>
-            <p className="text-gold text-xs tracking-[0.2em] uppercase mt-3 font-medium">Danbury, Connecticut</p>
-          </div>
-
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-6 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-slate-300 text-sm">Now accepting students at KDXR — Danbury, CT</span>
