@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
@@ -36,13 +36,22 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [testimonials]);
 
-  const [tileImageIndex, setTileImageIndex] = useState(0);
+  const [tileIndices, setTileIndices] = useState([0, 0, 0]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTileImageIndex((prev) => prev + 1);
-    }, 4000);
-    return () => clearInterval(interval);
+    // Stagger tiles: tile 0 swaps at 0s, tile 1 at 2s, tile 2 at 4s, then every 6s each
+    const timers = [0, 1, 2].map((i) => {
+      let timeout: ReturnType<typeof setTimeout>;
+      let interval: ReturnType<typeof setInterval>;
+      timeout = setTimeout(() => {
+        setTileIndices((prev) => { const next = [...prev]; next[i] = prev[i] + 1; return next; });
+        interval = setInterval(() => {
+          setTileIndices((prev) => { const next = [...prev]; next[i] = prev[i] + 1; return next; });
+        }, 6000);
+      }, i * 2000);
+      return () => { clearTimeout(timeout); if (interval) clearInterval(interval); };
+    });
+    return () => timers.forEach((cleanup) => cleanup());
   }, []);
 
   const services = [
@@ -238,7 +247,7 @@ export default function Home() {
                         src={src}
                         alt={service.title}
                         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                          imgIdx === tileImageIndex % service.images.length ? 'opacity-100' : 'opacity-0'
+                          imgIdx === (tileIndices[i] || 0) % service.images.length ? 'opacity-100' : 'opacity-0'
                         }`}
                       />
                     ))}
