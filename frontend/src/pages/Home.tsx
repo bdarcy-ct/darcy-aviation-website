@@ -70,6 +70,7 @@ export default function Home() {
       title: 'Scenic Tours',
       desc: 'From $249 — Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours.',
       link: '/experiences',
+      images: ['/images/scenic/scenic-1.jpg', '/images/scenic/scenic-2.jpg', '/images/scenic/scenic-3.jpg', '/images/scenic/scenic-4.jpg', '/images/scenic/scenic-5.jpg', '/images/scenic/scenic-6.jpg', '/images/scenic/scenic-7.jpg', '/images/scenic/scenic-8.jpg', '/images/scenic/scenic-9.jpg', '/images/scenic/scenic-10.jpg', '/images/scenic/scenic-11.jpg', '/images/scenic/scenic-12.jpg', '/images/scenic/scenic-13.jpg'],
     },
   ];
 
