@@ -10,9 +10,12 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link to="/" className="flex items-center gap-3 mb-4 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-aviation-blue to-gold flex items-center justify-center font-bold text-navy-900 text-lg transition-transform group-hover:scale-105">
-                DA
-              </div>
+              <img
+                src="/logo-3d.png"
+                alt="Darcy Aviation"
+                className="w-10 h-10 rounded-xl object-contain transition-transform group-hover:scale-105 drop-shadow-lg"
+                loading="lazy"
+              />
               <span className="text-white font-bold text-lg">Darcy Aviation</span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-4">
@@ -138,16 +141,22 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">
-            © {currentYear} Darcy Aviation LLC. All rights reserved.
-          </p>
-          <div className="flex items-center gap-2 text-slate-500 text-sm">
-            <span>KDXR</span>
-            <span className="w-1 h-1 rounded-full bg-gold" />
-            <span>Danbury Municipal Airport</span>
-            <span className="w-1 h-1 rounded-full bg-gold" />
-            <span>Connecticut</span>
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-slate-500 text-sm">
+              © {currentYear} Darcy Aviation LLC. All rights reserved.
+            </p>
+            <div className="flex items-center gap-2 text-slate-500 text-sm">
+              <span>KDXR</span>
+              <span className="w-1 h-1 rounded-full bg-gold" />
+              <span>Danbury Municipal Airport</span>
+              <span className="w-1 h-1 rounded-full bg-gold" />
+              <span>Connecticut</span>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-1 mt-4 text-xs text-slate-600">
+            <span>Website does not constitute a guarantee of aircraft availability or pricing.</span>
+            <a href="tel:+12036170645" className="hover:text-gold transition-colors">Call for current rates</a>
           </div>
         </div>
       </div>

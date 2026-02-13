@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import GlassCard from './GlassCard';
 import SectionWrapper from './SectionWrapper';
+import SEOHead from './SEOHead';
 
 interface FAQ {
   q: string;
@@ -37,6 +38,7 @@ interface TrainingDetailPageProps {
   faqs: FAQ[];
   ctaText: string;
   ctaLink: string;
+  seoPath?: string;
 }
 
 const BackArrowIcon = () => (
@@ -99,11 +101,17 @@ export default function TrainingDetailPage({
   faqs,
   ctaText,
   ctaLink,
+  seoPath,
 }: TrainingDetailPageProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
     <div className="pt-24">
+      <SEOHead
+        title={title}
+        description={`${title} at Darcy Aviation — ${heroDescription.slice(0, 150)}... Professional flight training at Danbury Municipal Airport (KDXR), Connecticut.`}
+        path={seoPath || '/training'}
+      />
       {/* Back link */}
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <Link

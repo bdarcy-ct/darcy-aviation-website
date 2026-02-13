@@ -17,7 +17,7 @@ function sanitize(str: string | undefined | null): string | null {
 // Create a booking
 router.post('/', (req: Request, res: Response) => {
   try {
-    const { name, email, phone, preferred_date, preferred_time, passengers, is_gift_card, message } = req.body;
+    const { name, email, phone, preferred_date, preferred_time, passengers, is_gift_card, experience_type, experience_price, message } = req.body;
 
     const cleanName = sanitize(name);
     const cleanEmail = sanitize(email);
@@ -35,8 +35,8 @@ router.post('/', (req: Request, res: Response) => {
     const passengerCount = Math.min(Math.max(Number(passengers) || 1, 1), 3);
 
     const stmt = db.prepare(`
-      INSERT INTO bookings (name, email, phone, preferred_date, preferred_time, passengers, is_gift_card, message)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO bookings (name, email, phone, preferred_date, preferred_time, passengers, is_gift_card, experience_type, experience_price, message)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -47,6 +47,8 @@ router.post('/', (req: Request, res: Response) => {
       sanitize(preferred_time),
       passengerCount,
       is_gift_card ? 1 : 0,
+      sanitize(experience_type) || 'Discovery Flight',
+      sanitize(experience_price),
       sanitize(message)
     );
 

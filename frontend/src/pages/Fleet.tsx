@@ -147,6 +147,20 @@ export default function Fleet() {
                       <span className="text-gold font-medium text-sm">{aircraft.range}</span>
                     </div>
                   )}
+
+                  {/* Availability indicator */}
+                  <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${aircraft.available ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <span className="text-xs text-slate-500">{aircraft.available ? 'Available' : 'In Maintenance'}</span>
+                    </div>
+                    <Link
+                      to={aircraft.type === 'Simulator' ? '/training/simulator' : '/book'}
+                      className="text-xs text-aviation-blue hover:text-gold transition-colors font-medium"
+                    >
+                      {aircraft.type === 'Simulator' ? 'Book Sim Time' : 'Book a Flight'} →
+                    </Link>
+                  </div>
                 </div>
               </GlassCard>
             ))}

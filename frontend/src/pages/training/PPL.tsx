@@ -126,6 +126,7 @@ export default function PPL() {
       ]}
       ctaText="Take the first step toward earning your wings. Book a Discovery Flight or contact us to discuss your training plan."
       ctaLink="/book"
+      seoPath="/training/ppl"
     />
   );
 }

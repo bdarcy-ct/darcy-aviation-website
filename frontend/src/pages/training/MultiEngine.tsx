@@ -116,6 +116,7 @@ export default function MultiEngine() {
       ]}
       ctaText="Add multi-engine capabilities to your pilot certificate. Contact us to schedule your multi-engine training."
       ctaLink="/book"
+      seoPath="/training/multi-engine"
     />
   );
 }

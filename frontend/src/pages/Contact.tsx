@@ -184,8 +184,10 @@ export default function Contact() {
                     <option value="">Select Subject</option>
                     <option value="Flight Training">Flight Training</option>
                     <option value="Discovery Flight">Discovery Flight</option>
+                    <option value="Scenic Tours">Scenic Tours & Experiences</option>
                     <option value="Aircraft Maintenance">Aircraft Maintenance</option>
                     <option value="Aircraft Rental">Aircraft Rental</option>
+                    <option value="Pre-Buy Inspection">Pre-Buy Inspection</option>
                     <option value="Gift Cards">Gift Cards</option>
                     <option value="General Inquiry">General Inquiry</option>
                   </select>

@@ -21,8 +21,38 @@ app.use((_req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('X-DNS-Prefetch-Control', 'on');
   next();
 });
+
+// Simple in-memory rate limiter for form submissions
+const rateLimiter = new Map<string, number[]>();
+function rateLimit(maxRequests: number, windowMs: number) {
+  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const requests = rateLimiter.get(ip) || [];
+    const valid = requests.filter(t => now - t < windowMs);
+    if (valid.length >= maxRequests) {
+      res.status(429).json({ error: 'Too many requests. Please wait and try again.' });
+      return;
+    }
+    valid.push(now);
+    rateLimiter.set(ip, valid);
+    next();
+  };
+}
+
+// Clean up rate limiter every 10 minutes
+setInterval(() => {
+  const cutoff = Date.now() - 600000;
+  for (const [ip, times] of rateLimiter.entries()) {
+    const valid = times.filter(t => t > cutoff);
+    if (valid.length === 0) rateLimiter.delete(ip);
+    else rateLimiter.set(ip, valid);
+  }
+}, 600000);
 
 // Initialize database
 initializeDatabase();
@@ -35,8 +65,8 @@ app.get('/api/health', (_req, res) => {
 // API Routes
 app.use('/api/fleet', fleetRoutes);
 app.use('/api/testimonials', testimonialRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/contact', contactRoutes);
+app.use('/api/bookings', rateLimit(5, 60000), bookingRoutes); // 5 per minute
+app.use('/api/contact', rateLimit(5, 60000), contactRoutes);  // 5 per minute
 app.use('/api/weather', weatherRoutes);
 
 // API 404 catch-all — MUST come before SPA fallback
@@ -46,6 +76,11 @@ app.all('/api/*', (_req, res) => {
 
 // Serve frontend in production
 const frontendDist = path.join(__dirname, '../../frontend/dist');
+// Hash-busted assets (js/css) get long cache, others get 1 day
+app.use('/assets', express.static(path.join(frontendDist, 'assets'), {
+  maxAge: '365d',
+  immutable: true,
+}));
 app.use(express.static(frontendDist, { maxAge: '1d' }));
 
 // SPA fallback - serve index.html for all non-API routes

@@ -120,6 +120,7 @@ export default function DiscoveryFlight() {
       ]}
       ctaText="Ready for the experience of a lifetime? Book your Discovery Flight today — no experience needed."
       ctaLink="/book"
+      seoPath="/training/discovery"
     />
   );
 }

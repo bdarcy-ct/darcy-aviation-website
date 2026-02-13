@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
@@ -75,6 +75,32 @@ const faqs = [
 
 export default function FAQ() {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+
+  // Inject FAQ structured data for SEO
+  useEffect(() => {
+    const allQuestions = faqs.flatMap((s) => s.questions);
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": allQuestions.map((q) => ({
+        "@type": "Question",
+        "name": q.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": q.a,
+        },
+      })),
+    };
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(faqSchema);
+    script.id = 'faq-schema';
+    document.head.appendChild(script);
+    return () => {
+      const el = document.getElementById('faq-schema');
+      if (el) el.remove();
+    };
+  }, []);
 
   const toggleItem = (key: string) => {
     setOpenItems((prev) => {

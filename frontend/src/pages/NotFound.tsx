@@ -7,7 +7,7 @@ export default function NotFound() {
       <SEOHead title="Page Not Found" description="The page you're looking for doesn't exist." />
       <div className="text-center max-w-lg">
         <div className="mb-8">
-          <svg className="w-24 h-24 mx-auto text-aviation-blue/50" fill="none" viewBox="0 0 24 24" strokeWidth={0.5} stroke="currentColor">
+          <svg className="w-24 h-24 mx-auto text-aviation-blue/50 animate-float" fill="none" viewBox="0 0 24 24" strokeWidth={0.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
           </svg>
         </div>
@@ -18,7 +18,7 @@ export default function NotFound() {
         <p className="text-slate-400 mb-8 leading-relaxed">
           Looks like this page went off course. Let's get you back on track.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
           <Link to="/" className="btn-gold">
             <span className="inline-flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -30,6 +30,26 @@ export default function NotFound() {
           <Link to="/contact" className="btn-blue">
             Contact Us
           </Link>
+        </div>
+        {/* Quick links */}
+        <div className="border-t border-white/10 pt-6">
+          <p className="text-slate-500 text-sm mb-3">Popular pages:</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              { to: '/experiences', label: 'Book an Experience' },
+              { to: '/training', label: 'Training Programs' },
+              { to: '/fleet', label: 'Our Fleet' },
+              { to: '/maintenance', label: 'Maintenance' },
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-sm text-slate-400 hover:text-gold transition-colors bg-white/5 rounded-lg px-3 py-1.5 border border-white/10 hover:border-gold/30"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

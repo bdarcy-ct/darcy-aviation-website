@@ -125,6 +125,7 @@ export default function Commercial() {
       ]}
       ctaText="Take the next step in your professional aviation career. Contact us to build your path to a Commercial Pilot License."
       ctaLink="/book"
+      seoPath="/training/commercial"
     />
   );
 }

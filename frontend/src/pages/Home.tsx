@@ -49,7 +49,7 @@ export default function Home() {
         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
       ),
       title: 'Aircraft Maintenance',
-      desc: 'FAA-certified A&P/IA mechanics. Annuals, 100-hour inspections, engine overhauls, and avionics.',
+      desc: 'FAA-certified A&P/IA mechanics. Annuals, 100-hour inspections, engine overhauls, and custom needs tailored to your aircraft.',
       link: '/maintenance',
     },
     {
@@ -117,10 +117,21 @@ export default function Home() {
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-aviation-blue rounded-full filter blur-[128px] animate-pulse-glow" />
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gold rounded-full filter blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-500 rounded-full filter blur-[128px] animate-pulse-glow" style={{ animationDelay: '3s' }} />
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-8 backdrop-blur-sm">
+          {/* 3D Logo */}
+          <div className="mb-6">
+            <img
+              src="/logo-3d.png"
+              alt="Darcy Aviation Logo"
+              className="w-28 h-28 sm:w-36 sm:h-36 mx-auto drop-shadow-2xl animate-float object-contain"
+              loading="eager"
+            />
+          </div>
+
+          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-6 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-slate-300 text-sm">Now accepting students at KDXR — Danbury, CT</span>
           </div>
@@ -149,6 +160,22 @@ export default function Home() {
             <Link to="/training" className="btn-blue text-lg">
               Explore Programs →
             </Link>
+          </div>
+
+          {/* Quick trust badges under CTA */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-sm text-slate-500">
+            <span className="inline-flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+              FAA Certified
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+              4.9★ on Google
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+              600+ Students
+            </span>
           </div>
         </div>
 
@@ -184,7 +211,7 @@ export default function Home() {
             </div>
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">
-                <AnimatedCounter target={2019} />
+                2019
               </div>
               <div className="text-slate-400 text-sm mt-1">Established</div>
             </div>
@@ -200,8 +227,8 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {services.map((service, i) => (
-            <Link key={i} to={service.link} className="block group">
-              <GlassCard delay={i * 100}>
+            <Link key={i} to={service.link} className="block group h-full">
+              <GlassCard delay={i * 100} className="h-full">
                 <div className="text-aviation-blue mb-4 transition-transform group-hover:scale-110 group-hover:text-gold duration-300">{service.icon}</div>
                 <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-gold transition-colors">{service.title}</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">{service.desc}</p>
@@ -254,10 +281,13 @@ export default function Home() {
                     </svg>
                   ))}
                 </div>
-                <p className="text-white text-lg md:text-xl leading-relaxed mb-6 italic transition-opacity duration-500">
+                <p className="text-white text-lg md:text-xl leading-relaxed mb-6 italic transition-all duration-700 ease-in-out">
                   "{testimonials[currentTestimonial].text}"
                 </p>
                 <p className="text-gold font-semibold">{testimonials[currentTestimonial].name}</p>
+                {testimonials[currentTestimonial].date && (
+                  <p className="text-slate-500 text-xs mt-1">{new Date(testimonials[currentTestimonial].date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
+                )}
               </div>
               {/* Dots */}
               <div className="flex justify-center gap-2 mt-6" role="tablist" aria-label="Testimonial navigation">

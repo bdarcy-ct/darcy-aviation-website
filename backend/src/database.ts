@@ -25,6 +25,8 @@ export function initializeDatabase(): void {
       preferred_time TEXT,
       passengers INTEGER DEFAULT 1,
       is_gift_card BOOLEAN DEFAULT 0,
+      experience_type TEXT DEFAULT 'Discovery Flight',
+      experience_price TEXT,
       message TEXT,
       status TEXT DEFAULT 'pending',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP

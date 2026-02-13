@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
-    "build": "cd frontend && npm install && npm run build && cd ../backend && npm install && npm run build",
+    "build": "cd frontend && npm install && CACHE_BUST=1739360000 npm run build && cd ../backend && npm install && npm run build",
     "start": "cd backend && node dist/index.js",
     "postinstall": "cd frontend && npm install && cd ../backend && npm install"
   },
