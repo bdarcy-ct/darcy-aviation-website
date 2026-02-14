@@ -8,6 +8,8 @@ import ContentEditor from './ContentEditor';
 import MediaManager from './MediaManager';
 import FAQManager from './FAQManager';
 import SEOSettings from './SEOSettings';
+import FleetManager from './FleetManager';
+import TestimonialsManager from './TestimonialsManager';
 
 const AdminPage: React.FC = () => {
   const { user, isLoading } = useAdmin();
@@ -36,6 +38,8 @@ const AdminPage: React.FC = () => {
         <Route path="/media" element={<MediaManager />} />
         <Route path="/faqs" element={<FAQManager />} />
         <Route path="/pages" element={<SEOSettings />} />
+        <Route path="/fleet" element={<FleetManager />} />
+        <Route path="/testimonials" element={<TestimonialsManager />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Routes>
     </AdminLayout>

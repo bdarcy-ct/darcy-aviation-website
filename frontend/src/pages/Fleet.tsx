@@ -4,6 +4,7 @@ import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
 import { CardSkeleton } from '../components/Skeleton';
+import { useCmsSection } from '../hooks/useCmsContent';
 
 interface Aircraft {
   id: number;
@@ -37,6 +38,7 @@ function getTypeIcon(type: string) {
 }
 
 export default function Fleet() {
+  const { get: cms } = useCmsSection('fleet');
   const [fleet, setFleet] = useState<Aircraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export default function Fleet() {
             <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">Fleet</span>
           </h1>
           <p className="section-subtitle">
-            Well-maintained aircraft and cutting-edge simulator for every stage of your training.
+            {cms('subheadline', 'Well-maintained aircraft and cutting-edge simulator for every stage of your training.')}
           </p>
         </div>
 

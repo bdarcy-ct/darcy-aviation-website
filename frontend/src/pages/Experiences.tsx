@@ -2,11 +2,15 @@ import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
+import { useCmsSection } from '../hooks/useCmsContent';
+
+function ExperiencesPage() {
+  const { get: cms } = useCmsSection('experiences');
 
 const experiences = [
   {
     title: 'Discovery Flight',
-    price: '$249',
+    price: cms('discovery_price', '$249'),
     slug: 'discovery-flight',
     desc: 'Take the captain\'s seat and experience the thrill of flying firsthand. Whether it\'s been a lifelong dream or a spark of curiosity, grab the controls with an experienced instructor by your side and see the world from above.',
     icon: (
@@ -19,7 +23,7 @@ const experiences = [
   },
   {
     title: 'Candlewood Lake Tour',
-    price: '$290',
+    price: cms('candlewood_price', '$290'),
     slug: 'candlewood-lake-tour',
     desc: 'Soar over the majestically wooded Candlewood Lake region. Take in sweeping views of Connecticut\'s largest lake, rolling hills, and charming shoreline communities from the best seat in the house.',
     icon: (
@@ -31,7 +35,7 @@ const experiences = [
   },
   {
     title: 'West Point & Hudson River Tour',
-    price: '$379',
+    price: cms('westpoint_price', '$379'),
     slug: 'west-point-hudson-river-tour',
     desc: 'Fly over the storied grounds of the West Point Military Academy, then navigate your way down the legendary Hudson River. A stunning blend of American history and natural beauty from an altitude most only dream of.',
     icon: (
@@ -43,7 +47,7 @@ const experiences = [
   },
   {
     title: 'NYC Skyline Tour',
-    price: '$550',
+    price: cms('nyc_price', '$550'),
     slug: 'nyc-skyline-tour',
     desc: 'Fly through America\'s most iconic skyline at eye level with breathtaking skyscrapers along the Hudson River. See the Statue of Liberty, the Empire State Building, and Central Park from a perspective that will leave you speechless.',
     icon: (
@@ -55,7 +59,7 @@ const experiences = [
   },
   {
     title: 'City Lights Night Tour',
-    price: '$680',
+    price: cms('citylights_price', '$680'),
     slug: 'city-lights-night-tour',
     desc: 'The most spectacular flight you and your loved ones will ever experience. Cruise down the Hudson River through the glittering Manhattan skyline, then sweep out over the East River — all under the magic of city lights after dark.',
     icon: (
@@ -68,7 +72,6 @@ const experiences = [
   },
 ];
 
-export default function Experiences() {
   return (
     <div className="pt-24">
       <SEOHead
@@ -162,3 +165,5 @@ export default function Experiences() {
     </div>
   );
 }
+
+export default ExperiencesPage;

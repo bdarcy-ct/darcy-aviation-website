@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
+import { useCmsSection } from '../hooks/useCmsContent';
 
 interface ServiceDetail {
   title: string;
@@ -178,6 +179,7 @@ const trustIndicators = [
 ];
 
 export default function Maintenance() {
+  const { get: cms } = useCmsSection('maintenance');
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const toggle = (i: number) => {
@@ -198,7 +200,7 @@ export default function Maintenance() {
             <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">Maintenance</span>
           </h1>
           <p className="section-subtitle">
-            FAA-certified maintenance services for Cessna and Piper aircraft. Keeping you safe in the skies.
+            {cms('subheadline', 'FAA-certified maintenance services for Cessna and Piper aircraft. Keeping you safe in the skies.')}
           </p>
         </div>
 

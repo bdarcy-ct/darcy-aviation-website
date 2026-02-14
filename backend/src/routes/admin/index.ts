@@ -5,6 +5,8 @@ import mediaRoutes from './media';
 import faqRoutes from './faqs';
 import dashboardRoutes from './dashboard';
 import seoRoutes from './seo';
+import fleetRoutes from './fleet';
+import testimonialRoutes from './testimonials';
 
 const router = express.Router();
 
@@ -15,5 +17,7 @@ router.use('/media', mediaRoutes);
 router.use('/faqs', faqRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/seo', seoRoutes);
+router.use('/fleet', fleetRoutes);
+router.use('/testimonials', testimonialRoutes);
 
 export default router;
