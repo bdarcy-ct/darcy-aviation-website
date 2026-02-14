@@ -146,7 +146,7 @@ export default function Home() {
             <span className="text-slate-300 text-sm">Now accepting students at KDXR — Danbury, CT</span>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tight inline-block px-6 py-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.3), rgba(59,130,246,0.5), rgba(212,175,55,0.5))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 2px 8px rgba(255,255,255,0.15))" }}>
             Take Flight at{' '}
             <span className="bg-gradient-to-r from-aviation-blue via-blue-400 to-gold bg-clip-text text-transparent">
               Darcy Aviation
