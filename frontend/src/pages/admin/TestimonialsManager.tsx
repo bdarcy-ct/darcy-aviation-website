@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useToast } from '../../components/admin/Toast';
 
 interface Testimonial {
   id: number;
@@ -20,6 +21,7 @@ const TestimonialsManager: React.FC = () => {
   const [form, setForm] = useState(emptyTestimonial);
   const [saving, setSaving] = useState(false);
   const { token } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => { fetchTestimonials(); }, []);
 
@@ -44,7 +46,7 @@ const TestimonialsManager: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.text) { alert('Name and testimonial text are required'); return; }
+    if (!form.name || !form.text) { toast('error', 'Name and testimonial text are required'); return; }
     setSaving(true);
     try {
       const url = editing ? `/api/admin/testimonials/${editing.id}` : '/api/admin/testimonials';
@@ -53,9 +55,9 @@ const TestimonialsManager: React.FC = () => {
         method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (res.ok) { await fetchTestimonials(); setShowForm(false); setEditing(null); }
-      else alert('Failed to save');
-    } catch (e) { alert('Failed to save'); }
+      if (res.ok) { toast('success', editing ? 'Testimonial updated' : 'Testimonial added'); await fetchTestimonials(); setShowForm(false); setEditing(null); }
+      else toast('error', 'Failed to save testimonial');
+    } catch (e) { toast('error', 'Failed to save testimonial'); }
     finally { setSaving(false); }
   };
 
@@ -63,9 +65,9 @@ const TestimonialsManager: React.FC = () => {
     if (!confirm(`Delete testimonial from "${name}"?`)) return;
     try {
       const res = await fetch(`/api/admin/testimonials/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) await fetchTestimonials();
-      else alert('Failed to delete');
-    } catch (e) { alert('Failed to delete'); }
+      if (res.ok) { toast('success', 'Testimonial deleted'); await fetchTestimonials(); }
+      else toast('error', 'Failed to delete');
+    } catch (e) { toast('error', 'Failed to delete'); }
   };
 
   const toggleFeatured = async (id: number) => {

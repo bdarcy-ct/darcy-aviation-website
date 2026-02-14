@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useToast } from '../../components/admin/Toast';
 
 interface PageMeta {
   id: number;
@@ -18,6 +19,7 @@ const SEOSettings: React.FC = () => {
   const [editingPage, setEditingPage] = useState<PageMeta | null>(null);
   const [saving, setSaving] = useState(false);
   const { token } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchPageMeta();
@@ -53,14 +55,15 @@ const SEOSettings: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'SEO settings saved');
         await fetchPageMeta();
         setEditingPage(null);
       } else {
-        alert('Failed to update page meta');
+        toast('error', 'Failed to update page meta');
       }
     } catch (error) {
       console.error('Failed to update page meta:', error);
-      alert('Failed to update page meta');
+      toast('error', 'Failed to update page meta');
     } finally {
       setSaving(false);
     }
@@ -105,8 +108,8 @@ const SEOSettings: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">SEO Settings</h1>
-        <p className="text-slate-300">Manage page titles, descriptions, and Open Graph meta data</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">SEO Settings</h1>
+        <p className="text-slate-300 text-sm sm:text-base">Manage page titles, descriptions, and Open Graph meta data</p>
       </div>
 
       {/* SEO Tips */}

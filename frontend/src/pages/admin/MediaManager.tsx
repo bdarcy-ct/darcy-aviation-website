@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useToast } from '../../components/admin/Toast';
 
 interface MediaFile {
   id: number | string;
@@ -23,6 +24,7 @@ const MediaManager: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { token } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchMedia();
@@ -76,11 +78,13 @@ const MediaManager: React.FC = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          alert(`Failed to upload ${file.name}: ${errorData.error}`);
+          toast('error', `Failed to upload ${file.name}: ${errorData.error}`);
+        } else {
+          toast('success', `Uploaded ${file.name}`);
         }
       } catch (error) {
         console.error(`Failed to upload ${file.name}:`, error);
-        alert(`Failed to upload ${file.name}`);
+        toast('error', `Failed to upload ${file.name}`);
       }
     }
 
@@ -95,7 +99,7 @@ const MediaManager: React.FC = () => {
 
   const handleDelete = async (id: number | string, filename: string, isSiteAsset?: boolean) => {
     if (isSiteAsset) {
-      alert('Site assets cannot be deleted from here. They are part of the website\'s core files.');
+      toast('info', 'Site assets cannot be deleted — they are core website files');
       return;
     }
 
@@ -108,13 +112,14 @@ const MediaManager: React.FC = () => {
       });
 
       if (response.ok) {
-        await fetchMedia(); // Refresh the list
+        toast('success', 'File deleted');
+        await fetchMedia();
       } else {
-        alert('Failed to delete file');
+        toast('error', 'Failed to delete file');
       }
     } catch (error) {
       console.error('Failed to delete file:', error);
-      alert('Failed to delete file');
+      toast('error', 'Failed to delete file');
     }
   };
 
@@ -154,8 +159,8 @@ const MediaManager: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Media Manager</h1>
-        <p className="text-slate-300">Upload and manage photos, videos, and other media files</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Media Manager</h1>
+        <p className="text-slate-300 text-sm sm:text-base">Upload and manage photos, videos, and other media files</p>
       </div>
 
       {/* Tab Navigation */}
@@ -343,7 +348,7 @@ const MediaManager: React.FC = () => {
                     {/* Actions */}
                     <div className={`flex gap-2 ${viewMode === 'list' ? 'flex-shrink-0 ml-4' : 'mt-2'}`}>
                       <button
-                        onClick={() => navigator.clipboard.writeText(file.file_path)}
+                        onClick={() => { navigator.clipboard.writeText(file.file_path); toast('success', 'URL copied to clipboard'); }}
                         className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                         title="Copy URL"
                       >

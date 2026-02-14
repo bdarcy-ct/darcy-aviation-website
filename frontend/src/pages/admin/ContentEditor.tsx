@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useToast } from '../../components/admin/Toast';
 
 interface ContentItem {
   id: number;
@@ -26,6 +27,7 @@ const ContentEditor: React.FC = () => {
   const [newItem, setNewItem] = useState<NewContentItem>({ section: '', key: '', content: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const { token } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchContent();
@@ -73,15 +75,16 @@ const ContentEditor: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'Content saved');
         await fetchContent();
         setEditingItem(null);
         setEditContent('');
       } else {
-        alert('Failed to save content');
+        toast('error', 'Failed to save content');
       }
     } catch (error) {
       console.error('Failed to save content:', error);
-      alert('Failed to save content');
+      toast('error', 'Failed to save content');
     } finally {
       setSaving(false);
     }
@@ -89,7 +92,7 @@ const ContentEditor: React.FC = () => {
 
   const handleAddItem = async () => {
     if (!newItem.section || !newItem.key || !newItem.content) {
-      alert('All fields are required');
+      toast('error', 'All fields are required');
       return;
     }
 
@@ -105,15 +108,16 @@ const ContentEditor: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'Content item added');
         setNewItem({ section: '', key: '', content: '' });
         setShowAddForm(false);
         await fetchContent();
       } else {
-        alert('Failed to add content item');
+        toast('error', 'Failed to add content item');
       }
     } catch (error) {
       console.error('Failed to add content:', error);
-      alert('Failed to add content');
+      toast('error', 'Failed to add content');
     } finally {
       setSaving(false);
     }
@@ -129,12 +133,14 @@ const ContentEditor: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'Content deleted');
         await fetchContent();
       } else {
-        alert('Failed to delete content');
+        toast('error', 'Failed to delete content');
       }
     } catch (error) {
       console.error('Failed to delete:', error);
+      toast('error', 'Failed to delete content');
     }
   };
 
@@ -183,10 +189,10 @@ const ContentEditor: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Content Editor</h1>
-          <p className="text-slate-300">Edit site content — changes appear on the live site immediately</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Content Editor</h1>
+          <p className="text-slate-300 text-sm sm:text-base">Edit site content — changes appear on the live site immediately</p>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}

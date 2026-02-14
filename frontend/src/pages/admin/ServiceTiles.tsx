@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useToast } from '../../components/admin/Toast';
 
 interface ServiceTile {
   id: number;
@@ -20,6 +21,7 @@ const ServiceTiles: React.FC = () => {
   const [editingTile, setEditingTile] = useState<ServiceTile | null>(null);
   const [showForm, setShowForm] = useState(false);
   const { token } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchTiles();
@@ -60,16 +62,17 @@ const ServiceTiles: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', editingTile ? 'Tile updated' : 'Tile created');
         await fetchTiles();
         setShowForm(false);
         setEditingTile(null);
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.error}`);
+        toast('error', errorData.error || 'Failed to save tile');
       }
     } catch (error) {
       console.error('Failed to save service tile:', error);
-      alert('Failed to save service tile');
+      toast('error', 'Failed to save service tile');
     }
   };
 
@@ -83,13 +86,14 @@ const ServiceTiles: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'Tile deleted');
         await fetchTiles();
       } else {
-        alert('Failed to delete service tile');
+        toast('error', 'Failed to delete tile');
       }
     } catch (error) {
       console.error('Failed to delete service tile:', error);
-      alert('Failed to delete service tile');
+      toast('error', 'Failed to delete tile');
     }
   };
 
@@ -117,16 +121,16 @@ const ServiceTiles: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Service Tiles</h1>
-          <p className="text-slate-300">Manage the service tiles shown on the homepage</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Service Tiles</h1>
+          <p className="text-slate-300 text-sm sm:text-base">Manage the service tiles shown on the homepage</p>
         </div>
         <button
           onClick={openCreateForm}
-          className="bg-gold hover:bg-yellow-500 text-navy-900 px-6 py-3 rounded-lg font-semibold transition-colors"
+          className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap"
         >
-          Add New Tile
+          + Add Tile
         </button>
       </div>
 
@@ -220,8 +224,7 @@ const ServiceTileForm: React.FC<ServiceTileFormProps> = ({ tile, onSubmit, onCan
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.link) {
-      alert('Please fill in all required fields');
-      return;
+      return; // Fields are marked required on form elements
     }
     onSubmit(formData);
   };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useToast } from '../../components/admin/Toast';
 
 interface FAQ {
   id: number;
@@ -26,6 +27,7 @@ const FAQManager: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const { token } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchFAQs();
@@ -50,7 +52,7 @@ const FAQManager: React.FC = () => {
 
   const handleCreate = async () => {
     if (!newFaq.question || !newFaq.answer) {
-      alert('Please fill in both question and answer');
+      toast('error', 'Please fill in both question and answer');
       return;
     }
 
@@ -66,15 +68,16 @@ const FAQManager: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'FAQ created');
         setNewFaq({ question: '', answer: '', category: 'general' });
         setShowAddForm(false);
         await fetchFAQs();
       } else {
-        alert('Failed to create FAQ');
+        toast('error', 'Failed to create FAQ');
       }
     } catch (error) {
       console.error('Failed to create FAQ:', error);
-      alert('Failed to create FAQ');
+      toast('error', 'Failed to create FAQ');
     } finally {
       setSaving(false);
     }
@@ -95,14 +98,15 @@ const FAQManager: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'FAQ updated');
         setEditingFaq(null);
         await fetchFAQs();
       } else {
-        alert('Failed to update FAQ');
+        toast('error', 'Failed to update FAQ');
       }
     } catch (error) {
       console.error('Failed to update FAQ:', error);
-      alert('Failed to update FAQ');
+      toast('error', 'Failed to update FAQ');
     } finally {
       setSaving(false);
     }
@@ -118,13 +122,14 @@ const FAQManager: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', 'FAQ deleted');
         await fetchFAQs();
       } else {
-        alert('Failed to delete FAQ');
+        toast('error', 'Failed to delete FAQ');
       }
     } catch (error) {
       console.error('Failed to delete FAQ:', error);
-      alert('Failed to delete FAQ');
+      toast('error', 'Failed to delete FAQ');
     }
   };
 
@@ -142,13 +147,14 @@ const FAQManager: React.FC = () => {
       });
 
       if (response.ok) {
+        toast('success', `FAQ ${faq.is_active ? 'deactivated' : 'activated'}`);
         await fetchFAQs();
       } else {
-        alert('Failed to update FAQ status');
+        toast('error', 'Failed to update FAQ status');
       }
     } catch (error) {
       console.error('Failed to update FAQ status:', error);
-      alert('Failed to update FAQ status');
+      toast('error', 'Failed to update FAQ status');
     }
   };
 
@@ -168,14 +174,14 @@ const FAQManager: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">FAQ Manager</h1>
-          <p className="text-slate-300">Manage frequently asked questions</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">FAQ Manager</h1>
+          <p className="text-slate-300 text-sm sm:text-base">Manage frequently asked questions</p>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors"
+          className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap"
         >
           + Add New FAQ
         </button>

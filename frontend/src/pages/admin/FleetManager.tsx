@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useToast } from '../../components/admin/Toast';
 
 interface Aircraft {
   id: number;
@@ -28,6 +29,7 @@ const FleetManager: React.FC = () => {
   const [form, setForm] = useState(emptyAircraft);
   const [saving, setSaving] = useState(false);
   const { token } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => { fetchFleet(); }, []);
 
@@ -52,7 +54,7 @@ const FleetManager: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!form.name) { alert('Name is required'); return; }
+    if (!form.name) { toast('error', 'Name is required'); return; }
     setSaving(true);
     try {
       const url = editing ? `/api/admin/fleet/${editing.id}` : '/api/admin/fleet';
@@ -61,9 +63,9 @@ const FleetManager: React.FC = () => {
         method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (res.ok) { await fetchFleet(); setShowForm(false); setEditing(null); }
-      else alert('Failed to save');
-    } catch (e) { alert('Failed to save'); }
+      if (res.ok) { toast('success', editing ? 'Aircraft updated' : 'Aircraft added'); await fetchFleet(); setShowForm(false); setEditing(null); }
+      else toast('error', 'Failed to save aircraft');
+    } catch (e) { toast('error', 'Failed to save aircraft'); }
     finally { setSaving(false); }
   };
 
@@ -71,9 +73,9 @@ const FleetManager: React.FC = () => {
     if (!confirm(`Delete "${name}"?`)) return;
     try {
       const res = await fetch(`/api/admin/fleet/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) await fetchFleet();
-      else alert('Failed to delete');
-    } catch (e) { alert('Failed to delete'); }
+      if (res.ok) { toast('success', 'Aircraft deleted'); await fetchFleet(); }
+      else toast('error', 'Failed to delete');
+    } catch (e) { toast('error', 'Failed to delete'); }
   };
 
   const toggleAvail = async (id: number) => {
