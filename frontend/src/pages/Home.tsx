@@ -146,7 +146,7 @@ export default function Home() {
             <span className="text-slate-300 text-sm">Now accepting students at KDXR — Danbury, CT</span>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tight inline-block px-6 py-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
             Take Flight at{' '}
             <span className="bg-gradient-to-r from-aviation-blue via-blue-400 to-gold bg-clip-text text-transparent">
               Darcy Aviation

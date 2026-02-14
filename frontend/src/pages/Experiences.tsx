@@ -79,7 +79,7 @@ export default function Experiences() {
       {/* Hero */}
       <SectionWrapper>
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 inline-block px-6 py-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
             Book an{' '}
             <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">
               Experience
