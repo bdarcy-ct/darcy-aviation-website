@@ -9,8 +9,8 @@ router.get('/', authenticateAdmin, (req, res) => {
   try {
     // Get counts for various entities
     const bookingsCount = db.prepare('SELECT COUNT(*) as count FROM bookings').get() as { count: number };
-    const pendingBookings = db.prepare('SELECT COUNT(*) as count FROM bookings WHERE status = "pending"').get() as { count: number };
-    const contactMessages = db.prepare('SELECT COUNT(*) as count FROM contact_messages WHERE read = 0').get() as { count: number };
+    const pendingBookings = db.prepare("SELECT COUNT(*) as count FROM bookings WHERE status = 'pending'").get() as { count: number };
+    const contactMessages = db.prepare("SELECT COUNT(*) as count FROM contact_messages WHERE read = 0").get() as { count: number };
     const mediaFiles = db.prepare('SELECT COUNT(*) as count FROM media_files').get() as { count: number };
     const faqs = db.prepare('SELECT COUNT(*) as count FROM faqs WHERE is_active = 1').get() as { count: number };
     const fleetAircraft = db.prepare('SELECT COUNT(*) as count FROM fleet WHERE available = 1').get() as { count: number };
