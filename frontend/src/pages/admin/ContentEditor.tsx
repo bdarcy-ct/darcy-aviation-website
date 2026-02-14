@@ -9,6 +9,12 @@ interface ContentItem {
   updated_at: string;
 }
 
+interface NewContentItem {
+  section: string;
+  key: string;
+  content: string;
+}
+
 const ContentEditor: React.FC = () => {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,6 +22,9 @@ const ContentEditor: React.FC = () => {
   const [editContent, setEditContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newItem, setNewItem] = useState<NewContentItem>({ section: '', key: '', content: '' });
+  const [searchQuery, setSearchQuery] = useState('');
   const { token } = useAdmin();
 
   useEffect(() => {
@@ -64,7 +73,7 @@ const ContentEditor: React.FC = () => {
       });
 
       if (response.ok) {
-        await fetchContent(); // Refresh the list
+        await fetchContent();
         setEditingItem(null);
         setEditContent('');
       } else {
@@ -78,18 +87,80 @@ const ContentEditor: React.FC = () => {
     }
   };
 
+  const handleAddItem = async () => {
+    if (!newItem.section || !newItem.key || !newItem.content) {
+      alert('All fields are required');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/admin/content/${newItem.section}/${newItem.key}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content: newItem.content })
+      });
+
+      if (response.ok) {
+        setNewItem({ section: '', key: '', content: '' });
+        setShowAddForm(false);
+        await fetchContent();
+      } else {
+        alert('Failed to add content item');
+      }
+    } catch (error) {
+      console.error('Failed to add content:', error);
+      alert('Failed to add content');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (section: string, key: string) => {
+    if (!confirm(`Delete "${section} → ${key}"?`)) return;
+
+    try {
+      const response = await fetch(`/api/admin/content/${section}/${key}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        await fetchContent();
+      } else {
+        alert('Failed to delete content');
+      }
+    } catch (error) {
+      console.error('Failed to delete:', error);
+    }
+  };
+
   const sections = [...new Set(content.map(item => item.section))];
-  const filteredContent = filter === 'all' ? content : content.filter(item => item.section === filter);
+  
+  let filteredContent = filter === 'all' ? content : content.filter(item => item.section === filter);
+  
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    filteredContent = filteredContent.filter(item =>
+      item.key.toLowerCase().includes(q) ||
+      item.content.toLowerCase().includes(q) ||
+      item.section.toLowerCase().includes(q)
+    );
+  }
 
   const getSectionIcon = (section: string) => {
-    const icons: { [key: string]: string } = {
+    const icons: Record<string, string> = {
       'hero': '🏠',
       'about': 'ℹ️',
       'contact': '📞',
       'training': '✈️',
       'fleet': '🛩️',
       'maintenance': '🔧',
-      'experiences': '🎯'
+      'experiences': '🎯',
+      'cta': '📣',
     };
     return icons[section] || '📄';
   };
@@ -112,13 +183,91 @@ const ContentEditor: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Content Editor</h1>
-        <p className="text-slate-300">Edit site content and copy</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Content Editor</h1>
+          <p className="text-slate-300">Edit site content — changes appear on the live site immediately</p>
+        </div>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors"
+        >
+          {showAddForm ? '✕ Cancel' : '+ Add New'}
+        </button>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Add New Content Form */}
+      {showAddForm && (
+        <div className="bg-white/10 backdrop-blur-md border border-gold/30 rounded-xl p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">Add New Content Item</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Section</label>
+              <div className="flex gap-2">
+                <select
+                  value={newItem.section}
+                  onChange={(e) => setNewItem({ ...newItem, section: e.target.value })}
+                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-gold/50"
+                >
+                  <option value="">Select or type new...</option>
+                  {sections.map(s => (
+                    <option key={s} value={s}>{getSectionIcon(s)} {s}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={newItem.section}
+                  onChange={(e) => setNewItem({ ...newItem, section: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50"
+                  placeholder="Or type new section name"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Key</label>
+              <input
+                type="text"
+                value={newItem.key}
+                onChange={(e) => setNewItem({ ...newItem, key: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50"
+                placeholder="e.g., headline, subheadline, phone"
+              />
+            </div>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-slate-300 mb-2">Content</label>
+            <textarea
+              value={newItem.content}
+              onChange={(e) => setNewItem({ ...newItem, content: e.target.value })}
+              rows={3}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50"
+              placeholder="Enter the content..."
+            />
+          </div>
+          <button
+            onClick={handleAddItem}
+            disabled={saving || !newItem.section || !newItem.key || !newItem.content}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Adding...' : 'Add Content Item'}
+          </button>
+        </div>
+      )}
+
+      {/* Search + Filter */}
       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
+        {/* Search */}
+        <div className="mb-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="🔍 Search content..."
+            className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50"
+          />
+        </div>
+
+        {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setFilter('all')}
@@ -128,21 +277,24 @@ const ContentEditor: React.FC = () => {
                 : 'bg-white/10 text-slate-300 hover:bg-white/20'
             }`}
           >
-            All Sections
+            All ({content.length})
           </button>
-          {sections.map(section => (
-            <button
-              key={section}
-              onClick={() => setFilter(section)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === section
-                  ? 'bg-gold text-navy-900'
-                  : 'bg-white/10 text-slate-300 hover:bg-white/20'
-              }`}
-            >
-              {getSectionIcon(section)} {section.charAt(0).toUpperCase() + section.slice(1)}
-            </button>
-          ))}
+          {sections.map(section => {
+            const count = content.filter(item => item.section === section).length;
+            return (
+              <button
+                key={section}
+                onClick={() => setFilter(section)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === section
+                    ? 'bg-gold text-navy-900'
+                    : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                }`}
+              >
+                {getSectionIcon(section)} {section} ({count})
+              </button>
+            );
+          })}
         </div>
 
         {/* Content Items */}
@@ -178,12 +330,20 @@ const ContentEditor: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => startEdit(item)}
-                    className="bg-gold hover:bg-yellow-500 text-navy-900 px-3 py-1 rounded text-sm font-medium transition-colors"
-                  >
-                    Edit
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startEdit(item)}
+                      className="bg-gold hover:bg-yellow-500 text-navy-900 px-3 py-1 rounded text-sm font-medium transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.section, item.key)}
+                      className="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-3 py-1 rounded text-sm font-medium transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -191,13 +351,13 @@ const ContentEditor: React.FC = () => {
                 <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
-                  rows={4}
+                  rows={Math.min(8, Math.max(2, editContent.split('\n').length + 1))}
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50"
                   placeholder="Enter content..."
                 />
               ) : (
                 <div className="bg-black/20 rounded-lg p-3">
-                  <p className="text-slate-200 whitespace-pre-wrap">{item.content}</p>
+                  <p className="text-slate-200 whitespace-pre-wrap text-sm">{item.content}</p>
                 </div>
               )}
             </div>
@@ -206,20 +366,41 @@ const ContentEditor: React.FC = () => {
 
         {filteredContent.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-slate-400">No content items found</p>
+            <p className="text-slate-400">
+              {searchQuery ? `No results for "${searchQuery}"` : 'No content items found'}
+            </p>
           </div>
         )}
       </div>
 
-      {/* Add New Content Item */}
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Add New Content Item</h2>
-        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
-          <p className="text-yellow-300 text-sm">
-            <strong>Note:</strong> New content items should typically be added through code. 
-            This interface is primarily for editing existing content. Contact your developer 
-            to add new content sections or keys.
-          </p>
+      {/* Help Section */}
+      <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-6">
+        <h2 className="text-lg font-semibold text-blue-300 mb-3">📖 Content Sections Guide</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          <div>
+            <h3 className="font-medium text-blue-200 mb-1">🏠 hero</h3>
+            <p className="text-blue-300/70">Homepage hero: headline, subheadline, CTA text/links, stat values</p>
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-200 mb-1">📞 contact</h3>
+            <p className="text-blue-300/70">Phone, email, address, hours, social links — used across site</p>
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-200 mb-1">ℹ️ about</h3>
+            <p className="text-blue-300/70">About page story text, team member bios</p>
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-200 mb-1">✈️ training</h3>
+            <p className="text-blue-300/70">Training program descriptions, headlines</p>
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-200 mb-1">🎯 experiences</h3>
+            <p className="text-blue-300/70">Tour prices, descriptions</p>
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-200 mb-1">📣 cta</h3>
+            <p className="text-blue-300/70">Call-to-action banners: headlines, button text, links</p>
+          </div>
         </div>
       </div>
     </div>

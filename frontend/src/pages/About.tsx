@@ -1,6 +1,7 @@
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
+import { useCmsSection } from '../hooks/useCmsContent';
 
 const ShieldIcon = () => (
   <svg className="w-10 h-10 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -61,25 +62,31 @@ const values = [
   },
 ];
 
-const team = [
+// Team data uses CMS-compatible keys but has hardcoded fallbacks
+const teamBase = [
   {
     name: 'Brent Darcy',
     role: 'Founder & Chief Instructor',
-    desc: 'Brent founded Darcy Aviation with a vision to create a premier flight training environment in Connecticut.',
+    cmsKey: 'team_brent',
+    fallback: 'Brent founded Darcy Aviation with a vision to create a premier flight training environment in Connecticut.',
   },
   {
     name: 'John',
     role: 'Certified Flight Instructor',
-    desc: 'Dedicated CFI known for patient instruction and helping students pass their checkrides with confidence.',
+    cmsKey: 'team_john',
+    fallback: 'Dedicated CFI known for patient instruction and helping students pass their checkrides with confidence.',
   },
   {
     name: 'Archana',
     role: 'Certified Flight Instructor',
-    desc: 'An exceptional CFI who brings enthusiasm and expertise to every lesson. A student favorite.',
+    cmsKey: 'team_archana',
+    fallback: 'An exceptional CFI who brings enthusiasm and expertise to every lesson. A student favorite.',
   },
 ];
 
 export default function About() {
+  const { get: cms } = useCmsSection('about');
+
   return (
     <div className="pt-24">
       <SEOHead
@@ -103,21 +110,16 @@ export default function About() {
         <div className="glass-card p-8 md:p-12 mb-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Our Story</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">{cms('story_title', 'Our Story')}</h2>
               <div className="space-y-4 text-slate-300 leading-relaxed">
                 <p>
-                  Founded in 2019, Darcy Aviation was born from a simple vision: to create the best flight training 
-                  experience in the New York/Connecticut area. Located at Danbury Municipal Airport (KDXR), we have 
-                  grown from a small operation into one of the region's most respected flight schools.
+                  {cms('story_p1', 'Founded in 2019, Darcy Aviation was born from a simple vision: to create the best flight training experience in the New York/Connecticut area. Located at Danbury Municipal Airport (KDXR), we have grown from a small operation into one of the region\'s most respected flight schools.')}
                 </p>
                 <p>
-                  Our founder, Brent Darcy, set out to build more than just a flight school — he wanted to create 
-                  a community. A place where students feel like family, where instructors genuinely care about each 
-                  student's progress, and where the joy of aviation is shared every single day.
+                  {cms('story_p2', 'Our founder, Brent Darcy, set out to build more than just a flight school — he wanted to create a community. A place where students feel like family, where instructors genuinely care about each student\'s progress, and where the joy of aviation is shared every single day.')}
                 </p>
                 <p>
-                  Today, with over 600 students trained, a premium fleet of well-maintained aircraft, and a team 
-                  of experienced instructors, Darcy Aviation continues to set the standard for flight training in Connecticut.
+                  {cms('story_p3', 'Today, with over 600 students trained, a premium fleet of well-maintained aircraft, and a team of experienced instructors, Darcy Aviation continues to set the standard for flight training in Connecticut.')}
                 </p>
               </div>
             </div>
@@ -142,14 +144,14 @@ export default function About() {
           <p className="section-subtitle">The people who make Darcy Aviation special</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {team.map((member, i) => (
+          {teamBase.map((member, i) => (
             <GlassCard key={i} delay={i * 100} className="text-center">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-aviation-blue to-gold mx-auto mb-4 flex items-center justify-center">
                 <PilotIcon />
               </div>
               <h3 className="text-xl font-semibold text-white mb-1">{member.name}</h3>
               <p className="text-gold text-sm font-medium mb-3">{member.role}</p>
-              <p className="text-slate-400 text-sm leading-relaxed">{member.desc}</p>
+              <p className="text-slate-400 text-sm leading-relaxed">{cms(member.cmsKey, member.fallback)}</p>
             </GlassCard>
           ))}
         </div>

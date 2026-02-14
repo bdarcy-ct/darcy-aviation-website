@@ -6,6 +6,7 @@ import SEOHead from '../components/SEOHead';
 import AnimatedCounter from '../components/AnimatedCounter';
 import { TestimonialSkeleton } from '../components/Skeleton';
 import VideoHero from '../components/VideoHero';
+import { useCmsContent } from '../hooks/useCmsContent';
 
 interface Testimonial {
   id: number;
@@ -17,6 +18,7 @@ interface Testimonial {
 }
 
 export default function Home() {
+  const { get: cms } = useCmsContent();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -143,7 +145,7 @@ export default function Home() {
 
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-6 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-slate-300 text-sm">Now accepting students at KDXR — Danbury, CT</span>
+            <span className="text-slate-300 text-sm">{cms('hero', 'badge_text', 'Now accepting students at KDXR — Danbury, CT')}</span>
           </div>
           
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight" style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}>
@@ -154,8 +156,7 @@ export default function Home() {
           </h1>
           
           <p className="text-lg sm:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Connecticut's premier flight training destination. Professional instruction, 
-            premium fleet, and unforgettable scenic tours at Danbury Municipal Airport.
+            {cms('hero', 'subheadline', "Connecticut's premier flight training destination. Professional instruction, premium fleet, and unforgettable scenic tours at Danbury Municipal Airport.")}
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -392,10 +393,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-aviation-blue/10 to-gold/10" />
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Start Your Aviation Journey?
+              {cms('cta', 'headline', 'Ready to Start Your Aviation Journey?')}
             </h2>
             <p className="text-slate-300 text-lg mb-8 max-w-xl mx-auto">
-              Whether you're dreaming of your private pilot license or looking for a unique gift, we're here to help you take flight.
+              {cms('cta', 'subheadline', "Whether you're dreaming of your private pilot license or looking for a unique gift, we're here to help you take flight.")}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/book" className="btn-gold text-lg">

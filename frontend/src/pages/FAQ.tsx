@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
+import { useFaqs } from '../hooks/useFaqs';
 
-const faqs = [
+// Hardcoded fallback FAQs (used if API fails)
+const fallbackFaqs = [
   {
-    category: 'Flight Training',
+    category: 'training',
+    label: 'Flight Training',
     questions: [
       {
         q: 'How long does it take to get a Private Pilot License?',
@@ -34,7 +37,8 @@ const faqs = [
     ],
   },
   {
-    category: 'Costs & Scheduling',
+    category: 'costs',
+    label: 'Costs & Scheduling',
     questions: [
       {
         q: 'How much does flight training cost?',
@@ -55,7 +59,8 @@ const faqs = [
     ],
   },
   {
-    category: 'Aircraft Maintenance',
+    category: 'aircraft',
+    label: 'Aircraft Maintenance',
     questions: [
       {
         q: 'What maintenance services do you offer?',
@@ -74,10 +79,15 @@ const faqs = [
 ];
 
 export default function FAQ() {
+  const { sections: dbSections, loading } = useFaqs();
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+
+  // Use DB sections if available, fall back to hardcoded
+  const faqs = dbSections.length > 0 ? dbSections : (loading ? [] : fallbackFaqs);
 
   // Inject FAQ structured data for SEO
   useEffect(() => {
+    if (faqs.length === 0) return;
     const allQuestions = faqs.flatMap((s) => s.questions);
     const faqSchema = {
       "@context": "https://schema.org",
@@ -100,7 +110,7 @@ export default function FAQ() {
       const el = document.getElementById('faq-schema');
       if (el) el.remove();
     };
-  }, []);
+  }, [faqs]);
 
   const toggleItem = (key: string) => {
     setOpenItems((prev) => {
@@ -129,41 +139,56 @@ export default function FAQ() {
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-10">
-          {faqs.map((section) => (
-            <div key={section.category}>
-              <h2 className="text-xl font-bold text-gold mb-4 flex items-center gap-2">
-                <span className="w-8 h-0.5 bg-gradient-to-r from-gold to-transparent" />
-                {section.category}
-              </h2>
-              <div className="space-y-3">
-                {section.questions.map((faq, i) => {
-                  const key = `${section.category}-${i}`;
-                  const isOpen = openItems.has(key);
-                  return (
-                    <div key={key} className="glass-card overflow-hidden">
-                      <button
-                        onClick={() => toggleItem(key)}
-                        className="w-full flex items-center justify-between p-5 text-left group"
-                      >
-                        <span className="text-white font-medium pr-4 group-hover:text-gold transition-colors">{faq.q}</span>
-                        <svg
-                          className={`w-5 h-5 text-gold flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-                          fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 pb-5' : 'max-h-0'}`}>
-                        <p className="px-5 text-slate-400 text-sm leading-relaxed">{faq.a}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+        {loading ? (
+          <div className="max-w-3xl mx-auto space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="glass-card p-6 animate-pulse">
+                <div className="h-4 bg-white/10 rounded w-1/3 mb-4" />
+                <div className="space-y-3">
+                  <div className="h-12 bg-white/5 rounded" />
+                  <div className="h-12 bg-white/5 rounded" />
+                  <div className="h-12 bg-white/5 rounded" />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="max-w-3xl mx-auto space-y-10">
+            {faqs.map((section) => (
+              <div key={section.category}>
+                <h2 className="text-xl font-bold text-gold mb-4 flex items-center gap-2">
+                  <span className="w-8 h-0.5 bg-gradient-to-r from-gold to-transparent" />
+                  {section.label}
+                </h2>
+                <div className="space-y-3">
+                  {section.questions.map((faq, i) => {
+                    const key = `${section.category}-${i}`;
+                    const isOpen = openItems.has(key);
+                    return (
+                      <div key={key} className="glass-card overflow-hidden">
+                        <button
+                          onClick={() => toggleItem(key)}
+                          className="w-full flex items-center justify-between p-5 text-left group"
+                        >
+                          <span className="text-white font-medium pr-4 group-hover:text-gold transition-colors">{faq.q}</span>
+                          <svg
+                            className={`w-5 h-5 text-gold flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 pb-5' : 'max-h-0'}`}>
+                          <p className="px-5 text-slate-400 text-sm leading-relaxed">{faq.a}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </SectionWrapper>
 
       {/* CTA */}

@@ -2,8 +2,10 @@ import { useState } from 'react';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
+import { useCmsSection } from '../hooks/useCmsContent';
 
 export default function Contact() {
+  const { get: cms } = useCmsSection('contact');
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
@@ -34,37 +36,42 @@ export default function Contact() {
 
   const inputClass = 'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-aviation-blue/50 focus:bg-white/10 transition-all';
 
+  const phone = cms('phone', '(203) 617-0645');
+  const email = cms('email', 'admin@darcyaviation.com');
+  const address = cms('address', '1 Wallingford Rd, Danbury, CT 06810');
+  const hours = cms('hours', '7 Days/Week, 9AM\u20135PM');
+
   const contactInfo = [
     {
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
       ),
       label: 'Address',
-      value: '1 Wallingford Rd, Danbury, CT 06810',
-      href: 'https://maps.google.com/?q=1+Wallingford+Rd+Danbury+CT+06810',
+      value: address,
+      href: `https://maps.google.com/?q=${encodeURIComponent(address)}`,
     },
     {
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
       ),
       label: 'Phone',
-      value: '(203) 617-0645',
-      href: 'tel:+12036170645',
+      value: phone,
+      href: `tel:+1${phone.replace(/\D/g, '')}`,
     },
     {
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
       ),
       label: 'Email',
-      value: 'admin@darcyaviation.com',
-      href: 'mailto:admin@darcyaviation.com',
+      value: email,
+      href: `mailto:${email}`,
     },
     {
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       ),
       label: 'Hours',
-      value: '7 Days/Week, 9AM\u20135PM',
+      value: hours,
     },
   ];
 

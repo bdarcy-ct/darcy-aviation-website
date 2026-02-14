@@ -8,6 +8,7 @@ import bookingRoutes from './routes/bookings';
 import contactRoutes from './routes/contact';
 import weatherRoutes from './routes/weather';
 import adminRoutes from './routes/admin';
+import publicRoutes from './routes/public';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -70,11 +71,16 @@ app.use('/api/bookings', rateLimit(5, 60000), bookingRoutes); // 5 per minute
 app.use('/api/contact', rateLimit(5, 60000), contactRoutes);  // 5 per minute
 app.use('/api/weather', weatherRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/public', publicRoutes);
 
 // API 404 catch-all — MUST come before SPA fallback
 app.all('/api/*', (_req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
+
+// Serve uploaded media files (accessible at /uploads/...)
+const uploadsDir = path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
 
 // Serve frontend in production
 const frontendDist = path.join(__dirname, '../../frontend/dist');
