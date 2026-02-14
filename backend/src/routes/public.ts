@@ -103,4 +103,125 @@ router.get('/service-tiles', (_req, res) => {
   }
 });
 
+// Get all active training programs
+router.get('/training-programs', (_req, res) => {
+  try {
+    const programs = db.prepare(`
+      SELECT * FROM training_programs 
+      WHERE is_active = 1 
+      ORDER BY sort_order ASC, id ASC
+    `).all();
+
+    // Parse JSON fields for frontend consumption
+    const parsedPrograms = (programs as any[]).map((program: any) => ({
+      ...program,
+      overview: JSON.parse(program.overview || '[]'),
+      requirements: JSON.parse(program.requirements || '[]'),
+      curriculum: JSON.parse(program.curriculum || '[]'),
+      fleet_used: JSON.parse(program.fleet_used || '[]'),
+      faqs: JSON.parse(program.faqs || '[]'),
+    }));
+
+    res.json(parsedPrograms);
+  } catch (error) {
+    console.error('Error fetching training programs:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get single training program by slug
+router.get('/training-programs/:slug', (req, res) => {
+  try {
+    const { slug } = req.params;
+    const program = db.prepare('SELECT * FROM training_programs WHERE slug = ? AND is_active = 1').get(slug) as any;
+    
+    if (!program) {
+      return res.status(404).json({ error: 'Training program not found' });
+    }
+
+    // Parse JSON fields
+    const parsedProgram = {
+      ...program,
+      overview: JSON.parse(program.overview || '[]'),
+      requirements: JSON.parse(program.requirements || '[]'),
+      curriculum: JSON.parse(program.curriculum || '[]'),
+      fleet_used: JSON.parse(program.fleet_used || '[]'),
+      faqs: JSON.parse(program.faqs || '[]'),
+    };
+
+    res.json(parsedProgram);
+  } catch (error) {
+    console.error('Error fetching training program:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all active experiences
+router.get('/experiences', (_req, res) => {
+  try {
+    const experiences = db.prepare(`
+      SELECT * FROM experiences 
+      WHERE is_active = 1 
+      ORDER BY sort_order ASC, id ASC
+    `).all();
+
+    // Parse JSON fields for frontend consumption
+    const parsedExperiences = (experiences as any[]).map((experience: any) => ({
+      ...experience,
+      highlights: JSON.parse(experience.highlights || '[]'),
+    }));
+
+    res.json(parsedExperiences);
+  } catch (error) {
+    console.error('Error fetching experiences:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get single experience by slug
+router.get('/experiences/:slug', (req, res) => {
+  try {
+    const { slug } = req.params;
+    const experience = db.prepare('SELECT * FROM experiences WHERE slug = ? AND is_active = 1').get(slug) as any;
+    
+    if (!experience) {
+      return res.status(404).json({ error: 'Experience not found' });
+    }
+
+    // Parse JSON fields
+    const parsedExperience = {
+      ...experience,
+      highlights: JSON.parse(experience.highlights || '[]'),
+    };
+
+    res.json(parsedExperience);
+  } catch (error) {
+    console.error('Error fetching experience:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all active maintenance services
+router.get('/maintenance-services', (_req, res) => {
+  try {
+    const services = db.prepare(`
+      SELECT * FROM maintenance_services 
+      WHERE is_active = 1 
+      ORDER BY sort_order ASC, id ASC
+    `).all();
+
+    // Parse JSON fields for frontend consumption
+    const parsedServices = (services as any[]).map((service: any) => ({
+      ...service,
+      details: JSON.parse(service.details || '[]'),
+      includes: JSON.parse(service.includes || '[]'),
+    }));
+
+    res.json(parsedServices);
+  } catch (error) {
+    console.error('Error fetching maintenance services:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

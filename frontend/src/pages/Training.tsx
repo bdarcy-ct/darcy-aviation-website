@@ -4,67 +4,84 @@ import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
 import { useCmsSection } from '../hooks/useCmsContent';
+import { useTrainingPrograms } from '../hooks/useTrainingPrograms';
 
 function TrainingPage() {
   const { get: cms } = useCmsSection('training');
+  const { programs: apiPrograms, loading: programsLoading } = useTrainingPrograms();
 
-const programs = [
-  {
-    title: 'Discovery Flight',
-    slug: '/training/discovery',
-    desc: '$249 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
-    icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+  // Map API programs to display format with fallbacks
+  const programs = apiPrograms.length > 0 ? apiPrograms.map(program => ({
+    title: program.hero_title,
+    slug: `/training/${program.slug}`,
+    desc: program.hero_description,
+    icon: program.hero_icon_svg ? (
+      <div dangerouslySetInnerHTML={{ __html: program.hero_icon_svg }} />
+    ) : (
+      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+      </svg>
     ),
-    highlights: ['30-min flight time', 'You fly the plane', 'No experience needed'],
-    featured: true,
-  },
-  {
-    title: 'Private Pilot License (PPL)',
-    slug: '/training/ppl',
-    desc: cms('ppl_desc', 'Your journey starts here. Learn to fly single-engine aircraft and earn your wings. The PPL is the foundation for all your future aviation goals.'),
-    icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
-    ),
-    highlights: ['40+ flight hours', 'Ground school included', 'Solo & cross-country flights'],
-  },
-  {
-    title: 'Instrument Rating',
-    slug: '/training/instrument',
-    desc: cms('instrument_desc', 'Master the art of flying in all weather conditions with precision instrument training. Essential for serious pilots.'),
-    icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" /></svg>
-    ),
-    highlights: ['40+ instrument hours', 'Simulator training', 'IFR navigation & approaches'],
-  },
-  {
-    title: 'Commercial Pilot License',
-    slug: '/training/commercial',
-    desc: cms('commercial_desc', 'Turn your passion into a career. Earn your commercial certificate and get paid to fly.'),
-    icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-    ),
-    highlights: ['250+ total hours', 'Complex aircraft training', 'Advanced maneuvers'],
-  },
-  {
-    title: 'Multi-Engine Rating',
-    slug: '/training/multi-engine',
-    desc: cms('multiengine_desc', 'Expand your capabilities with twin-engine aircraft training. Essential for airline and charter careers.'),
-    icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
-    ),
-    highlights: ['Twin-engine proficiency', 'Engine-out procedures', 'Systems management'],
-  },
-  {
-    title: 'Flight Simulator',
-    slug: '/training/simulator',
-    desc: 'Full-motion simulator for risk-free practice and instrument training. Build proficiency without the clock running on aircraft rental.',
-    icon: (
-      <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" /></svg>
-    ),
-    highlights: ['AATD certified', 'Instrument practice', 'Procedure training'],
-  },
-];
+    highlights: program.overview.slice(0, 3), // Use first 3 overview items as highlights
+    featured: program.slug === 'discovery' || program.slug === 'ppl',
+  })) : [
+    // Fallback programs if API fails
+    {
+      title: 'Discovery Flight',
+      slug: '/training/discovery',
+      desc: '$249 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
+      icon: (
+        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+      ),
+      highlights: ['30-min flight time', 'You fly the plane', 'No experience needed'],
+      featured: true,
+    },
+    {
+      title: 'Private Pilot License (PPL)',
+      slug: '/training/ppl',
+      desc: cms('ppl_desc', 'Your journey starts here. Learn to fly single-engine aircraft and earn your wings. The PPL is the foundation for all your future aviation goals.'),
+      icon: (
+        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
+      ),
+      highlights: ['40+ flight hours', 'Ground school included', 'Solo & cross-country flights'],
+    },
+    {
+      title: 'Instrument Rating',
+      slug: '/training/instrument',
+      desc: cms('instrument_desc', 'Master the art of flying in all weather conditions with precision instrument training. Essential for serious pilots.'),
+      icon: (
+        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" /></svg>
+      ),
+      highlights: ['40+ instrument hours', 'Simulator training', 'IFR navigation & approaches'],
+    },
+    {
+      title: 'Commercial Pilot License',
+      slug: '/training/commercial',
+      desc: cms('commercial_desc', 'Turn your passion into a career. Earn your commercial certificate and get paid to fly.'),
+      icon: (
+        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+      ),
+      highlights: ['250+ total hours', 'Complex aircraft training', 'Advanced maneuvers'],
+    },
+    {
+      title: 'Multi-Engine Rating',
+      slug: '/training/multi-engine',
+      desc: cms('multiengine_desc', 'Expand your capabilities with twin-engine aircraft training. Essential for airline and charter careers.'),
+      icon: (
+        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 12L3.269 3.126A59.768 59.768 0 0721.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+      ),
+      highlights: ['Twin-engine proficiency', 'Engine-out procedures', 'Systems management'],
+    },
+    {
+      title: 'Flight Simulator',
+      slug: '/training/simulator',
+      desc: 'Full-motion simulator for risk-free practice and instrument training. Build proficiency without the clock running on aircraft rental.',
+      icon: (
+        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" /></svg>
+      ),
+      highlights: ['AATD certified', 'Instrument practice', 'Procedure training'],
+    },
+  ];
 
 const timelineSteps = [
   {

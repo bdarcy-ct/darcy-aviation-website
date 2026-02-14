@@ -11,6 +11,9 @@ import SEOSettings from './SEOSettings';
 import FleetManager from './FleetManager';
 import TestimonialsManager from './TestimonialsManager';
 import ServiceTiles from './ServiceTiles';
+import TrainingProgramsManager from './TrainingProgramsManager';
+import ExperiencesManager from './ExperiencesManager';
+import MaintenanceServicesManager from './MaintenanceServicesManager';
 
 const AdminPage: React.FC = () => {
   const { user, isLoading } = useAdmin();
@@ -42,6 +45,9 @@ const AdminPage: React.FC = () => {
         <Route path="/fleet" element={<FleetManager />} />
         <Route path="/testimonials" element={<TestimonialsManager />} />
         <Route path="/service-tiles" element={<ServiceTiles />} />
+        <Route path="/training-programs" element={<TrainingProgramsManager />} />
+        <Route path="/experiences" element={<ExperiencesManager />} />
+        <Route path="/maintenance-services" element={<MaintenanceServicesManager />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Routes>
     </AdminLayout>
