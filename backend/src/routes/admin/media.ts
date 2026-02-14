@@ -19,10 +19,10 @@ const staticUploadsDir = path.join(__dirname, '../../../../static/uploads');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req: any, _file: any, cb: any) => {
     cb(null, uploadsDir);
   },
-  filename: (req, file, cb) => {
+  filename: (_req: any, file: any, cb: any) => {
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
     const name = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9]/g, '-');
@@ -35,7 +35,7 @@ const upload = multer({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req: any, file: any, cb: any) => {
     const allowedTypes = [
       'image/jpeg',
       'image/jpg', 
@@ -67,18 +67,18 @@ router.get('/', authenticateAdmin, (req, res) => {
 });
 
 // Upload new media file
-router.post('/upload', authenticateAdmin, upload.single('file'), (req, res) => {
+router.post('/upload', authenticateAdmin, upload.single('file'), (req: any, res) => {
   try {
-    if (!req.file) {
+    const file = req.file;
+    if (!file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-
     const { category = 'general' } = req.body;
-    const filePath = `/uploads/${req.file.filename}`;
+    const filePath = `/uploads/${file.filename}`;
 
     // Copy file to static directory for serving
-    const srcPath = path.join(uploadsDir, req.file.filename);
-    const destPath = path.join(staticUploadsDir, req.file.filename);
+    const srcPath = path.join(uploadsDir, file.filename);
+    const destPath = path.join(staticUploadsDir, file.filename);
     fs.copyFileSync(srcPath, destPath);
 
     // Save to database
@@ -88,10 +88,10 @@ router.post('/upload', authenticateAdmin, upload.single('file'), (req, res) => {
     `);
 
     const result = stmt.run(
-      req.file.filename,
-      req.file.originalname,
-      req.file.mimetype,
-      req.file.size,
+      file.filename,
+      file.originalname,
+      file.mimetype,
+      file.size,
       filePath,
       category
     );
