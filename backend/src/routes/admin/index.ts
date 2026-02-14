@@ -7,6 +7,7 @@ import dashboardRoutes from './dashboard';
 import seoRoutes from './seo';
 import fleetRoutes from './fleet';
 import testimonialRoutes from './testimonials';
+import serviceTilesRoutes from './service-tiles';
 
 const router = express.Router();
 
@@ -19,5 +20,6 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/seo', seoRoutes);
 router.use('/fleet', fleetRoutes);
 router.use('/testimonials', testimonialRoutes);
+router.use('/service-tiles', serviceTilesRoutes);
 
 export default router;

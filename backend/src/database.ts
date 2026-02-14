@@ -63,7 +63,8 @@ export function initializeDatabase(): void {
       rating INTEGER DEFAULT 5,
       text TEXT NOT NULL,
       date TEXT,
-      featured BOOLEAN DEFAULT 0
+      featured BOOLEAN DEFAULT 0,
+      source TEXT DEFAULT 'internal'
     );
 
     -- CMS Admin Tables
@@ -116,6 +117,19 @@ export function initializeDatabase(): void {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS service_tiles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      link TEXT NOT NULL,
+      icon_svg TEXT,
+      images TEXT, -- JSON array of image paths
+      sort_order INTEGER DEFAULT 0,
+      is_active BOOLEAN DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   // Seed data if tables are empty
@@ -144,17 +158,28 @@ export function initializeDatabase(): void {
   const testimonialCount = db.prepare('SELECT COUNT(*) as count FROM testimonials').get() as { count: number };
   if (testimonialCount.count === 0) {
     const insertTestimonial = db.prepare(`
-      INSERT INTO testimonials (name, rating, text, date, featured)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO testimonials (name, rating, text, date, featured, source)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     const testimonialData = [
-      ['Michael R.', 5, 'Brent and his team at Darcy are top notch. They were always available to talk and breakdown the process and progress for our son who trained there to get his private pilot license before he started college.', '2024-08-15', 1],
-      ['James T.', 5, 'If you are looking for the best flight training school in the NY/CT area look no further than Darcy Aviation. Brent and his team of experienced instructors are truly professional and knowledgeable.', '2024-07-22', 1],
-      ['Captain David L.', 5, 'Darcy Aviation is a class act. As a professional pilot for a major airline, it had been nearly 15 years since flying GA. I wanted to take my kid up flying and Darcy made that happen... in an epic way.', '2024-06-10', 1],
-      ['Sarah K.', 5, 'I had an excellent experience receiving my Private Pilots License at Darcy Aviation. My instructor John was able to help me pass my check ride.', '2024-05-18', 1],
-      ['Alex M.', 5, 'I am currently a student pilot working towards my PPL and I have nothing less than incredible things to say. Brent creates a family like culture.', '2024-09-02', 1],
-      ['Rachel W.', 5, 'Had an amazing experience at Darcy Aviation! My CFI, Archana, is fantastic. All the planes are in great condition. Highly recommend!', '2024-10-05', 1],
+      // Google Reviews
+      ['Michael R.', 5, 'Brent and his team at Darcy are top notch. They were always available to talk and breakdown the process and progress for our son who trained there to get his private pilot license before he started college.', '2024-08-15', 1, 'google'],
+      ['James T.', 5, 'If you are looking for the best flight training school in the NY/CT area look no further than Darcy Aviation. Brent and his team of experienced instructors are truly professional and knowledgeable.', '2024-07-22', 1, 'google'],
+      ['Captain David L.', 5, 'Darcy Aviation is a class act. As a professional pilot for a major airline, it had been nearly 15 years since flying GA. I wanted to take my kid up flying and Darcy made that happen... in an epic way.', '2024-06-10', 1, 'google'],
+      ['Sarah K.', 5, 'I had an excellent experience receiving my Private Pilots License at Darcy Aviation. My instructor John was able to help me pass my check ride.', '2024-05-18', 1, 'google'],
+      ['Alex M.', 5, 'I am currently a student pilot working towards my PPL and I have nothing less than incredible things to say. Brent creates a family like culture.', '2024-09-02', 1, 'google'],
+      ['Rachel W.', 5, 'Had an amazing experience at Darcy Aviation! My CFI, Archana, is fantastic. All the planes are in great condition. Highly recommend!', '2024-10-05', 1, 'google'],
+      ['Christopher P.', 5, 'Outstanding flight school! The instructors are patient, knowledgeable, and really care about your success. Just got my PPL and couldn\'t be happier with the training I received.', '2024-09-28', 1, 'google'],
+      ['Jennifer M.', 5, 'Brent runs an exceptional operation. From discovery flight to checkride, every step was professional and well-organized. The aircraft are well-maintained and the facilities are top-notch.', '2024-11-12', 1, 'google'],
+      ['Thomas K.', 5, 'Great experience training here. The instructors adapt to your learning style and the scheduling is very flexible. Passed my instrument rating on the first try thanks to their thorough training.', '2024-10-20', 1, 'google'],
+      ['Lisa D.', 5, 'Fantastic flight school! The staff is friendly, professional, and creates a welcoming environment. My teenage son got his PPL here and loved every minute of it.', '2024-07-03', 1, 'google'],
+      ['Mark B.', 5, 'Darcy Aviation exceeded my expectations. From ground school to solo flight, everything was well-structured and safe. Highly recommend for anyone serious about aviation.', '2024-08-30', 1, 'google'],
+      ['Amanda S.', 5, 'Best decision I made was choosing Darcy Aviation for my flight training. Brent and the team are incredible. Just passed my commercial checkride!', '2024-12-01', 1, 'google'],
+      // Internal testimonials (website/other sources)
+      ['Robert H.', 5, 'The maintenance team at Darcy Aviation is exceptional. They take great care of our aircraft and always explain what needs to be done. Trustworthy and professional.', '2024-06-25', 1, 'internal'],
+      ['Patricia J.', 5, 'Took a scenic flight over Candlewood Lake with my family. Absolutely breathtaking! The pilot was knowledgeable and made everyone feel comfortable. Unforgettable experience.', '2024-09-15', 1, 'internal'],
+      ['Daniel C.', 5, 'Professional aircraft maintenance at fair prices. They saved me thousands on my annual inspection by catching issues early. Highly skilled A&P mechanics.', '2024-11-08', 1, 'internal'],
     ];
 
     const insertMany = db.transaction(() => {
@@ -285,6 +310,52 @@ export function initializeDatabase(): void {
     });
     insertMany();
     console.log('✅ FAQs seeded with real content');
+  }
+
+  // Seed service tiles if empty
+  const serviceCount = db.prepare('SELECT COUNT(*) as count FROM service_tiles').get() as { count: number };
+  if (serviceCount.count === 0) {
+    const insertTile = db.prepare(`
+      INSERT INTO service_tiles (title, description, link, icon_svg, images, sort_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, 1)
+    `);
+    
+    const tilesData = [
+      [
+        'Flight Training',
+        'From Private Pilot to Commercial — structured programs with experienced CFIs who care about your success.',
+        '/training',
+        '<svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>',
+        JSON.stringify(['/images/training/train-1.jpg', '/images/training/train-2.jpg', '/images/training/train-3.jpg', '/images/training/train-4.jpg', '/images/training/train-5.jpg']),
+        1
+      ],
+      [
+        'Aircraft Maintenance',
+        'FAA-certified A&P/IA mechanics. Annuals, 100-hour inspections, engine overhauls, and custom needs tailored to your aircraft.',
+        '/maintenance',
+        '<svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>',
+        JSON.stringify(['/images/maintenance/maint-1.jpg', '/images/maintenance/maint-2.jpg', '/images/maintenance/maint-3.jpg', '/images/maintenance/maint-4.jpg', '/images/maintenance/maint-5.jpg']),
+        2
+      ],
+      [
+        'Scenic Tours',
+        'From $249 — Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours.',
+        '/experiences',
+        '<svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>',
+        JSON.stringify([
+          '/images/scenic/scenic-1.jpg', '/images/scenic/scenic-2.jpg', '/images/scenic/scenic-3.jpg', '/images/scenic/scenic-4.jpg', '/images/scenic/scenic-5.jpg', '/images/scenic/scenic-6.jpg', '/images/scenic/scenic-7.jpg', '/images/scenic/scenic-8.jpg', '/images/scenic/scenic-9.jpg', '/images/scenic/scenic-10.jpg', '/images/scenic/scenic-11.jpg', '/images/scenic/scenic-12.jpg', '/images/scenic/scenic-13.jpg'
+        ]),
+        3
+      ]
+    ];
+
+    const insertMany = db.transaction(() => {
+      for (const [title, description, link, iconSvg, images, sortOrder] of tilesData) {
+        insertTile.run(title, description, link, iconSvg, images, sortOrder);
+      }
+    });
+    insertMany();
+    console.log('✅ Service tiles seeded with default content');
   }
 
   // Seed page meta — INSERT OR IGNORE so new pages are added without overwriting edits

@@ -151,4 +151,83 @@ router.delete('/:id', authenticateAdmin, (req, res) => {
   }
 });
 
+// Get existing site assets (scan public directories)
+router.get('/site-assets', authenticateAdmin, (req, res) => {
+  try {
+    const assets: any[] = [];
+    const basePublicPath = path.join(__dirname, '../../../../frontend/public');
+    
+    // Directories to scan
+    const scanDirs = [
+      { dir: 'videos', category: 'Hero Videos' },
+      { dir: 'images/training', category: 'Training Photos' },
+      { dir: 'images/scenic', category: 'Scenic Photos' }, 
+      { dir: 'images/maintenance', category: 'Maintenance Photos' },
+      { dir: '.', category: 'Logos', filter: /logo.*\.(png|jpg|jpeg|gif|webp)$/i }
+    ];
+
+    scanDirs.forEach(({ dir, category, filter }) => {
+      const fullPath = path.join(basePublicPath, dir);
+      
+      if (fs.existsSync(fullPath)) {
+        const files = fs.readdirSync(fullPath, { withFileTypes: true });
+        
+        files.forEach(dirent => {
+          if (dirent.isFile()) {
+            const filename = dirent.name;
+            const filePath = path.join(fullPath, filename);
+            
+            // Apply filter if specified
+            if (filter && !filter.test(filename)) return;
+            
+            // Check if it's a media file
+            const ext = path.extname(filename).toLowerCase();
+            const isMediaFile = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.ogg'].includes(ext);
+            
+            if (isMediaFile) {
+              const stats = fs.statSync(filePath);
+              const publicPath = dir === '.' ? `/${filename}` : `/${dir}/${filename}`;
+              
+              // Determine MIME type
+              let mimeType = '';
+              if (['.jpg', '.jpeg'].includes(ext)) mimeType = 'image/jpeg';
+              else if (ext === '.png') mimeType = 'image/png';
+              else if (ext === '.gif') mimeType = 'image/gif';
+              else if (ext === '.webp') mimeType = 'image/webp';
+              else if (ext === '.mp4') mimeType = 'video/mp4';
+              else if (ext === '.webm') mimeType = 'video/webm';
+              else if (ext === '.ogg') mimeType = 'video/ogg';
+              
+              assets.push({
+                id: `site-${publicPath.replace(/[\/\.]/g, '-')}`,
+                filename,
+                original_name: filename,
+                mime_type: mimeType,
+                file_size: stats.size,
+                file_path: publicPath,
+                category,
+                uploaded_at: stats.birthtime.toISOString(),
+                is_site_asset: true
+              });
+            }
+          }
+        });
+      }
+    });
+
+    // Sort by category, then by filename
+    assets.sort((a, b) => {
+      if (a.category !== b.category) {
+        return a.category.localeCompare(b.category);
+      }
+      return a.filename.localeCompare(b.filename);
+    });
+
+    res.json(assets);
+  } catch (error) {
+    console.error('Error scanning site assets:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

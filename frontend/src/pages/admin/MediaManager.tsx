@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 
 interface MediaFile {
-  id: number;
+  id: number | string;
   filename: string;
   original_name: string;
   mime_type: string;
@@ -10,12 +10,15 @@ interface MediaFile {
   file_path: string;
   category: string;
   uploaded_at: string;
+  is_site_asset?: boolean;
 }
 
 const MediaManager: React.FC = () => {
-  const [media, setMedia] = useState<MediaFile[]>([]);
+  const [uploadedMedia, setUploadedMedia] = useState<MediaFile[]>([]);
+  const [siteAssets, setSiteAssets] = useState<MediaFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'uploaded' | 'assets'>('uploaded');
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,13 +30,24 @@ const MediaManager: React.FC = () => {
 
   const fetchMedia = async () => {
     try {
-      const response = await fetch('/api/admin/media', {
+      // Fetch uploaded media
+      const uploadedResponse = await fetch('/api/admin/media', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setMedia(data);
+      if (uploadedResponse.ok) {
+        const uploadedData = await uploadedResponse.json();
+        setUploadedMedia(uploadedData);
+      }
+
+      // Fetch site assets
+      const assetsResponse = await fetch('/api/admin/media/site-assets', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (assetsResponse.ok) {
+        const assetsData = await assetsResponse.json();
+        setSiteAssets(assetsData);
       }
     } catch (error) {
       console.error('Failed to fetch media:', error);
@@ -79,7 +93,12 @@ const MediaManager: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number, filename: string) => {
+  const handleDelete = async (id: number | string, filename: string, isSiteAsset?: boolean) => {
+    if (isSiteAsset) {
+      alert('Site assets cannot be deleted from here. They are part of the website\'s core files.');
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete ${filename}?`)) return;
 
     try {
@@ -116,8 +135,9 @@ const MediaManager: React.FC = () => {
   const isImage = (mimeType: string) => mimeType.startsWith('image/');
   const isVideo = (mimeType: string) => mimeType.startsWith('video/');
 
-  const categories = [...new Set(media.map(file => file.category))];
-  const filteredMedia = filter === 'all' ? media : media.filter(file => file.category === filter);
+  const currentMedia = activeTab === 'uploaded' ? uploadedMedia : siteAssets;
+  const categories = [...new Set(currentMedia.map(file => file.category))];
+  const filteredMedia = filter === 'all' ? currentMedia : currentMedia.filter(file => file.category === filter);
 
   if (isLoading) {
     return (
@@ -138,41 +158,79 @@ const MediaManager: React.FC = () => {
         <p className="text-slate-300">Upload and manage photos, videos, and other media files</p>
       </div>
 
-      {/* Upload Section */}
+      {/* Tab Navigation */}
       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Upload New Files</h2>
-        
-        <div className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center">
-          {uploading ? (
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-full border-2 border-gold/30 border-t-gold animate-spin mx-auto" />
-              <p className="text-slate-300">Uploading files...</p>
-            </div>
-          ) : (
-            <>
-              <div className="text-4xl mb-4">📤</div>
-              <p className="text-white mb-2">Drag & drop files here, or click to select</p>
-              <p className="text-slate-400 text-sm mb-4">
-                Supports: JPG, PNG, GIF, WebP, MP4, WebM, OGG (Max 50MB each)
-              </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                onChange={handleFileUpload}
-                accept="image/*,video/*"
-                className="hidden"
-                id="file-upload"
-              />
-              <label
-                htmlFor="file-upload"
-                className="inline-block bg-gold hover:bg-yellow-500 text-navy-900 px-6 py-3 rounded-lg font-semibold cursor-pointer transition-colors"
-              >
-                Choose Files
-              </label>
-            </>
-          )}
+        <div className="flex gap-1 mb-6">
+          <button
+            onClick={() => { setActiveTab('uploaded'); setFilter('all'); }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              activeTab === 'uploaded'
+                ? 'bg-gold text-navy-900'
+                : 'bg-white/10 text-slate-300 hover:bg-white/20'
+            }`}
+          >
+            Uploaded Files ({uploadedMedia.length})
+          </button>
+          <button
+            onClick={() => { setActiveTab('assets'); setFilter('all'); }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              activeTab === 'assets'
+                ? 'bg-aviation-blue text-white'
+                : 'bg-white/10 text-slate-300 hover:bg-white/20'
+            }`}
+          >
+            Site Assets ({siteAssets.length})
+          </button>
         </div>
+
+        {activeTab === 'uploaded' && (
+          <div>
+            <h2 className="text-xl font-semibold text-white mb-4">Upload New Files</h2>
+            
+            <div className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center">
+              {uploading ? (
+                <div className="space-y-4">
+                  <div className="w-12 h-12 rounded-full border-2 border-gold/30 border-t-gold animate-spin mx-auto" />
+                  <p className="text-slate-300">Uploading files...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="text-4xl mb-4">📤</div>
+                  <p className="text-white mb-2">Drag & drop files here, or click to select</p>
+                  <p className="text-slate-400 text-sm mb-4">
+                    Supports: JPG, PNG, GIF, WebP, MP4, WebM, OGG (Max 50MB each)
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    onChange={handleFileUpload}
+                    accept="image/*,video/*"
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="inline-block bg-gold hover:bg-yellow-500 text-navy-900 px-6 py-3 rounded-lg font-semibold cursor-pointer transition-colors"
+                  >
+                    Choose Files
+                  </label>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'assets' && (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-4">🗂️</div>
+            <h2 className="text-xl font-semibold text-white mb-2">Site Assets</h2>
+            <p className="text-slate-300 max-w-2xl mx-auto">
+              These are the existing media files already on your website - hero videos, service photos, and logos. 
+              They cannot be deleted from here as they are core website files.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Controls */}
@@ -188,10 +246,10 @@ const MediaManager: React.FC = () => {
                   : 'bg-white/10 text-slate-300 hover:bg-white/20'
               }`}
             >
-              All ({media.length})
+              All ({currentMedia.length})
             </button>
             {categories.map(category => {
-              const count = media.filter(file => file.category === category).length;
+              const count = currentMedia.filter(file => file.category === category).length;
               return (
                 <button
                   key={category}
@@ -291,13 +349,19 @@ const MediaManager: React.FC = () => {
                       >
                         Copy
                       </button>
-                      <button
-                        onClick={() => handleDelete(file.id, file.original_name)}
-                        className="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-2 py-1 rounded text-xs font-medium transition-colors"
-                        title="Delete"
-                      >
-                        Delete
-                      </button>
+                      {file.is_site_asset ? (
+                        <span className="bg-gray-500/20 text-gray-400 px-2 py-1 rounded text-xs font-medium cursor-not-allowed" title="Cannot delete site assets">
+                          Protected
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleDelete(file.id, file.original_name, file.is_site_asset)}
+                          className="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-2 py-1 rounded text-xs font-medium transition-colors"
+                          title="Delete"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

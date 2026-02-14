@@ -80,4 +80,27 @@ router.get('/seo/:slug', (req, res) => {
   }
 });
 
+// Get active service tiles for homepage
+router.get('/service-tiles', (_req, res) => {
+  try {
+    const tiles = db.prepare(`
+      SELECT id, title, description, link, icon_svg, images, sort_order
+      FROM service_tiles 
+      WHERE is_active = 1 
+      ORDER BY sort_order ASC, id ASC
+    `).all();
+    
+    // Parse the images JSON for each tile
+    const tilesWithParsedImages = tiles.map((tile: any) => ({
+      ...tile,
+      images: tile.images ? JSON.parse(tile.images) : []
+    }));
+    
+    res.json(tilesWithParsedImages);
+  } catch (error) {
+    console.error('Error fetching service tiles:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

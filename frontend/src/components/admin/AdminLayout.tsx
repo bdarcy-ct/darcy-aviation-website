@@ -19,6 +19,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/admin/content', label: 'Content', icon: '📝' },
+    { path: '/admin/service-tiles', label: 'Service Tiles', icon: '🔧' },
     { path: '/admin/fleet', label: 'Fleet', icon: '🛩️' },
     { path: '/admin/testimonials', label: 'Reviews', icon: '⭐' },
     { path: '/admin/media', label: 'Media', icon: '🖼️' },

@@ -6,6 +6,7 @@ import SEOHead from '../components/SEOHead';
 import AnimatedCounter from '../components/AnimatedCounter';
 import { TestimonialSkeleton } from '../components/Skeleton';
 import VideoHero from '../components/VideoHero';
+import ReviewCarousel from '../components/ReviewCarousel';
 import { useCmsContent } from '../hooks/useCmsContent';
 
 interface Testimonial {
@@ -15,13 +16,25 @@ interface Testimonial {
   text: string;
   date: string;
   featured: number;
+  source?: string;
+}
+
+interface ServiceTile {
+  id: number;
+  title: string;
+  description: string;
+  link: string;
+  icon_svg: string | null;
+  images: string[];
+  sort_order: number;
 }
 
 export default function Home() {
   const { get: cms } = useCmsContent();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [serviceTiles, setServiceTiles] = useState<ServiceTile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tilesLoading, setTilesLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/testimonials')
@@ -31,12 +44,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (testimonials.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [testimonials]);
+    fetch('/api/public/service-tiles')
+      .then((res) => res.json())
+      .then((data) => { setServiceTiles(data); setTilesLoading(false); })
+      .catch(() => setTilesLoading(false));
+  }, []);
+
+  // Testimonial rotation now handled by ReviewCarousel component
 
   const [tileIndices, setTileIndices] = useState([0, 0, 0]);
 
@@ -56,7 +70,8 @@ export default function Home() {
     return () => timers.forEach((cleanup) => cleanup());
   }, []);
 
-  const services = [
+  // Fallback hardcoded services (used if CMS data unavailable)
+  const fallbackServices = [
     {
       icon: (
         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
@@ -85,6 +100,21 @@ export default function Home() {
       images: ['/images/scenic/scenic-1.jpg', '/images/scenic/scenic-2.jpg', '/images/scenic/scenic-3.jpg', '/images/scenic/scenic-4.jpg', '/images/scenic/scenic-5.jpg', '/images/scenic/scenic-6.jpg', '/images/scenic/scenic-7.jpg', '/images/scenic/scenic-8.jpg', '/images/scenic/scenic-9.jpg', '/images/scenic/scenic-10.jpg', '/images/scenic/scenic-11.jpg', '/images/scenic/scenic-12.jpg', '/images/scenic/scenic-13.jpg'],
     },
   ];
+
+  // Convert CMS service tiles to the format expected by the component
+  const services = !tilesLoading && serviceTiles.length > 0
+    ? serviceTiles.map(tile => ({
+        icon: tile.icon_svg ? (
+          <div dangerouslySetInnerHTML={{ __html: tile.icon_svg }} />
+        ) : (
+          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
+        ),
+        title: tile.title,
+        desc: tile.description,
+        link: tile.link,
+        images: tile.images,
+      }))
+    : fallbackServices;
 
   const whyDarcy = [
     {
@@ -289,50 +319,17 @@ export default function Home() {
         </div>
       </SectionWrapper>
 
-      {/* Testimonials */}
+      {/* Reviews */}
       <SectionWrapper>
         <div className="text-center mb-12">
           <h2 className="section-title">What Our Students Say</h2>
-          <p className="section-subtitle">Real reviews from real pilots</p>
+          <p className="section-subtitle">Real reviews from Google and our community</p>
         </div>
         <div className="max-w-3xl mx-auto">
           {loading ? (
             <TestimonialSkeleton />
           ) : testimonials.length > 0 ? (
-            <div className="glass-card p-8 md:p-12 text-center relative overflow-hidden">
-              <div className="absolute top-4 left-8 text-6xl text-aviation-blue/20 font-serif select-none">"</div>
-              <div className="relative z-10">
-                <div className="flex justify-center mb-4" aria-label={`${testimonials[currentTestimonial].rating} out of 5 stars`}>
-                  {Array.from({ length: testimonials[currentTestimonial].rating }).map((_, i) => (
-                    <svg key={i} className="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-white text-lg md:text-xl leading-relaxed mb-6 italic transition-all duration-700 ease-in-out">
-                  "{testimonials[currentTestimonial].text}"
-                </p>
-                <p className="text-gold font-semibold">{testimonials[currentTestimonial].name}</p>
-                {testimonials[currentTestimonial].date && (
-                  <p className="text-slate-500 text-xs mt-1">{new Date(testimonials[currentTestimonial].date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
-                )}
-              </div>
-              {/* Dots */}
-              <div className="flex justify-center gap-2 mt-6" role="tablist" aria-label="Testimonial navigation">
-                {testimonials.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentTestimonial(i)}
-                    role="tab"
-                    aria-selected={i === currentTestimonial}
-                    aria-label={`Testimonial ${i + 1}`}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i === currentTestimonial ? 'bg-gold w-6' : 'bg-white/30 hover:bg-white/50 w-2'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
+            <ReviewCarousel reviews={testimonials} />
           ) : null}
         </div>
       </SectionWrapper>
