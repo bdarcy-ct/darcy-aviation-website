@@ -6,6 +6,7 @@ import WeatherBackground from './components/WeatherBackground';
 import BackToTop from './components/BackToTop';
 import ErrorBoundary from './components/ErrorBoundary';
 import { WeatherProvider } from './contexts/WeatherContext';
+import { AdminProvider } from './contexts/AdminContext';
 
 // Lazy-load pages for better initial load performance
 const Home = lazy(() => import('./pages/Home'));
@@ -23,6 +24,7 @@ const About = lazy(() => import('./pages/About'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Experiences = lazy(() => import('./pages/Experiences'));
+const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function ScrollToTop() {
@@ -48,35 +50,45 @@ export default function App() {
   return (
     <ErrorBoundary>
     <WeatherProvider>
-    <div className="relative min-h-screen flex flex-col">
-      <WeatherBackground />
-      <ScrollToTop />
-      <Navbar />
-      <main id="main-content" className="relative z-10 flex-1">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/training" element={<Training />} />
-            <Route path="/training/ppl" element={<PPL />} />
-            <Route path="/training/instrument" element={<InstrumentRating />} />
-            <Route path="/training/commercial" element={<Commercial />} />
-            <Route path="/training/multi-engine" element={<MultiEngine />} />
-            <Route path="/training/discovery" element={<DiscoveryFlight />} />
-            <Route path="/training/simulator" element={<SimulatorPage />} />
-            <Route path="/fleet" element={<Fleet />} />
-            <Route path="/maintenance" element={<Maintenance />} />
-            <Route path="/experiences" element={<Experiences />} />
-            <Route path="/book" element={<Book />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </main>
-      <Footer />
-      <BackToTop />
-    </div>
+    <AdminProvider>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Admin Routes - separate from main app */}
+          <Route path="/admin/*" element={<AdminPage />} />
+          
+          {/* Main App Routes */}
+          <Route path="/*" element={
+            <div className="relative min-h-screen flex flex-col">
+              <WeatherBackground />
+              <ScrollToTop />
+              <Navbar />
+              <main id="main-content" className="relative z-10 flex-1">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/training" element={<Training />} />
+                  <Route path="/training/ppl" element={<PPL />} />
+                  <Route path="/training/instrument" element={<InstrumentRating />} />
+                  <Route path="/training/commercial" element={<Commercial />} />
+                  <Route path="/training/multi-engine" element={<MultiEngine />} />
+                  <Route path="/training/discovery" element={<DiscoveryFlight />} />
+                  <Route path="/training/simulator" element={<SimulatorPage />} />
+                  <Route path="/fleet" element={<Fleet />} />
+                  <Route path="/maintenance" element={<Maintenance />} />
+                  <Route path="/experiences" element={<Experiences />} />
+                  <Route path="/book" element={<Book />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Footer />
+              <BackToTop />
+            </div>
+          } />
+        </Routes>
+      </Suspense>
+    </AdminProvider>
     </WeatherProvider>
     </ErrorBoundary>
   );
