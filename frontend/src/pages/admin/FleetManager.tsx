@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useToast } from '../../components/admin/Toast';
 
@@ -30,6 +30,8 @@ const FleetManager: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const { token } = useAdmin();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => { fetchFleet(); }, []);
 
@@ -76,6 +78,30 @@ const FleetManager: React.FC = () => {
       if (res.ok) { toast('success', 'Aircraft deleted'); await fetchFleet(); }
       else toast('error', 'Failed to delete');
     } catch (e) { toast('error', 'Failed to delete'); }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('error', 'Please select an image file'); return; }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/admin/media', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setForm({ ...form, image_url: data.url || `/uploads/${data.filename}` });
+        toast('success', 'Image uploaded');
+      } else {
+        toast('error', 'Failed to upload image');
+      }
+    } catch (err) { toast('error', 'Failed to upload image'); }
+    finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
   const toggleAvail = async (id: number) => {
@@ -143,9 +169,25 @@ const FleetManager: React.FC = () => {
               <label className="block text-sm font-medium text-slate-300 mb-1">Range</label>
               <input className={inputCls} value={form.range} onChange={e => setForm({ ...form, range: e.target.value })} placeholder="e.g., 640 nm" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Image URL</label>
-              <input className={inputCls} value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} placeholder="/uploads/... or /images/..." />
+            <div className="sm:col-span-2 lg:col-span-3">
+              <label className="block text-sm font-medium text-slate-300 mb-1">Aircraft Photo</label>
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                {form.image_url && (
+                  <div className="relative w-40 h-28 rounded-lg overflow-hidden border border-white/20 flex-shrink-0">
+                    <img src={form.image_url} alt="Aircraft" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <button onClick={() => setForm({ ...form, image_url: '' })} className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
+                  </div>
+                )}
+                <div className="flex-1 space-y-2">
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="bg-aviation-blue/20 hover:bg-aviation-blue/30 text-aviation-blue border border-aviation-blue/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                      {uploading ? 'Uploading...' : '📷 Upload Photo'}
+                    </button>
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </div>
+                  <input className={inputCls + ' text-sm'} value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} placeholder="Or paste image URL..." />
+                </div>
+              </div>
             </div>
             <div className="flex items-end">
               <label className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-lg cursor-pointer">
@@ -175,6 +217,11 @@ const FleetManager: React.FC = () => {
               <div key={a.id} className="bg-white/10 border border-white/20 rounded-lg p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
+                    {a.image_url ? (
+                      <img src={a.image_url} alt={a.name} className="w-16 h-12 rounded-lg object-cover flex-shrink-0 border border-white/10" />
+                    ) : (
+                      <div className="w-16 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-2xl">🛩️</div>
+                    )}
                     <span className={`w-3 h-3 rounded-full flex-shrink-0 ${a.available ? 'bg-green-400' : 'bg-red-400'}`} />
                     <div className="min-w-0">
                       <h3 className="text-white font-medium truncate">{a.name}</h3>
