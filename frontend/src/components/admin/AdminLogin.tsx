@@ -92,7 +92,7 @@ const AdminLogin: React.FC = () => {
 
           <div className="mt-6 text-center">
             <p className="text-slate-400 text-sm">
-              Default: admin / darcy2026
+              Darcy Aviation Admin Panel
             </p>
           </div>
         </div>
