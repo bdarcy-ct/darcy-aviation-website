@@ -10,19 +10,29 @@ function TrainingPage() {
   const { get: cms } = useCmsSection('training');
   const { programs: apiPrograms, loading: programsLoading } = useTrainingPrograms();
 
+  // Short highlight mappings by slug (concise bullets matching experience tile style)
+  const programHighlights: Record<string, string[]> = {
+    'discovery': ['30-min flight time', 'You fly the plane', 'No experience needed'],
+    'ppl': ['40+ flight hours', 'Ground school included', 'Solo & cross-country flights'],
+    'instrument': ['40+ instrument hours', 'Simulator training', 'IFR navigation & approaches'],
+    'commercial': ['250+ total hours', 'Complex aircraft training', 'Advanced maneuvers'],
+    'multi-engine': ['Twin-engine proficiency', 'Engine-out procedures', 'Systems management'],
+    'simulator': ['AATD certified', 'Instrument practice', 'Procedure training'],
+  };
+
   // Map API programs to display format with fallbacks
   const programs = apiPrograms.length > 0 ? apiPrograms.map(program => ({
     title: program.hero_title,
     slug: `/training/${program.slug}`,
     desc: program.hero_description,
     icon: program.hero_icon_svg ? (
-      <div dangerouslySetInnerHTML={{ __html: program.hero_icon_svg }} />
+      <div className="w-8 h-8 text-gold [&_svg]:w-full [&_svg]:h-full [&_svg]:stroke-current" dangerouslySetInnerHTML={{ __html: program.hero_icon_svg }} />
     ) : (
       <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
       </svg>
     ),
-    highlights: program.overview.slice(0, 3), // Use first 3 overview items as highlights
+    highlights: programHighlights[program.slug] || program.requirements?.slice(0, 3).map(r => r.length > 40 ? r.slice(0, 37) + '…' : r) || [],
     featured: program.slug === 'discovery' || program.slug === 'ppl',
   })) : [
     // Fallback programs if API fails
