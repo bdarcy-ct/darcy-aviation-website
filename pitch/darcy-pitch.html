@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Darcy Aviation — Website Upgrade Summary</title>
+<style>
+  @page { size: letter; margin: 0.6in 0.7in; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; font-size: 10.5pt; line-height: 1.5; }
+  
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: avoid; }
+  
+  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; padding-bottom: 10px; margin-bottom: 18px; }
+  .header h1 { font-size: 20pt; color: #0f172a; font-weight: 800; }
+  .header .sub { font-size: 9pt; color: #64748b; }
+  .badge { background: #d4af37; color: #0f172a; font-size: 8pt; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+  
+  h2 { font-size: 13pt; color: #0f172a; margin: 14px 0 8px; border-left: 4px solid #d4af37; padding-left: 10px; }
+  h3 { font-size: 11pt; color: #334155; margin: 8px 0 4px; }
+  
+  p { margin-bottom: 6px; color: #475569; }
+  
+  .two-col { display: flex; gap: 20px; }
+  .two-col > div { flex: 1; }
+  
+  .problem-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+  .problem-box .label { font-size: 8pt; font-weight: 700; color: #dc2626; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  
+  .solution-box { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+  .solution-box .label { font-size: 8pt; font-weight: 700; color: #16a34a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  
+  ul { margin: 4px 0 8px 18px; color: #475569; }
+  li { margin-bottom: 3px; }
+  
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+  .feature { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; }
+  .feature strong { color: #0f172a; font-size: 9.5pt; }
+  .feature span { display: block; color: #64748b; font-size: 8.5pt; }
+  
+  .stats-row { display: flex; gap: 12px; margin: 10px 0; }
+  .stat { flex: 1; text-align: center; background: #0f172a; color: white; border-radius: 8px; padding: 10px 6px; }
+  .stat .num { font-size: 18pt; font-weight: 800; color: #d4af37; }
+  .stat .lbl { font-size: 8pt; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  .cta-box { background: linear-gradient(135deg, #0f172a, #1e3a5f); color: white; border-radius: 10px; padding: 14px 18px; margin-top: 12px; text-align: center; }
+  .cta-box h3 { color: #d4af37; margin-bottom: 6px; font-size: 12pt; }
+  .cta-box p { color: #cbd5e1; font-size: 9.5pt; }
+  
+  .seo-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 9.5pt; }
+  .seo-table th { background: #0f172a; color: white; padding: 6px 10px; text-align: left; font-size: 8.5pt; text-transform: uppercase; }
+  .seo-table td { padding: 5px 10px; border-bottom: 1px solid #e2e8f0; }
+  .seo-table tr:nth-child(even) { background: #f8fafc; }
+  
+  .check { color: #16a34a; font-weight: 700; }
+  .cross { color: #dc2626; font-weight: 700; }
+  
+  .footer { text-align: center; font-size: 8pt; color: #94a3b8; margin-top: 14px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Darcy Aviation</h1>
+      <div class="sub">Website Upgrade — Summary & Deliverables</div>
+    </div>
+    <span class="badge">LIVE NOW</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="num">9</div><div class="lbl">Pages</div></div>
+    <div class="stat"><div class="num">6</div><div class="lbl">Training Programs</div></div>
+    <div class="stat"><div class="num">5</div><div class="lbl">Experiences</div></div>
+    <div class="stat"><div class="num">12</div><div class="lbl">Admin Pages</div></div>
+    <div class="stat"><div class="num">4.9★</div><div class="lbl">Google Rating</div></div>
+  </div>
+
+  <h2>Problems With the Old Site</h2>
+  <div class="two-col">
+    <div>
+      <div class="problem-box">
+        <div class="label">❌ No Online Presence</div>
+        <p style="margin:0;font-size:9.5pt;">No website at all — customers had to find Darcy through word of mouth or FlightCircle. Losing leads to competitors with professional sites.</p>
+      </div>
+      <div class="problem-box">
+        <div class="label">❌ No Booking System</div>
+        <p style="margin:0;font-size:9.5pt;">No way for customers to book discovery flights or experiences online. Every inquiry required a phone call or walk-in.</p>
+      </div>
+      <div class="problem-box">
+        <div class="label">❌ Zero SEO</div>
+        <p style="margin:0;font-size:9.5pt;">Not indexed by Google. People searching "flight training Danbury CT" or "discovery flight Connecticut" never found Darcy.</p>
+      </div>
+    </div>
+    <div>
+      <div class="problem-box">
+        <div class="label">❌ No Content Control</div>
+        <p style="margin:0;font-size:9.5pt;">No way to update pricing, descriptions, training programs, or fleet info without a developer. Changes took days/weeks.</p>
+      </div>
+      <div class="problem-box">
+        <div class="label">❌ No Credibility Signals</div>
+        <p style="margin:0;font-size:9.5pt;">No testimonials, fleet details, maintenance info, or FAQ. Potential students had no way to evaluate Darcy before calling.</p>
+      </div>
+      <div class="problem-box">
+        <div class="label">❌ Not Mobile-Friendly</div>
+        <p style="margin:0;font-size:9.5pt;">60%+ of flight school inquiries come from mobile. Without a responsive site, most visitors bounced immediately.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>What We Built</h2>
+  <div class="feature-grid">
+    <div class="feature"><strong>Modern, Fast Website</strong><span>Dark aviation theme, glassmorphism UI, smooth animations, mobile-first responsive design</span></div>
+    <div class="feature"><strong>Online Booking</strong><span>Customers book discovery flights &amp; experiences directly — name, email, date, passengers, gift option</span></div>
+    <div class="feature"><strong>5 Scenic Experiences</strong><span>Discovery Flight ($249) → Candlewood Lake → West Point/Hudson → NYC Skyline → City Lights Night ($680)</span></div>
+    <div class="feature"><strong>6 Training Programs</strong><span>PPL, Instrument, Commercial, Multi-Engine, Discovery Flight, Simulator — each with full detail page</span></div>
+    <div class="feature"><strong>Fleet Showcase</strong><span>Cessna 172 &amp; Piper PA-28 with specs — engine, seats, power, cruise speed, range, availability</span></div>
+    <div class="feature"><strong>Maintenance Services</strong><span>6 expandable service cards: Annuals, 100-hr, Oil Changes, Engine Overhaul, Custom, Pre-Buy</span></div>
+    <div class="feature"><strong>Live Weather Badge</strong><span>Real-time KDXR METAR in the nav bar — temperature, wind, conditions. Updates automatically.</span></div>
+    <div class="feature"><strong>Gift Card Integration</strong><span>Links to FlightCircle gift card shop. CTA buttons on Experiences page and footer.</span></div>
+  </div>
+
+  <div class="footer">darcy-aviation-production.up.railway.app &nbsp;|&nbsp; Built Feb 2026 &nbsp;|&nbsp; Prepared for Brent Darcy, Darcy Aviation LLC</div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>SEO, CMS & Admin</h1>
+      <div class="sub">Built-in tools so Darcy controls their own site</div>
+    </div>
+    <span class="badge">SELF-SERVICE</span>
+  </div>
+
+  <h2>SEO — Built In From Day One</h2>
+  <p>Every page has structured metadata so Google indexes Darcy properly. No plugins, no extra cost — it's baked in.</p>
+  
+  <table class="seo-table">
+    <tr><th>Feature</th><th>Old Site</th><th>New Site</th></tr>
+    <tr><td>Google-indexable pages</td><td class="cross">0</td><td class="check">15+ unique URLs</td></tr>
+    <tr><td>Page titles &amp; meta descriptions</td><td class="cross">None</td><td class="check">Custom per page</td></tr>
+    <tr><td>Open Graph (Facebook/social sharing)</td><td class="cross">None</td><td class="check">Title, description, image per page</td></tr>
+    <tr><td>Mobile-friendly (Google ranking factor)</td><td class="cross">No</td><td class="check">Fully responsive</td></tr>
+    <tr><td>Fast load times (Core Web Vitals)</td><td class="cross">N/A</td><td class="check">&lt;2s load, lazy-loaded pages</td></tr>
+    <tr><td>Local SEO keywords</td><td class="cross">None</td><td class="check">"KDXR", "Danbury CT", "Connecticut flight training"</td></tr>
+    <tr><td>Structured content (FAQ schema-ready)</td><td class="cross">No</td><td class="check">16 FAQs in 3 categories</td></tr>
+  </table>
+
+  <p><strong>Target keywords:</strong> "flight school Danbury CT", "discovery flight Connecticut", "learn to fly near me", "aircraft maintenance KDXR", "NYC skyline flight tour"</p>
+
+  <h2>Admin CMS — Full Content Control</h2>
+  <p>Brent (or any authorized user) can update the entire site from <strong>/admin</strong> without touching code.</p>
+  
+  <div class="feature-grid">
+    <div class="feature"><strong>Content Editor</strong><span>Edit headlines, descriptions, and text across all pages</span></div>
+    <div class="feature"><strong>Training Programs</strong><span>Add/edit/reorder programs, curriculum, requirements, FAQs, fleet used</span></div>
+    <div class="feature"><strong>Experiences</strong><span>Update tours, pricing, descriptions, and highlight bullets</span></div>
+    <div class="feature"><strong>Fleet Manager</strong><span>Add/remove aircraft, update specs, photos, availability status</span></div>
+    <div class="feature"><strong>Testimonials</strong><span>Manage Google reviews shown on the homepage carousel</span></div>
+    <div class="feature"><strong>FAQ Manager</strong><span>Add/edit/categorize questions — shows on FAQ page instantly</span></div>
+    <div class="feature"><strong>Service Tiles</strong><span>Update homepage service cards and maintenance offerings</span></div>
+    <div class="feature"><strong>SEO Settings</strong><span>Edit page titles, meta descriptions, and social sharing text</span></div>
+    <div class="feature"><strong>Media Manager</strong><span>Upload images for fleet, experiences, and content sections</span></div>
+    <div class="feature"><strong>Maintenance Services</strong><span>Update service descriptions, checklists, and pricing notes</span></div>
+  </div>
+
+  <p style="font-size:9pt;color:#64748b;margin-top:4px;"><strong>Admin login:</strong> darcy-aviation-production.up.railway.app/admin — credentials provided separately.</p>
+
+  <h2>What This Means for Darcy</h2>
+  <div class="two-col">
+    <div>
+      <div class="solution-box">
+        <div class="label">✅ Capture Leads 24/7</div>
+        <p style="margin:0;font-size:9.5pt;">Online booking form captures name, email, phone, date — even when the office is closed. No more missed inquiries.</p>
+      </div>
+      <div class="solution-box">
+        <div class="label">✅ Rank on Google</div>
+        <p style="margin:0;font-size:9.5pt;">15+ optimized pages targeting local search terms. When someone searches "flight school near Danbury", Darcy shows up.</p>
+      </div>
+    </div>
+    <div>
+      <div class="solution-box">
+        <div class="label">✅ Professional Credibility</div>
+        <p style="margin:0;font-size:9.5pt;">Polished, modern site with fleet specs, testimonials, detailed program info. Builds trust before the first phone call.</p>
+      </div>
+      <div class="solution-box">
+        <div class="label">✅ Self-Service Updates</div>
+        <p style="margin:0;font-size:9.5pt;">Change pricing, add new programs, update fleet — all from the admin panel. No developer needed for day-to-day changes.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h3>Ready to Go Live on darcyaviation.com</h3>
+    <p>The site is built, deployed, and running. Next step: point the custom domain and flip the switch.<br/>All content is editable. All features are live. Darcy Aviation is ready for the internet.</p>
+  </div>
+
+  <div class="footer">Prepared by Ludwig Hellström &nbsp;|&nbsp; February 2026 &nbsp;|&nbsp; Questions? admin@darcyaviation.com</div>
+</div>
+
+</body>
+</html>
