@@ -4,6 +4,15 @@ import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
 import { useExperiences } from '../hooks/useExperiences';
 
+// FlightCircle booking links for each experience
+const flightCircleLinks: Record<string, string> = {
+  'discovery-flight': 'https://www.flightcircle.com/shop/97822f668fb9/4000001759',
+  'candlewood-lake-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001846',
+  'west-point-hudson-river-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001848',
+  'nyc-skyline-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001849',
+  'city-lights-night-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001850',
+};
+
 // Default icon mapped by slug
 const defaultIcons: Record<string, JSX.Element> = {
   'discovery-flight': (
@@ -44,7 +53,7 @@ const fallbackExperiences = [
   {
     slug: 'discovery-flight',
     title: 'Discovery Flight',
-    price: '$280',
+    price: '$279',
     description: 'Take the captain\'s seat and experience the thrill of flying firsthand. Whether it\'s been a lifelong dream or a spark of curiosity, grab the controls with an experienced instructor by your side and see the world from above.',
     highlights: ['~30 minutes', 'You fly the plane', 'No experience needed'],
     featured: true,
@@ -129,7 +138,7 @@ function ExperiencesPage() {
         {/* Experience Tiles */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {experiences.map((exp, i) => (
-            <Link key={i} to={`/book?experience=${exp.slug}&title=${encodeURIComponent(exp.title)}&price=${encodeURIComponent(exp.price)}`} className="block group">
+            <a key={i} href={flightCircleLinks[exp.slug] || '#'} target="_blank" rel="noopener noreferrer" className="block group">
               <GlassCard delay={i * 100} className={`h-full ${exp.featured ? '!border-gold/30 relative' : ''}`}>
                 {exp.featured && (
                   <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
@@ -159,8 +168,47 @@ function ExperiencesPage() {
                   <span className="text-gold font-semibold text-sm">{exp.price}</span>
                 </div>
               </GlassCard>
-            </Link>
+            </a>
           ))}
+
+          {/* Contact Us tile */}
+          <Link to="/contact" className="block group">
+            <GlassCard delay={experiences.length * 100} className="h-full !border-aviation-blue/30 relative flex flex-col items-center justify-center text-center">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold transition-colors">Contact Us</h3>
+              <p className="text-slate-400 text-sm leading-relaxed mb-4">Have questions about our experiences or want to plan a custom flight? We'd love to hear from you.</p>
+              <ul className="space-y-2 mb-4">
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Custom flight requests
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Group bookings
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  (203) 617-0645
+                </li>
+              </ul>
+              <div className="flex items-center gap-1 text-aviation-blue text-sm font-medium group-hover:text-gold transition-colors mt-auto">
+                <span>Get in Touch</span>
+                <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </GlassCard>
+          </Link>
         </div>
       </SectionWrapper>
 

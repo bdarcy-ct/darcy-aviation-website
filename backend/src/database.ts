@@ -311,7 +311,7 @@ export function initializeDatabase(): void {
       // Experiences
       ['experiences', 'headline', 'Unforgettable Flying Experiences'],
       ['experiences', 'subheadline', 'From your first discovery flight to a breathtaking night tour over the Manhattan skyline — five unique flying experiences for every occasion.'],
-      ['experiences', 'discovery_price', '$249'],
+      ['experiences', 'discovery_price', '$279'],
       ['experiences', 'candlewood_price', '$290'],
       ['experiences', 'westpoint_price', '$379'],
       ['experiences', 'nyc_price', '$550'],
@@ -324,7 +324,7 @@ export function initializeDatabase(): void {
       // CTA / General
       ['cta', 'headline', 'Ready to Start Your Aviation Journey?'],
       ['cta', 'subheadline', "Whether you're dreaming of your private pilot license or looking for a unique gift, we're here to help you take flight."],
-      ['cta', 'primary_text', 'Book a Discovery Flight — $249'],
+      ['cta', 'primary_text', 'Book a Discovery Flight — $279'],
       ['cta', 'primary_link', '/book'],
       ['cta', 'gift_link', 'https://www.flightcircle.com/shop/97822f668fb9/4000001831'],
     ];
@@ -346,7 +346,7 @@ export function initializeDatabase(): void {
       // Flight Training
       ['How long does it take to get a Private Pilot License?', 'Most students complete their PPL in 3-6 months, depending on how frequently they fly. The FAA requires a minimum of 40 flight hours, but the national average is around 60-70 hours. Flying 2-3 times per week is recommended for the best learning curve.', 'training', 1],
       ['Do I need any experience to start flying?', 'No prior experience is needed! Everyone starts from zero. You must be at least 16 years old to fly solo and 17 to earn your private pilot certificate. You will also need an FAA medical certificate, which we can help you obtain.', 'training', 2],
-      ['What is a Discovery Flight?', 'A discovery flight is a 30-minute introductory flight where you actually take the controls of the aircraft under the guidance of a certified flight instructor. It is the perfect way to experience flying before committing to a full training program. Discovery flights are $249 and make great gifts!', 'training', 3],
+      ['What is a Discovery Flight?', 'A discovery flight is a 30-minute introductory flight where you actually take the controls of the aircraft under the guidance of a certified flight instructor. It is the perfect way to experience flying before committing to a full training program. Discovery flights are $279 and make great gifts!', 'training', 3],
       ['How often should I fly during training?', 'We recommend flying at least 2-3 times per week for optimal progress and knowledge retention. Flying less frequently can extend your training timeline and overall cost. We are open 7 days a week to accommodate your schedule.', 'training', 4],
       ['What ratings and certificates do you offer?', 'We offer Private Pilot License (PPL), Instrument Rating (IR), Commercial Pilot License (CPL), and Multi-Engine Rating. We also have a full-motion simulator for instrument training and procedure practice.', 'training', 5],
       ['What aircraft will I train in?', 'Our fleet includes Cessna 172 Skyhawks and Piper PA-28 Warriors for primary training, a multi-engine trainer for your multi-engine rating, and a full-motion simulator. All our aircraft are meticulously maintained.', 'training', 6],
@@ -397,7 +397,7 @@ export function initializeDatabase(): void {
       ],
       [
         'Scenic Tours',
-        'From $249 — Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours.',
+        'From $279 — Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours.',
         '/experiences',
         '<svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>',
         JSON.stringify([
@@ -909,7 +909,7 @@ export function initializeDatabase(): void {
         '~30 minutes flight time',
         'One-time experience',
         'The Discovery Flight includes approximately 30 minutes of flight time, plus pre-flight briefing and post-flight discussion. Total time is about 1 hour.',
-        'Discovery Flights are $249 and make excellent gifts. Gift certificates are available online.',
+        'Discovery Flights are $279 and make excellent gifts. Gift certificates are available online.',
         1,
         JSON.stringify([
           {
@@ -1050,7 +1050,7 @@ export function initializeDatabase(): void {
       [
         'discovery-flight',
         'Discovery Flight',
-        '$249',
+        '$279',
         'Take the captain\'s seat and experience the thrill of flying firsthand. Whether it\'s been a lifelong dream or a spark of curiosity, grab the controls with an experienced instructor by your side and see the world from above.',
         '<svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>',
         JSON.stringify(['~30 minutes', 'You fly the plane', 'No experience needed']),
@@ -1259,7 +1259,7 @@ export function initializeDatabase(): void {
     const insertMeta = db.prepare('INSERT OR IGNORE INTO pages_meta (page_slug, title, description) VALUES (?, ?, ?)');
     
     const defaultMeta = [
-      ['home', 'Darcy Aviation — Premier Flight Training & Scenic Tours | KDXR Danbury CT', 'Darcy Aviation — premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $249. Private Pilot through Commercial licenses.'],
+      ['home', 'Darcy Aviation — Premier Flight Training & Scenic Tours | KDXR Danbury CT', 'Darcy Aviation — premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $279. Private Pilot through Commercial licenses.'],
       ['about', 'About Us — Darcy Aviation | KDXR Danbury CT', 'Learn about Darcy Aviation — founded in 2019 at Danbury Municipal Airport (KDXR), Connecticut. Meet our team of experienced flight instructors and mechanics.'],
       ['training', 'Flight Training Programs — Darcy Aviation', 'From Private Pilot License to Commercial training — comprehensive flight programs with experienced CFIs at KDXR.'],
       ['fleet', 'Our Aircraft Fleet — Darcy Aviation', 'Modern, well-maintained Cessna and Piper aircraft plus full-motion simulator at KDXR.'],
@@ -1304,7 +1304,7 @@ export function initializeDatabase(): void {
     // Update SEO meta from old values to new
     migrateMeta.run(
       'Darcy Aviation — Premier Flight Training & Scenic Tours | KDXR Danbury CT',
-      'Darcy Aviation — premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $249. Private Pilot through Commercial licenses.',
+      'Darcy Aviation — premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $279. Private Pilot through Commercial licenses.',
       'home',
       'Darcy Aviation - Professional Flight Training'
     );
