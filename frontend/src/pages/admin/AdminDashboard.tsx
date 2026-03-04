@@ -25,12 +25,21 @@ export default function AdminDashboard() {
     fetch('/api/admin/dashboard', {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then(d => {
         if (d && d.counts) setData(d);
-        else console.error('Invalid dashboard response:', d);
+        else {
+          console.error('Invalid dashboard response:', d);
+          setData({ counts: { mediaFiles: 0, faqs: 0, fleetAircraft: 0, testimonials: 0, storageUsageMB: 0 } });
+        }
       })
-      .catch(console.error)
+      .catch(err => {
+        console.error('Dashboard fetch error:', err);
+        setData({ counts: { mediaFiles: 0, faqs: 0, fleetAircraft: 0, testimonials: 0, storageUsageMB: 0 } });
+      })
       .finally(() => setLoading(false));
   }, []);
 
