@@ -95,7 +95,7 @@ export default function Home() {
         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
       ),
       title: 'Scenic Tours',
-      desc: 'From $249 — Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours.',
+      desc: 'From $279 — Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours.',
       link: '/experiences',
       images: ['/images/scenic/scenic-1.jpg', '/images/scenic/scenic-2.jpg', '/images/scenic/scenic-3.jpg', '/images/scenic/scenic-4.jpg', '/images/scenic/scenic-5.jpg', '/images/scenic/scenic-6.jpg', '/images/scenic/scenic-7.jpg', '/images/scenic/scenic-8.jpg', '/images/scenic/scenic-9.jpg', '/images/scenic/scenic-10.jpg', '/images/scenic/scenic-11.jpg', '/images/scenic/scenic-12.jpg', '/images/scenic/scenic-13.jpg'],
     },
@@ -158,7 +158,7 @@ export default function Home() {
   return (
     <div>
       <SEOHead
-        description="Darcy Aviation — Premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $249. Private Pilot through Commercial licenses. FAA-certified maintenance."
+        description="Darcy Aviation — Premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $279. Private Pilot through Commercial licenses. FAA-certified maintenance."
         path="/"
       />
 
@@ -348,7 +348,7 @@ export default function Home() {
                 we offer five unique flying experiences for every occasion.
               </p>
               <div className="flex flex-wrap gap-3 mb-6">
-                {['Discovery Flight $249', 'Candlewood Lake $290', 'West Point $379', 'NYC Skyline $550', 'City Lights $680'].map((exp) => (
+                {['Discovery Flight $279', 'Candlewood Lake $290', 'West Point $379', 'NYC Skyline $550', 'City Lights $680'].map((exp) => (
                   <span key={exp} className="text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-slate-300">
                     {exp}
                   </span>
@@ -364,7 +364,7 @@ export default function Home() {
                 <div className="text-slate-400 text-sm">Unique Tours</div>
               </div>
               <div className="glass-card p-4 text-center">
-                <div className="text-3xl font-bold text-aviation-blue mb-1">$249</div>
+                <div className="text-3xl font-bold text-aviation-blue mb-1">$279</div>
                 <div className="text-slate-400 text-sm">Starting From</div>
               </div>
               <div className="glass-card p-4 text-center">
@@ -397,10 +397,10 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/experiences" className="btn-gold text-lg">
-                Book a Discovery Flight — $249
+                Book a Discovery Flight — $279
               </Link>
               <a
-                href="https://www.flightcircle.com/shop/97822f668fb9/4000001831"
+                href="https://www.flightcircle.com/shop/97822f668fb9/4000001759"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-blue text-lg"

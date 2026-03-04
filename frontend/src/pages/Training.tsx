@@ -39,7 +39,7 @@ function TrainingPage() {
     {
       title: 'Discovery Flight',
       slug: '/training/discovery',
-      desc: '$249 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
+      desc: '$279 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
       icon: (
         <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
       ),
@@ -149,7 +149,7 @@ const faqs = [
   },
   {
     q: 'How much does flight training cost?',
-    a: 'Costs vary based on the program and your learning pace. Contact us for a personalized estimate. Discovery flights start at $249.',
+    a: 'Costs vary based on the program and your learning pace. Contact us for a personalized estimate. Discovery flights start at $279.',
   },
   {
     q: 'Can I fly in bad weather during training?',
@@ -250,7 +250,7 @@ const faqs = [
           <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
           <p className="text-slate-300 mb-8">Book a discovery flight and take the first step toward earning your wings.</p>
           <Link to="/experiences" className="btn-gold text-lg">
-            Book a Discovery Flight — $249
+            Book a Discovery Flight — $279
           </Link>
         </div>
       </SectionWrapper>

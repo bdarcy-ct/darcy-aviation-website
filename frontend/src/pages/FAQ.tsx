@@ -20,7 +20,7 @@ const fallbackFaqs = [
       },
       {
         q: 'What is a Discovery Flight?',
-        a: 'A discovery flight is a 30-minute introductory flight where you actually take the controls of the aircraft under the guidance of a certified flight instructor. It is the perfect way to experience flying before committing to a full training program. Discovery flights are $249 and make great gifts!',
+        a: 'A discovery flight is a 30-minute introductory flight where you actually take the controls of the aircraft under the guidance of a certified flight instructor. It is the perfect way to experience flying before committing to a full training program. Discovery flights are $279 and make great gifts!',
       },
       {
         q: 'How often should I fly during training?',

@@ -5,7 +5,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const { get: cms } = useCmsSection('contact');
   const phone = cms('phone', '(203) 617-0645');
-  const email = cms('email', 'admin@darcyaviation.com');
+  const email = cms('email', 'brent@darcyaviation.com');
   const address = cms('address', '1 Wallingford Rd, Danbury, CT 06810');
   const hours = cms('hours', '7 Days/Week, 9AM–5PM');
   const facebook = cms('facebook', 'https://www.facebook.com/darcyaviation/');

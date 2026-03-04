@@ -209,7 +209,7 @@ const ExperiencesManager: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Price *</label>
-                <input className={inputCls} value={formData.price || ''} onChange={e => setFormData({ ...formData, price: e.target.value })} placeholder="e.g., $249" />
+                <input className={inputCls} value={formData.price || ''} onChange={e => setFormData({ ...formData, price: e.target.value })} placeholder="e.g., $279" />
               </div>
             </div>
 

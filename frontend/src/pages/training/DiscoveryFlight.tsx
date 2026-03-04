@@ -10,7 +10,7 @@ export default function DiscoveryFlight() {
   return (
     <TrainingDetailPage
       title="Discovery Flight"
-      subtitle="Introductory Experience — $249"
+      subtitle="Introductory Experience — $279"
       heroDescription="Experience the thrill of flying firsthand. A Discovery Flight puts you in the pilot's seat with a certified flight instructor by your side. No experience needed — just curiosity and a sense of adventure."
       heroIcon={heroIcon}
       overview={[
@@ -72,7 +72,7 @@ export default function DiscoveryFlight() {
         frequency: 'Single session — book anytime',
         details: 'Plan for about one hour total, including the pre-flight briefing, 30 minutes of flight time, and a post-flight debrief. Arrive 15 minutes early. Weather permitting, flights operate seven days a week.',
       }}
-      costNote="Discovery Flights are priced at $249. This includes the aircraft, fuel, instructor, and your 30 minutes of flight time. No hidden fees. Gift certificates are available — contact us to purchase one for someone special."
+      costNote="Discovery Flights are priced at $279. This includes the aircraft, fuel, instructor, and your 30 minutes of flight time. No hidden fees. Gift certificates are available — contact us to purchase one for someone special."
       hideCostQuote
       fleet={[
         {
