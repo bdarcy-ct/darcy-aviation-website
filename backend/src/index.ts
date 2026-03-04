@@ -4,8 +4,7 @@ import path from 'path';
 import { initializeDatabase } from './database';
 import fleetRoutes from './routes/fleet';
 import testimonialRoutes from './routes/testimonials';
-import bookingRoutes from './routes/bookings';
-import contactRoutes from './routes/contact';
+// bookings and contact routes removed — bookings via FlightCircle, contact via email
 import weatherRoutes from './routes/weather';
 import adminRoutes from './routes/admin';
 import publicRoutes from './routes/public';
@@ -67,8 +66,7 @@ app.get('/api/health', (_req, res) => {
 // API Routes
 app.use('/api/fleet', fleetRoutes);
 app.use('/api/testimonials', testimonialRoutes);
-app.use('/api/bookings', rateLimit(5, 60000), bookingRoutes); // 5 per minute
-app.use('/api/contact', rateLimit(5, 60000), contactRoutes);  // 5 per minute
+// bookings and contact API routes removed
 app.use('/api/weather', weatherRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/public', publicRoutes);

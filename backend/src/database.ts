@@ -288,7 +288,7 @@ export function initializeDatabase(): void {
 
       // Contact Info
       ['contact', 'phone', '(203) 617-0645'],
-      ['contact', 'email', 'admin@darcyaviation.com'],
+      ['contact', 'email', 'brent@darcyaviation.com'],
       ['contact', 'address', '1 Wallingford Rd, Danbury, CT 06810'],
       ['contact', 'hours', '7 Days/Week, 9AM–5PM'],
       ['contact', 'facebook', 'https://www.facebook.com/darcyaviation/'],
@@ -1264,7 +1264,7 @@ export function initializeDatabase(): void {
       ['training', 'Flight Training Programs — Darcy Aviation', 'From Private Pilot License to Commercial training — comprehensive flight programs with experienced CFIs at KDXR.'],
       ['fleet', 'Our Aircraft Fleet — Darcy Aviation', 'Modern, well-maintained Cessna and Piper aircraft plus full-motion simulator at KDXR.'],
       ['maintenance', 'Aircraft Maintenance — Darcy Aviation', 'FAA-certified A&P/IA mechanics. Annuals, 100-hour inspections, engine overhauls at KDXR Danbury CT.'],
-      ['contact', 'Contact Us — Darcy Aviation', 'Get in touch with Darcy Aviation — call (203) 617-0645, email admin@darcyaviation.com, or visit us at 1 Wallingford Rd, Danbury, CT 06810.'],
+      ['contact', 'Contact Us — Darcy Aviation', 'Get in touch with Darcy Aviation — call (203) 617-0645, email brent@darcyaviation.com, or visit us at 1 Wallingford Rd, Danbury, CT 06810.'],
       ['faq', 'FAQ — Darcy Aviation', 'Frequently asked questions about flight training, costs, scheduling, and aircraft maintenance at Darcy Aviation in Danbury, CT.'],
       ['experiences', 'Scenic Tours & Flying Experiences — Darcy Aviation', 'Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours from Danbury CT.'],
       ['book', 'Book Now — Darcy Aviation', 'Book a discovery flight, scenic tour, or start your flight training at Darcy Aviation, KDXR Danbury CT.'],
@@ -1288,7 +1288,7 @@ export function initializeDatabase(): void {
     ['about', 'main_text', 'Darcy Aviation has been training pilots for over 15 years...', 'Founded in 2019, Darcy Aviation was born from a simple vision: to create the best flight training experience in the New York/Connecticut area. Located at Danbury Municipal Airport (KDXR), we have grown from a small operation into one of the region\'s most respected flight schools.'],
     ['about', 'team_info', 'Our experienced instructors are dedicated to your success...', 'Our founder, Brent Darcy, set out to build more than just a flight school — he wanted to create a community. A place where students feel like family, where instructors genuinely care about each student\'s progress, and where the joy of aviation is shared every single day.'],
     ['contact', 'phone', '(203) 555-0123', '(203) 617-0645'],
-    ['contact', 'email', 'info@darcyaviation.com', 'admin@darcyaviation.com'],
+    ['contact', 'email', 'brent@darcyaviation.com', 'brent@darcyaviation.com'],
     ['contact', 'address', '123 Airport Road, Danbury, CT 06810', '1 Wallingford Rd, Danbury, CT 06810'],
     ['contact', 'hours', 'Monday-Friday: 8AM-6PM, Saturday-Sunday: 9AM-5PM', '7 Days/Week, 9AM–5PM'],
     // Update SEO meta too
