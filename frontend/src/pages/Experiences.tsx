@@ -159,12 +159,12 @@ function ExperiencesPage() {
                   ))}
                 </ul>
                 <div className="flex items-center justify-between mt-auto">
-                  <div className="flex items-center gap-1 text-aviation-blue text-sm font-medium group-hover:text-gold transition-colors">
-                    <span>Book Now</span>
+                  <span className="inline-flex items-center gap-1 bg-gradient-to-r from-gold-dark to-gold text-navy-900 font-bold text-sm px-4 py-2 rounded-lg group-hover:shadow-lg group-hover:shadow-gold/25 transition-all">
+                    Book Now
                     <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
-                  </div>
+                  </span>
                   <span className="text-gold font-semibold text-sm">{exp.price}</span>
                 </div>
               </GlassCard>
