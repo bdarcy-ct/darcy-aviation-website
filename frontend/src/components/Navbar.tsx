@@ -77,7 +77,7 @@ export default function Navbar() {
                 </Link>
               ))}
               <WeatherBadge />
-              <Link to="/book" className="btn-gold ml-3 !px-5 !py-2 text-sm">
+              <Link to="/experiences" className="btn-gold ml-3 !px-5 !py-2 text-sm">
                 Book Now
               </Link>
             </div>
@@ -143,7 +143,7 @@ export default function Navbar() {
           ))}
           <div className="pt-4">
             <Link
-              to="/book"
+              to="/experiences"
               className="block text-center btn-gold !py-3.5 text-base"
               onClick={() => setIsOpen(false)}
             >

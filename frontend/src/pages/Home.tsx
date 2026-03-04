@@ -396,7 +396,7 @@ export default function Home() {
               {cms('cta', 'subheadline', "Whether you're dreaming of your private pilot license or looking for a unique gift, we're here to help you take flight.")}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/book" className="btn-gold text-lg">
+              <Link to="/experiences" className="btn-gold text-lg">
                 Book a Discovery Flight — $249
               </Link>
               <a

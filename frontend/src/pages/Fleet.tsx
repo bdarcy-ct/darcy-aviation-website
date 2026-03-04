@@ -157,7 +157,7 @@ export default function Fleet() {
                       <span className="text-xs text-slate-500">{aircraft.available ? 'Available' : 'In Maintenance'}</span>
                     </div>
                     <Link
-                      to={aircraft.type === 'Simulator' ? '/training/simulator' : '/book'}
+                      to={aircraft.type === 'Simulator' ? '/training/simulator' : '/experiences'}
                       className="text-xs text-aviation-blue hover:text-gold transition-colors font-medium"
                     >
                       {aircraft.type === 'Simulator' ? 'Book Sim Time' : 'Book a Flight'} →

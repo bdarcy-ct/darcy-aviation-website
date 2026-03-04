@@ -73,7 +73,7 @@ export default function Footer() {
                 { to: '/maintenance', label: 'Maintenance' },
                 { to: '/about', label: 'About Us' },
                 { to: '/faq', label: 'FAQ' },
-                { to: '/book', label: 'Book Now' },
+                { to: '/experiences', label: 'Book Now' },
               ].map((link) => (
                 <li key={link.to}>
                   <Link to={link.to} className="text-slate-400 hover:text-gold transition-colors text-sm inline-flex items-center gap-1.5 group">

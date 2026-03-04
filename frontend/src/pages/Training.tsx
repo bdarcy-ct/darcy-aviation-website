@@ -249,7 +249,7 @@ const faqs = [
         <div className="glass-card p-8 md:p-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
           <p className="text-slate-300 mb-8">Book a discovery flight and take the first step toward earning your wings.</p>
-          <Link to="/book" className="btn-gold text-lg">
+          <Link to="/experiences" className="btn-gold text-lg">
             Book a Discovery Flight — $249
           </Link>
         </div>

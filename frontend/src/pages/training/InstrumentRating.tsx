@@ -122,7 +122,7 @@ export default function InstrumentRating() {
         },
       ]}
       ctaText="Expand your flying capabilities with precision instrument training. Contact us to discuss your instrument rating goals."
-      ctaLink="/book"
+      ctaLink="/experiences"
       seoPath="/training/instrument"
     />
   );

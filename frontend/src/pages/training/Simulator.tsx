@@ -117,7 +117,7 @@ export default function SimulatorPage() {
         },
       ]}
       ctaText="Maximize your training efficiency with our FAA-certified simulator. Contact us to schedule a session."
-      ctaLink="/book"
+      ctaLink="/experiences"
       seoPath="/training/simulator"
     />
   );
