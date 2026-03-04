@@ -26,7 +26,10 @@ export default function AdminDashboard() {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
-      .then(setData)
+      .then(d => {
+        if (d && d.counts) setData(d);
+        else console.error('Invalid dashboard response:', d);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
