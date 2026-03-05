@@ -54,7 +54,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group" aria-label="Darcy Aviation Home">
-              <img src="/logo-darcy-v3.png" alt="Darcy Aviation" className="h-10 w-auto transition-transform group-hover:scale-110 drop-shadow-lg" />
+              <img src="/logo-darcy-v3.png?v=1772735513" alt="Darcy Aviation" className="h-10 w-auto transition-transform group-hover:scale-110 drop-shadow-lg" />
               <div className="hidden sm:block">
                 <div className="text-white font-semibold text-sm leading-tight">Darcy Aviation</div>
                 <div className="text-gold text-[10px] leading-tight tracking-wider uppercase">Danbury, Connecticut</div>
