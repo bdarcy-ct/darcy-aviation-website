@@ -170,7 +170,7 @@ export default function Home() {
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto pt-24 sm:pt-0">
           {/* Logo */}
           <div className="mb-6">
-            <img src="/logo-darcy-v2.png" alt="Darcy Aviation" className="w-40 sm:w-52 mx-auto drop-shadow-2xl" />
+            <img src="/logo-darcy-v3.png" alt="Darcy Aviation" className="w-40 sm:w-52 mx-auto drop-shadow-2xl" />
           </div>
 
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-6 backdrop-blur-sm">
