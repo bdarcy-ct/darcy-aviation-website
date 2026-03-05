@@ -117,7 +117,7 @@ function ExperiencesPage() {
     <div className="pt-24">
       <SEOHead
         title="Book an Experience"
-        description="Book unforgettable flying experiences at Darcy Aviation — Discovery flights, scenic tours over Candlewood Lake, West Point, NYC Skyline, and City Lights night tours."
+        description="Book scenic airplane rides and flying experiences in Connecticut — Discovery flights from $279, Candlewood Lake tours, West Point &amp; Hudson River tours, NYC Skyline tours, and City Lights night tours. Gift certificates available."
         path="/experiences"
       />
       {/* Hero */}

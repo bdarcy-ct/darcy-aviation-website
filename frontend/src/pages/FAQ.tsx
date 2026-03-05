@@ -125,7 +125,7 @@ export default function FAQ() {
     <div className="pt-24">
       <SEOHead
         title="FAQ"
-        description="Frequently asked questions about flight training, costs, scheduling, and aircraft maintenance at Darcy Aviation in Danbury, CT."
+        description="Frequently asked questions about learning to fly, flight lesson costs, how much it costs to get a pilot license, scheduling, gift certificates, and aircraft maintenance at Darcy Aviation — the local flight school near Danbury, CT."
         path="/faq"
       />
       <SectionWrapper>

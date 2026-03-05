@@ -49,7 +49,7 @@ export default function Contact() {
     <div className="pt-24">
       <SEOHead
         title="Contact Us"
-        description="Get in touch with Darcy Aviation — call (203) 617-0645, email brent@darcyaviation.com, or visit us at 1 Wallingford Rd, Danbury, CT 06810 (KDXR)."
+        description="Contact Darcy Aviation — call (203) 617-0645, email brent@darcyaviation.com, or visit us at Danbury Municipal Airport, 1 Wallingford Rd, Danbury, CT 06810. Flight school near me in Connecticut."
         path="/contact"
       />
       <SectionWrapper>

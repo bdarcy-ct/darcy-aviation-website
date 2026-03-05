@@ -163,7 +163,7 @@ const faqs = [
     <div className="pt-24">
       <SEOHead
         title="Flight Training Programs"
-        description="Professional flight training at Darcy Aviation — Private Pilot, Instrument Rating, Commercial Pilot, Multi-Engine Rating, and discovery flights. Train 7 days/week at KDXR."
+        description="Learn to fly in Connecticut — flight lessons at Darcy Aviation include Private Pilot (PPL), Instrument Rating, Commercial Pilot, Multi-Engine Rating, and discovery flights. Flexible scheduling 7 days/week at KDXR. See how much flight training costs."
         path="/training"
       />
       {/* Hero */}

@@ -109,7 +109,7 @@ export default function TrainingDetailPage({
     <div className="pt-24">
       <SEOHead
         title={title}
-        description={`${title} at Darcy Aviation — ${heroDescription.slice(0, 150)}... Professional flight training at Danbury Municipal Airport (KDXR), Connecticut.`}
+        description={`${title} at Darcy Aviation — ${heroDescription.slice(0, 120)}... Learn to fly at our flight school near Danbury, CT (KDXR). Pilot training in Connecticut.`}
         path={seoPath || '/training'}
       />
       {/* Back link */}

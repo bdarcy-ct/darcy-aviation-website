@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://darcy-aviation-production.up.railway.app/sitemap.xml
+Sitemap: https://darcyaviation.com/sitemap.xml

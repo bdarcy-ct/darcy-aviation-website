@@ -9,12 +9,12 @@ interface SEOHeadProps {
 }
 
 const SITE_NAME = 'Darcy Aviation';
-const BASE_URL = 'https://darcy-aviation-production.up.railway.app';
+const BASE_URL = 'https://darcyaviation.com';
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 
 export default function SEOHead({
   title,
-  description = 'Premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights, Private Pilot through Commercial licenses, and FAA-certified maintenance.',
+  description = 'Learn to fly at Darcy Aviation — the premier flight school at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $279, Private Pilot through Commercial licenses, scenic airplane rides, and FAA-certified aircraft maintenance.',
   path = '/',
   image = DEFAULT_IMAGE,
   type = 'website',

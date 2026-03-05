@@ -158,7 +158,7 @@ export default function Home() {
   return (
     <div>
       <SEOHead
-        description="Darcy Aviation — Premier flight training and aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut. Discovery flights from $279. Private Pilot through Commercial licenses. FAA-certified maintenance."
+        description="Learn to fly at Darcy Aviation — the best flight school near Danbury, CT. Discovery flights from $279, scenic airplane rides over Connecticut, Private Pilot through Commercial licenses, and FAA-certified aircraft maintenance at KDXR."
         path="/"
       />
 

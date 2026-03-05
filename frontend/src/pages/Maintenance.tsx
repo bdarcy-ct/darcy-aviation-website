@@ -190,7 +190,7 @@ export default function Maintenance() {
     <div className="pt-24">
       <SEOHead
         title="Aircraft Maintenance"
-        description="FAA-certified aircraft maintenance at Darcy Aviation — annual inspections, 100-hour inspections, oil changes, engine overhauls, avionics, and pre-buy inspections for Cessna and Piper aircraft."
+        description="FAA-certified aircraft maintenance at Darcy Aviation, Danbury CT — annual inspections, 100-hour inspections, oil changes, engine overhauls, avionics upgrades, pre-buy inspections, biennial flight review (BFR), and instrument proficiency checks (IPC) for Cessna and Piper aircraft."
         path="/maintenance"
       />
       <SectionWrapper>

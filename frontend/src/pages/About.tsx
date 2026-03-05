@@ -91,7 +91,7 @@ export default function About() {
     <div className="pt-24">
       <SEOHead
         title="About Us"
-        description="Learn about Darcy Aviation — founded in 2019 at Danbury Municipal Airport (KDXR), Connecticut. Meet our team of experienced flight instructors and mechanics."
+        description="Learn about Darcy Aviation — a local flight school founded in 2019 at Danbury Municipal Airport (KDXR), Connecticut. Meet our team of experienced certified flight instructors (CFI) and A&amp;P mechanics."
         path="/about"
       />
       {/* About Hero */}
