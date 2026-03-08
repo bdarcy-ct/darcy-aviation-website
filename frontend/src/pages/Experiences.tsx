@@ -158,7 +158,7 @@ function ExperiencesPage() {
                   className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
                   style={{ background: `radial-gradient(ellipse at center, ${glow.shadow}, transparent 70%)` }}
                 />
-                <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${glow.gradient} opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl`} />
+                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${glow.gradient} opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 pointer-events-none`} />
                 <GlassCard delay={i * 100} className={`h-full relative ${exp.featured ? '!border-gold/30' : ''}`}>
                   {exp.featured && (
                     <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
@@ -198,7 +198,7 @@ function ExperiencesPage() {
               className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at center, rgba(16,185,129,0.3), transparent 70%)' }}
             />
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-emerald-500 to-teal-500 opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl" />
+            <div className="absolute top-0 left-0 right-0 rounded-2xl bg-gradient-to-b from-emerald-500 to-teal-500 opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 pointer-events-none" />
             <GlassCard delay={(experiences.length) * 100} className="h-full relative flex flex-col">
               <div className="mb-4">
                 <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -242,7 +242,7 @@ function ExperiencesPage() {
               className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at center, rgba(245,158,11,0.3), transparent 70%)' }}
             />
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-amber-500 to-orange-500 opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl" />
+            <div className="absolute top-0 left-0 right-0 rounded-2xl bg-gradient-to-b from-amber-500 to-orange-500 opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 pointer-events-none" />
             <GlassCard delay={(experiences.length + 1) * 100} className="h-full relative flex flex-col">
               <div className="mb-4">
                 <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -286,7 +286,7 @@ function ExperiencesPage() {
               className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.3), transparent 70%)' }}
             />
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-indigo-500 to-blue-500 opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl" />
+            <div className="absolute top-0 left-0 right-0 rounded-2xl bg-gradient-to-b from-indigo-500 to-blue-500 opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 pointer-events-none" />
             <GlassCard delay={(experiences.length + 2) * 100} className="h-full relative flex flex-col items-center justify-center text-center">
               <div className="mb-4">
                 <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
