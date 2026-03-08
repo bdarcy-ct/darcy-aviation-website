@@ -189,7 +189,7 @@ export default function Home() {
             {cms('hero', 'subheadline', "Connecticut's premier flight training destination. Professional instruction, premium fleet, and unforgettable scenic tours at Danbury Municipal Airport.")}
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/experiences" className="btn-gold text-lg group">
               <span className="inline-flex items-center gap-2">
                 <svg className="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -200,6 +200,12 @@ export default function Home() {
             </Link>
             <Link to="/training" className="btn-blue text-lg">
               Explore Programs →
+            </Link>
+            <Link to="/training" className="px-6 py-3 bg-emerald-600/80 hover:bg-emerald-500 text-white font-semibold rounded-xl backdrop-blur-sm border border-emerald-400/30 hover:border-emerald-400/60 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/25 text-lg">
+              Learn to Fly ✈️
+            </Link>
+            <Link to="/maintenance" className="px-6 py-3 bg-amber-600/80 hover:bg-amber-500 text-white font-semibold rounded-xl backdrop-blur-sm border border-amber-400/30 hover:border-amber-400/60 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25 text-lg">
+              Maintenance 🔧
             </Link>
           </div>
 
