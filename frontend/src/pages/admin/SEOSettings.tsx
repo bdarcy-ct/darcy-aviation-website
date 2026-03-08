@@ -89,7 +89,7 @@ const SEOSettings: React.FC = () => {
   };
 
   const generatePreviewURL = (slug: string) => {
-    const baseURL = 'https://darcy-aviation-production.up.railway.app';
+    const baseURL = 'https://darcyaviation.com';
     return slug === 'home' ? baseURL : `${baseURL}/${slug}`;
   };
 

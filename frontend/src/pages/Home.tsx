@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
@@ -161,6 +162,69 @@ export default function Home() {
         description="Learn to fly at Darcy Aviation — the best flight school near Danbury, CT. Discovery flights from $279, scenic airplane rides over Connecticut, Private Pilot through Commercial licenses, and FAA-certified aircraft maintenance at KDXR."
         path="/"
       />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Darcy Aviation",
+          "description": "Premier flight training, scenic airplane tours, and FAA-certified aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut.",
+          "url": "https://darcyaviation.com",
+          "telephone": "+1-203-617-0645",
+          "email": "brent@darcyaviation.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "1 Wallingford Rd",
+            "addressLocality": "Danbury",
+            "addressRegion": "CT",
+            "postalCode": "06810",
+            "addressCountry": "US"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 41.3714,
+            "longitude": -73.4822
+          },
+          "openingHours": "Mo-Su 09:00-17:00",
+          "priceRange": "$$",
+          "image": "https://darcyaviation.com/logo-darcy-v3.png",
+          "sameAs": [
+            "https://www.facebook.com/darcyaviation/",
+            "https://www.instagram.com/darcyaviation/"
+          ],
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "50",
+            "bestRating": "5"
+          },
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Flying Experiences",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Discovery Flight",
+                  "description": "Take your first step to become a pilot with a 30-minute introductory flight."
+                },
+                "price": "279.00",
+                "priceCurrency": "USD"
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "NYC Skyline Tour",
+                  "description": "Fly through Manhattan's iconic skyline along the Hudson River."
+                },
+                "price": "550.00",
+                "priceCurrency": "USD"
+              }
+            ]
+          }
+        })}</script>
+      </Helmet>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -199,10 +263,10 @@ export default function Home() {
               </span>
             </Link>
             <Link to="/training" className="btn-blue text-base whitespace-nowrap">
-              Explore Programs →
-            </Link>
-            <Link to="/training" className="btn-blue text-base whitespace-nowrap">
               Learn to Fly →
+            </Link>
+            <Link to="/fleet" className="btn-blue text-base whitespace-nowrap">
+              Our Fleet →
             </Link>
             <Link to="/maintenance" className="btn-blue text-base whitespace-nowrap">
               Maintenance →
@@ -214,10 +278,10 @@ export default function Home() {
               Book an Experience
             </Link>
             <Link to="/training" className="btn-blue text-sm text-center !px-4 !py-2.5">
-              Explore Programs
-            </Link>
-            <Link to="/training" className="btn-blue text-sm text-center !px-4 !py-2.5">
               Learn to Fly
+            </Link>
+            <Link to="/fleet" className="btn-blue text-sm text-center !px-4 !py-2.5">
+              Our Fleet
             </Link>
             <Link to="/maintenance" className="btn-blue text-sm text-center !px-4 !py-2.5">
               Maintenance

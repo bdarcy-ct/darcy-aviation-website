@@ -5,3 +5,13 @@ data/*.db-wal
 data/*.db-shm
 .env
 *.log
+
+# Temp preview/debug files
+darcy-frame-*.jpg
+new-logo-*.png
+logo-on-*.png
+logo-v*.png
+logo-original.png
+generate-pdf*.py
+generate-seo-pdf.py
+static/logo-darcy-v3-original.png
