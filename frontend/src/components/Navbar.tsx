@@ -82,9 +82,11 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Mobile: weather badge + menu button */}
+            {/* Mobile: Book Now + menu button + weather */}
             <div className="lg:hidden flex items-center gap-2">
-              <WeatherBadge />
+              <Link to="/experiences" className="btn-gold !px-3 !py-1.5 text-xs font-bold">
+                Book Now
+              </Link>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
@@ -99,6 +101,7 @@ export default function Navbar() {
                   )}
                 </svg>
               </button>
+              <WeatherBadge />
             </div>
           </div>
         </div>
