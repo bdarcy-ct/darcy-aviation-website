@@ -82,8 +82,9 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Mobile: Book Now + menu button + weather */}
+            {/* Mobile: weather + Book Now + menu button */}
             <div className="lg:hidden flex items-center gap-2">
+              <WeatherBadge />
               <Link to="/experiences" className="btn-gold !px-3 !py-1.5 text-xs font-bold">
                 Book Now
               </Link>
@@ -101,7 +102,6 @@ export default function Navbar() {
                   )}
                 </svg>
               </button>
-              <WeatherBadge />
             </div>
           </div>
         </div>
