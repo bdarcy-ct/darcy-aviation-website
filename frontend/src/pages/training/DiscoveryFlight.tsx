@@ -11,7 +11,7 @@ export default function DiscoveryFlight() {
     <TrainingDetailPage
       title="Discovery Flight"
       subtitle="Introductory Experience — $279"
-      heroDescription="Experience the thrill of flying firsthand. A Discovery Flight puts you in the pilot's seat with a certified flight instructor by your side. No experience needed — just curiosity and a sense of adventure."
+      heroDescription="Take your first step to become a pilot. A Discovery Flight puts you in the pilot's seat with a certified flight instructor by your side. No experience needed — just curiosity and a sense of adventure."
       heroIcon={heroIcon}
       overview={[
         'A Discovery Flight is the perfect first step for anyone curious about learning to fly. In just 30 minutes of flight time, you will experience the fundamentals of aviation from the left seat — the pilot\'s seat — with a certified flight instructor guiding you through every moment.',

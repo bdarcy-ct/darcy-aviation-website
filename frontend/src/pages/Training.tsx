@@ -34,12 +34,16 @@ function TrainingPage() {
     ),
     highlights: programHighlights[program.slug] || program.requirements?.slice(0, 3).map(r => r.length > 40 ? r.slice(0, 37) + '…' : r) || [],
     featured: program.slug === 'discovery' || program.slug === 'ppl',
-  })) : [
+  })).sort((a, b) => {
+    // Discovery Flight always first, then PPL
+    const order: Record<string, number> = { '/training/discovery': 0, '/training/ppl': 1 };
+    return (order[a.slug] ?? 99) - (order[b.slug] ?? 99);
+  }) : [
     // Fallback programs if API fails
     {
       title: 'Discovery Flight',
       slug: '/training/discovery',
-      desc: '$279 — Experience the thrill of flying. You take the controls under the guidance of a certified instructor. The perfect first step or gift!',
+      desc: '$279 — Take your first step to become a pilot. Grab the controls with an experienced instructor by your side and see the world from above.',
       icon: (
         <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
       ),

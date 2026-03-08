@@ -13,6 +13,18 @@ const flightCircleLinks: Record<string, string> = {
   'city-lights-night-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001850',
 };
 
+// Glow colors for each tile (always-on, intensify on hover)
+const tileGlowColors = [
+  { gradient: 'from-blue-500 to-cyan-500', shadow: 'rgba(59,130,246,0.3)', shadowHover: 'rgba(59,130,246,0.5)' },
+  { gradient: 'from-violet-500 to-purple-500', shadow: 'rgba(139,92,246,0.3)', shadowHover: 'rgba(139,92,246,0.5)' },
+  { gradient: 'from-emerald-500 to-teal-500', shadow: 'rgba(16,185,129,0.3)', shadowHover: 'rgba(16,185,129,0.5)' },
+  { gradient: 'from-amber-500 to-orange-500', shadow: 'rgba(245,158,11,0.3)', shadowHover: 'rgba(245,158,11,0.5)' },
+  { gradient: 'from-pink-500 to-rose-500', shadow: 'rgba(236,72,153,0.3)', shadowHover: 'rgba(236,72,153,0.5)' },
+  { gradient: 'from-indigo-500 to-blue-500', shadow: 'rgba(99,102,241,0.3)', shadowHover: 'rgba(99,102,241,0.5)' },
+  { gradient: 'from-cyan-500 to-sky-500', shadow: 'rgba(6,182,212,0.3)', shadowHover: 'rgba(6,182,212,0.5)' },
+  { gradient: 'from-rose-500 to-red-500', shadow: 'rgba(244,63,94,0.3)', shadowHover: 'rgba(244,63,94,0.5)' },
+];
+
 // Default icon mapped by slug
 const defaultIcons: Record<string, JSX.Element> = {
   'discovery-flight': (
@@ -54,7 +66,7 @@ const fallbackExperiences = [
     slug: 'discovery-flight',
     title: 'Discovery Flight',
     price: '$279',
-    description: 'Take the captain\'s seat and experience the thrill of flying firsthand. Whether it\'s been a lifelong dream or a spark of curiosity, grab the controls with an experienced instructor by your side and see the world from above.',
+    description: 'Take your first step to become a pilot. Whether it\'s been a lifelong dream or a spark of curiosity, grab the controls with an experienced instructor by your side and see the world from above.',
     highlights: ['~30 minutes', 'You fly the plane', 'No experience needed'],
     featured: true,
   },
@@ -137,43 +149,145 @@ function ExperiencesPage() {
 
         {/* Experience Tiles */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {experiences.map((exp, i) => (
-            <a key={i} href={flightCircleLinks[exp.slug] || '#'} target="_blank" rel="noopener noreferrer" className="block group">
-              <GlassCard delay={i * 100} className={`h-full ${exp.featured ? '!border-gold/30 relative' : ''}`}>
-                {exp.featured && (
-                  <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
-                    {i === 0 ? 'MOST POPULAR' : 'UNFORGETTABLE'}
-                  </div>
-                )}
-                <div className="mb-4">{exp.icon}</div>
-                <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold transition-colors">{exp.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed mb-4">{exp.description}</p>
-                <ul className="space-y-2 mb-4">
-                  {exp.highlights.map((h, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
-                      <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          {experiences.map((exp, i) => {
+            const glow = tileGlowColors[i % tileGlowColors.length];
+            return (
+              <a key={i} href={flightCircleLinks[exp.slug] || '#'} target="_blank" rel="noopener noreferrer" className="block group relative">
+                {/* Always-on glow */}
+                <div
+                  className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
+                  style={{ background: `radial-gradient(ellipse at center, ${glow.shadow}, transparent 70%)` }}
+                />
+                <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${glow.gradient} opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl`} />
+                <GlassCard delay={i * 100} className={`h-full relative ${exp.featured ? '!border-gold/30' : ''}`}>
+                  {exp.featured && (
+                    <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
+                      {i === 0 ? 'MOST POPULAR' : 'UNFORGETTABLE'}
+                    </div>
+                  )}
+                  <div className="mb-4">{exp.icon}</div>
+                  <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold transition-colors">{exp.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-4">{exp.description}</p>
+                  <ul className="space-y-2 mb-4">
+                    {exp.highlights.map((h, j) => (
+                      <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
+                        <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-gold-dark to-gold text-navy-900 font-bold text-sm px-4 py-2 rounded-lg group-hover:shadow-lg group-hover:shadow-gold/25 transition-all">
+                      Book Now
+                      <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                      {h}
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex items-center justify-between mt-auto">
-                  <span className="inline-flex items-center gap-1 bg-gradient-to-r from-gold-dark to-gold text-navy-900 font-bold text-sm px-4 py-2 rounded-lg group-hover:shadow-lg group-hover:shadow-gold/25 transition-all">
-                    Book Now
-                    <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                  <span className="text-gold font-semibold text-sm">{exp.price}</span>
-                </div>
-              </GlassCard>
-            </a>
-          ))}
+                    </span>
+                    <span className="text-gold font-semibold text-sm">{exp.price}</span>
+                  </div>
+                </GlassCard>
+              </a>
+            );
+          })}
+
+          {/* Learn to Fly tile */}
+          <Link to="/training" className="block group relative">
+            <div
+              className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at center, rgba(16,185,129,0.3), transparent 70%)' }}
+            />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-emerald-500 to-teal-500 opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl" />
+            <GlassCard delay={(experiences.length) * 100} className="h-full relative flex flex-col">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold transition-colors">Learn to Fly</h3>
+              <p className="text-slate-400 text-sm leading-relaxed mb-4">From your first discovery flight to advanced ratings — explore our full range of flight training programs at KDXR.</p>
+              <ul className="space-y-2 mb-4">
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Private Pilot through Commercial
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Experienced CFIs
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Train 7 days/week
+                </li>
+              </ul>
+              <div className="flex items-center gap-1 text-emerald-400 text-sm font-medium group-hover:text-gold transition-colors mt-auto">
+                <span>View Programs</span>
+                <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </GlassCard>
+          </Link>
+
+          {/* Maintenance tile */}
+          <Link to="/maintenance" className="block group relative">
+            <div
+              className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at center, rgba(245,158,11,0.3), transparent 70%)' }}
+            />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-amber-500 to-orange-500 opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl" />
+            <GlassCard delay={(experiences.length + 1) * 100} className="h-full relative flex flex-col">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.42 15.17l-5.658 3.286a1.125 1.125 0 01-1.674-.996V5.437a1.125 1.125 0 01.388-.855l5.66-4.837a1.125 1.125 0 011.578.04l3.94 4.04a1.125 1.125 0 01-.04 1.594l-3.194 3.011m2.1 2.1l3.194-3.011a1.125 1.125 0 01.824-.257c.596.067 1.185.17 1.767.308a1.125 1.125 0 01.84 1.089v4.94a1.125 1.125 0 01-1.12 1.125H15" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold transition-colors">Maintenance</h3>
+              <p className="text-slate-400 text-sm leading-relaxed mb-4">FAA-certified A&P/IA mechanics for all your aircraft maintenance needs — from annuals to engine overhauls.</p>
+              <ul className="space-y-2 mb-4">
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Annual & 100-hour inspections
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Engine overhauls & avionics
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-300">
+                  <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Cessna & Piper specialists
+                </li>
+              </ul>
+              <div className="flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:text-gold transition-colors mt-auto">
+                <span>Learn More</span>
+                <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </GlassCard>
+          </Link>
 
           {/* Contact Us tile */}
-          <Link to="/contact" className="block group">
-            <GlassCard delay={experiences.length * 100} className="h-full !border-aviation-blue/30 relative flex flex-col items-center justify-center text-center">
+          <Link to="/contact" className="block group relative">
+            <div
+              className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.3), transparent 70%)' }}
+            />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-indigo-500 to-blue-500 opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl" />
+            <GlassCard delay={(experiences.length + 2) * 100} className="h-full relative flex flex-col items-center justify-center text-center">
               <div className="mb-4">
                 <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
