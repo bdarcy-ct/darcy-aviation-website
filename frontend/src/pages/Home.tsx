@@ -210,16 +210,16 @@ export default function Home() {
           </div>
           {/* Mobile buttons - 2x2 grid */}
           <div className="md:hidden grid grid-cols-2 gap-3 max-w-sm mx-auto">
-            <Link to="/experiences" className="btn-gold text-sm text-center">
+            <Link to="/experiences" className="btn-gold text-sm text-center !px-4 !py-2.5">
               Book an Experience
             </Link>
-            <Link to="/training" className="btn-blue text-sm text-center">
+            <Link to="/training" className="btn-blue text-sm text-center !px-4 !py-2.5">
               Explore Programs
             </Link>
-            <Link to="/training" className="btn-blue text-sm text-center">
+            <Link to="/training" className="btn-blue text-sm text-center !px-4 !py-2.5">
               Learn to Fly
             </Link>
-            <Link to="/maintenance" className="btn-blue text-sm text-center">
+            <Link to="/maintenance" className="btn-blue text-sm text-center !px-4 !py-2.5">
               Maintenance
             </Link>
           </div>
