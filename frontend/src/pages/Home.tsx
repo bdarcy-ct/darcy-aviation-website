@@ -201,11 +201,11 @@ export default function Home() {
             <Link to="/training" className="btn-blue text-lg">
               Explore Programs →
             </Link>
-            <Link to="/training" className="px-6 py-3 bg-emerald-600/80 hover:bg-emerald-500 text-white font-semibold rounded-xl backdrop-blur-sm border border-emerald-400/30 hover:border-emerald-400/60 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/25 text-lg">
-              Learn to Fly ✈️
+            <Link to="/training" className="btn-blue text-lg">
+              Learn to Fly →
             </Link>
-            <Link to="/maintenance" className="px-6 py-3 bg-amber-600/80 hover:bg-amber-500 text-white font-semibold rounded-xl backdrop-blur-sm border border-amber-400/30 hover:border-amber-400/60 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25 text-lg">
-              Maintenance 🔧
+            <Link to="/maintenance" className="btn-blue text-lg">
+              Maintenance →
             </Link>
           </div>
 
