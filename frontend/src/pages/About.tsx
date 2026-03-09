@@ -64,9 +64,9 @@ const values = [
 
 // Default team members (shown if CMS has no team_ entries yet)
 const defaultTeam = [
-  { name: 'Brent Darcy', role: 'Founder & Chief Instructor', key: 'team_brent', bio: 'Brent founded Darcy Aviation with a vision to create a premier flight training environment in Connecticut.' },
-  { name: 'John', role: 'Certified Flight Instructor', key: 'team_john', bio: 'Dedicated CFI known for patient instruction and helping students pass their checkrides with confidence.' },
-  { name: 'Archana', role: 'Certified Flight Instructor', key: 'team_archana', bio: 'An exceptional CFI who brings enthusiasm and expertise to every lesson. A student favorite.' },
+  { name: 'Brent Darcy', role: 'Founder & Chief Instructor', key: 'team_brent', bio: 'Brent founded Darcy Aviation with a vision to create a premier flight training environment in Connecticut.', photo: '' },
+  { name: 'John', role: 'Certified Flight Instructor', key: 'team_john', bio: 'Dedicated CFI known for patient instruction and helping students pass their checkrides with confidence.', photo: '' },
+  { name: 'Archana', role: 'Certified Flight Instructor', key: 'team_archana', bio: 'An exceptional CFI who brings enthusiasm and expertise to every lesson. A student favorite.', photo: '' },
 ];
 
 // Extract team members from CMS data — any key starting with "team_" becomes a team card
