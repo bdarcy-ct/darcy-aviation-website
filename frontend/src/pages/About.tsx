@@ -62,30 +62,50 @@ const values = [
   },
 ];
 
-// Team data uses CMS-compatible keys but has hardcoded fallbacks
-const teamBase = [
-  {
-    name: 'Brent Darcy',
-    role: 'Founder & Chief Instructor',
-    cmsKey: 'team_brent',
-    fallback: 'Brent founded Darcy Aviation with a vision to create a premier flight training environment in Connecticut.',
-  },
-  {
-    name: 'John',
-    role: 'Certified Flight Instructor',
-    cmsKey: 'team_john',
-    fallback: 'Dedicated CFI known for patient instruction and helping students pass their checkrides with confidence.',
-  },
-  {
-    name: 'Archana',
-    role: 'Certified Flight Instructor',
-    cmsKey: 'team_archana',
-    fallback: 'An exceptional CFI who brings enthusiasm and expertise to every lesson. A student favorite.',
-  },
+// Default team members (shown if CMS has no team_ entries yet)
+const defaultTeam = [
+  { name: 'Brent Darcy', role: 'Founder & Chief Instructor', key: 'team_brent', bio: 'Brent founded Darcy Aviation with a vision to create a premier flight training environment in Connecticut.' },
+  { name: 'John', role: 'Certified Flight Instructor', key: 'team_john', bio: 'Dedicated CFI known for patient instruction and helping students pass their checkrides with confidence.' },
+  { name: 'Archana', role: 'Certified Flight Instructor', key: 'team_archana', bio: 'An exceptional CFI who brings enthusiasm and expertise to every lesson. A student favorite.' },
 ];
 
+// Extract team members from CMS data — any key starting with "team_" becomes a team card
+// CMS content format: key="team_firstname", content="bio text" or "Role | bio text"
+function buildTeamFromCms(data: Record<string, string>) {
+  const teamKeys = Object.keys(data).filter(k => k.startsWith('team_')).sort((a, b) => {
+    // Keep brent first, then alphabetical
+    if (a === 'team_brent') return -1;
+    if (b === 'team_brent') return 1;
+    return a.localeCompare(b);
+  });
+
+  if (teamKeys.length === 0) return defaultTeam;
+
+  return teamKeys.map(key => {
+    const rawName = key.replace('team_', '').replace(/_/g, ' ');
+    const name = rawName.replace(/\b\w/g, l => l.toUpperCase());
+    const content = data[key] || '';
+    
+    // Support "Role | bio" format, otherwise default role
+    const pipeIdx = content.indexOf('|');
+    let role = 'Certified Flight Instructor';
+    let bio = content;
+    if (pipeIdx > 0 && pipeIdx < 60) {
+      role = content.slice(0, pipeIdx).trim();
+      bio = content.slice(pipeIdx + 1).trim();
+    }
+
+    // Special case for Brent
+    if (key === 'team_brent') role = 'Founder & Chief Instructor';
+
+    const fallback = defaultTeam.find(d => d.key === key);
+    return { name: fallback?.name || name, role: fallback?.role || role, key, bio: bio || fallback?.bio || '' };
+  });
+}
+
 export default function About() {
-  const { get: cms } = useCmsSection('about');
+  const { data: aboutData, get: cms } = useCmsSection('about');
+  const team = buildTeamFromCms(aboutData);
 
   return (
     <div className="pt-24">
@@ -143,15 +163,15 @@ export default function About() {
           <h2 className="section-title">Meet the Team</h2>
           <p className="section-subtitle">The people who make Darcy Aviation special</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {teamBase.map((member, i) => (
-            <GlassCard key={i} delay={i * 100} className="text-center">
+        <div className={`grid grid-cols-1 ${team.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'} gap-6`}>
+          {team.map((member, i) => (
+            <GlassCard key={member.key} delay={i * 100} className="text-center">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-aviation-blue to-gold mx-auto mb-4 flex items-center justify-center">
                 <PilotIcon />
               </div>
               <h3 className="text-xl font-semibold text-white mb-1">{member.name}</h3>
               <p className="text-gold text-sm font-medium mb-3">{member.role}</p>
-              <p className="text-slate-400 text-sm leading-relaxed">{cms(member.cmsKey, member.fallback)}</p>
+              <p className="text-slate-400 text-sm leading-relaxed">{member.bio}</p>
             </GlassCard>
           ))}
         </div>
