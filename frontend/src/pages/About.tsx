@@ -71,8 +71,9 @@ const defaultTeam = [
 
 // Extract team members from CMS data — any key starting with "team_" becomes a team card
 // CMS content format: key="team_firstname", content="bio text" or "Role | bio text"
+// Photo support: key="team_firstname_photo", content="/uploads/photo.jpg"
 function buildTeamFromCms(data: Record<string, string>) {
-  const teamKeys = Object.keys(data).filter(k => k.startsWith('team_')).sort((a, b) => {
+  const teamKeys = Object.keys(data).filter(k => k.startsWith('team_') && !k.endsWith('_photo')).sort((a, b) => {
     // Keep brent first, then alphabetical
     if (a === 'team_brent') return -1;
     if (b === 'team_brent') return 1;
@@ -85,6 +86,7 @@ function buildTeamFromCms(data: Record<string, string>) {
     const rawName = key.replace('team_', '').replace(/_/g, ' ');
     const name = rawName.replace(/\b\w/g, l => l.toUpperCase());
     const content = data[key] || '';
+    const photo = data[`${key}_photo`] || '';
     
     // Support "Role | bio" format, otherwise default role
     const pipeIdx = content.indexOf('|');
@@ -99,7 +101,7 @@ function buildTeamFromCms(data: Record<string, string>) {
     if (key === 'team_brent') role = 'Founder & Chief Instructor';
 
     const fallback = defaultTeam.find(d => d.key === key);
-    return { name: fallback?.name || name, role: fallback?.role || role, key, bio: bio || fallback?.bio || '' };
+    return { name: fallback?.name || name, role: fallback?.role || role, key, bio: bio || fallback?.bio || '', photo };
   });
 }
 
@@ -166,9 +168,15 @@ export default function About() {
         <div className={`grid grid-cols-1 ${team.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'} gap-6`}>
           {team.map((member, i) => (
             <GlassCard key={member.key} delay={i * 100} className="text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-aviation-blue to-gold mx-auto mb-4 flex items-center justify-center">
-                <PilotIcon />
-              </div>
+              {member.photo ? (
+                <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden ring-2 ring-gold/40">
+                  <img src={member.photo} alt={member.name} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-aviation-blue to-gold mx-auto mb-4 flex items-center justify-center">
+                  <PilotIcon />
+                </div>
+              )}
               <h3 className="text-xl font-semibold text-white mb-1">{member.name}</h3>
               <p className="text-gold text-sm font-medium mb-3">{member.role}</p>
               <p className="text-slate-400 text-sm leading-relaxed">{member.bio}</p>
