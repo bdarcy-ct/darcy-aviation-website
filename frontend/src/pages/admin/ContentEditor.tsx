@@ -209,23 +209,29 @@ const ContentEditor: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Section</label>
-              <div className="flex gap-2">
-                <select
-                  value={newItem.section}
-                  onChange={(e) => setNewItem({ ...newItem, section: e.target.value })}
-                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-gold/50"
-                >
-                  <option value="">Select or type new...</option>
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {sections.map(s => (
-                    <option key={s} value={s}>{getSectionIcon(s)} {s}</option>
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setNewItem({ ...newItem, section: s })}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                        newItem.section === s
+                          ? 'bg-gold text-navy-900'
+                          : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                      }`}
+                    >
+                      {getSectionIcon(s)} {s}
+                    </button>
                   ))}
-                </select>
+                </div>
                 <input
                   type="text"
                   value={newItem.section}
                   onChange={(e) => setNewItem({ ...newItem, section: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
-                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50"
-                  placeholder="Or type new section name"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50"
+                  placeholder="Pick above or type a new section name"
                 />
               </div>
             </div>
