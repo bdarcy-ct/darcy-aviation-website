@@ -11,6 +11,7 @@ import serviceTilesRoutes from './service-tiles';
 import trainingProgramsRoutes from './training-programs';
 import experiencesRoutes from './experiences';
 import maintenanceServicesRoutes from './maintenance-services';
+import teamRoutes from './team';
 
 const router = express.Router();
 
@@ -27,5 +28,6 @@ router.use('/service-tiles', serviceTilesRoutes);
 router.use('/training-programs', trainingProgramsRoutes);
 router.use('/experiences', experiencesRoutes);
 router.use('/maintenance-services', maintenanceServicesRoutes);
+router.use('/team', teamRoutes);
 
 export default router;

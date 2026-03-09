@@ -224,4 +224,15 @@ router.get('/maintenance-services', (_req, res) => {
   }
 });
 
+// Get active team members (public)
+router.get('/team', (_req, res) => {
+  try {
+    const members = db.prepare('SELECT id, name, role, bio, photo_url FROM team_members WHERE is_active = 1 ORDER BY sort_order ASC, id ASC').all();
+    res.json(members);
+  } catch (error) {
+    console.error('Error fetching team:', error);
+    res.status(500).json({ error: 'Failed to fetch team members' });
+  }
+});
+
 export default router;

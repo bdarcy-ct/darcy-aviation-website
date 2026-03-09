@@ -14,6 +14,7 @@ import ServiceTiles from './ServiceTiles';
 import TrainingProgramsManager from './TrainingProgramsManager';
 import ExperiencesManager from './ExperiencesManager';
 import MaintenanceServicesManager from './MaintenanceServicesManager';
+import TeamManager from './TeamManager';
 
 const AdminPage: React.FC = () => {
   const { user, isLoading } = useAdmin();
@@ -48,6 +49,7 @@ const AdminPage: React.FC = () => {
         <Route path="/training-programs" element={<TrainingProgramsManager />} />
         <Route path="/experiences" element={<ExperiencesManager />} />
         <Route path="/maintenance-services" element={<MaintenanceServicesManager />} />
+        <Route path="/team" element={<TeamManager />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Routes>
     </AdminLayout>

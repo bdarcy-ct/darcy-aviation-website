@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
@@ -107,7 +108,28 @@ function buildTeamFromCms(data: Record<string, string>) {
 
 export default function About() {
   const { data: aboutData, get: cms } = useCmsSection('about');
-  const team = buildTeamFromCms(aboutData);
+  const cmsTeam = buildTeamFromCms(aboutData);
+  
+  // Fetch team from dedicated API (overrides CMS-based team if available)
+  const [apiTeam, setApiTeam] = useState<{ name: string; role: string; bio: string; photo: string; key: string }[]>([]);
+  useEffect(() => {
+    fetch('/api/public/team')
+      .then(res => res.ok ? res.json() : [])
+      .then((members: any[]) => {
+        if (members.length > 0) {
+          setApiTeam(members.map(m => ({
+            name: m.name,
+            role: m.role,
+            bio: m.bio,
+            photo: m.photo_url || '',
+            key: `api-${m.id}`,
+          })));
+        }
+      })
+      .catch(() => {});
+  }, []);
+  
+  const team = apiTeam.length > 0 ? apiTeam : cmsTeam;
 
   return (
     <div className="pt-24">
