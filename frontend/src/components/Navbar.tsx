@@ -79,15 +79,20 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              <a href="tel:+12036170645" className="flex items-center gap-1.5 px-3 py-2 text-sm text-gold hover:text-yellow-300 transition-colors font-medium">
+                <span>📞</span> (203) 617-0645
+              </a>
               <WeatherBadge />
-              <Link to="/experiences" className="btn-gold ml-3 !px-5 !py-2 text-sm">
+              <Link to="/experiences" className="btn-gold ml-2 !px-5 !py-2 text-sm">
                 Book Now
               </Link>
             </div>
 
-            {/* Mobile: weather + Book Now + menu button */}
-            <div className="lg:hidden flex items-center gap-2">
-              <WeatherBadge />
+            {/* Mobile: phone + Book Now + menu button */}
+            <div className="lg:hidden flex items-center gap-1.5">
+              <a href="tel:+12036170645" className="text-gold text-xs font-medium flex items-center gap-1">
+                <span>📞</span>
+              </a>
               <Link to="/experiences" className="btn-gold !px-3 !py-1.5 text-xs font-bold">
                 Book Now
               </Link>
