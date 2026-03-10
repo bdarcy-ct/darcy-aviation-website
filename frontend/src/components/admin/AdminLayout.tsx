@@ -1,20 +1,48 @@
 import React, { ReactNode, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../contexts/AdminContext';
-import { ToastProvider } from './Toast';
+import { ToastProvider, useToast } from './Toast';
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const { user, logout } = useAdmin();
+// Inner component that has access to ToastProvider context
+const AdminLayoutInner: React.FC<AdminLayoutProps> = ({ children }) => {
+  const { user, logout, token } = useAdmin();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [pwSaving, setPwSaving] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/admin');
+  };
+
+  const handleChangePassword = async () => {
+    if (!pwForm.currentPassword || !pwForm.newPassword) { toast('error', 'Fill in all fields'); return; }
+    if (pwForm.newPassword !== pwForm.confirmPassword) { toast('error', 'New passwords don\'t match'); return; }
+    if (pwForm.newPassword.length < 6) { toast('error', 'Password must be at least 6 characters'); return; }
+    setPwSaving(true);
+    try {
+      const res = await fetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast('success', 'Password changed!');
+        setShowPasswordModal(false);
+        setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        toast('error', data.error || 'Failed to change password');
+      }
+    } catch { toast('error', 'Failed to change password'); }
+    finally { setPwSaving(false); }
   };
 
   const navGroups = [
@@ -48,7 +76,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <ToastProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-navy-800 to-slate-800">
         {/* Navigation Header */}
         <nav className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
@@ -92,6 +119,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <span className="text-slate-400 text-xs hidden sm:inline">
                   {user?.username}
                 </span>
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="bg-white/10 hover:bg-white/20 text-slate-300 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors border border-white/20"
+                  title="Change Password"
+                >
+                  🔑
+                </button>
                 <button
                   onClick={handleLogout}
                   className="bg-red-500/15 hover:bg-red-500/25 text-red-300 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors border border-red-500/20"
@@ -162,7 +196,50 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           <span className="hidden sm:inline">View Site</span>
         </a>
+
+        {/* Change Password Modal */}
+        {showPasswordModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100]" onClick={() => setShowPasswordModal(false)}>
+            <div className="bg-slate-800 border border-white/20 rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <h2 className="text-xl font-bold text-white mb-4">🔑 Change Password</h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm text-slate-300 mb-1">Current Password</label>
+                  <input type="password" value={pwForm.currentPassword} onChange={e => setPwForm({ ...pwForm, currentPassword: e.target.value })}
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-gold/50" />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-300 mb-1">New Password</label>
+                  <input type="password" value={pwForm.newPassword} onChange={e => setPwForm({ ...pwForm, newPassword: e.target.value })}
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-gold/50" />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-300 mb-1">Confirm New Password</label>
+                  <input type="password" value={pwForm.confirmPassword} onChange={e => setPwForm({ ...pwForm, confirmPassword: e.target.value })}
+                    onKeyDown={e => e.key === 'Enter' && handleChangePassword()}
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-gold/50" />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-5">
+                <button onClick={handleChangePassword} disabled={pwSaving} className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 flex-1">
+                  {pwSaving ? 'Saving...' : 'Change Password'}
+                </button>
+                <button onClick={() => setShowPasswordModal(false)} className="bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+    );
+};
+
+// Wrapper that provides ToastProvider context
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  return (
+    <ToastProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
     </ToastProvider>
   );
 };

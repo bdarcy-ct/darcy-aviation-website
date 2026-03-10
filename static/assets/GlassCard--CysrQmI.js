@@ -1,0 +1,1 @@
+import{j as o}from"./index-iTj3LSN6.js";import{u as l}from"./SectionWrapper-ND_6uT8x.js";function c({children:s,className:a="",hover:i=!0,delay:r=0}){const[t,e]=l();return o.jsx("div",{ref:t,className:`${i?"glass-card-hover":"glass-card"} p-6 ${a} ${e?"animate-slide-up":"opacity-0"}`,style:{animationDelay:`${r}ms`},children:s})}export{c as G};
