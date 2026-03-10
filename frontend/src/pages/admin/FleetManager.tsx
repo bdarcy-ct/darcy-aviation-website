@@ -102,9 +102,9 @@ const FleetManager: React.FC = () => {
         });
         if (res.ok) {
           const data = await res.json();
-          newImages.push(data.url || `/uploads/${data.filename}`);
+          newImages.push(data.file?.file_path || data.url || `/uploads/${data.file?.filename || data.filename}`);
         }
-      } catch { /* skip failed uploads */ }
+      } catch (err) { console.error('Upload failed for file:', file.name, err); }
     }
     setForm({ ...form, images: newImages });
     setUploading(false);
