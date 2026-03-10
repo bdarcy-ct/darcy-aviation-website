@@ -91,25 +91,40 @@ const FleetManager: React.FC = () => {
     if (!files || files.length === 0) return;
     setUploading(true);
     const newImages = [...form.images];
+    let uploaded = 0;
+    let failed = 0;
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!file.type.startsWith('image/')) continue;
+      if (!file.type.startsWith('image/')) { failed++; continue; }
       try {
         const fd = new FormData();
         fd.append('file', file);
         const res = await fetch('/api/admin/media/upload', {
-          method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd,
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd,
         });
         if (res.ok) {
           const data = await res.json();
-          newImages.push(data.file?.file_path || data.url || `/uploads/${data.file?.filename || data.filename}`);
+          const imgUrl = data.file?.file_path || data.url || `/uploads/${data.file?.filename || data.filename}`;
+          newImages.push(imgUrl);
+          uploaded++;
+        } else {
+          const errText = await res.text();
+          console.error('Upload response error:', res.status, errText);
+          failed++;
         }
-      } catch (err) { console.error('Upload failed for file:', file.name, err); }
+      } catch (err) {
+        console.error('Upload exception for:', file.name, err);
+        failed++;
+      }
     }
-    setForm({ ...form, images: newImages });
+    setForm(prev => ({ ...prev, images: newImages }));
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    toast('success', `${newImages.length - form.images.length} image(s) uploaded`);
+    if (uploaded > 0) toast('success', `${uploaded} photo${uploaded > 1 ? 's' : ''} uploaded`);
+    if (failed > 0) toast('error', `${failed} upload${failed > 1 ? 's' : ''} failed`);
+    if (uploaded === 0 && failed === 0) toast('error', 'No valid image files selected');
   };
 
   const removeImage = (idx: number) => {
