@@ -58,6 +58,9 @@ export default function Navbar() {
               <div className="hidden sm:block">
                 <div className="text-white font-semibold text-sm leading-tight">Darcy Aviation</div>
                 <div className="text-gold text-[10px] leading-tight tracking-wider uppercase">Danbury, Connecticut</div>
+                <a href="tel:+12036170645" className="text-slate-400 hover:text-white text-[10px] leading-tight transition-colors" onClick={e => e.stopPropagation()}>
+                  (203) 617-0645
+                </a>
               </div>
             </Link>
 
@@ -144,7 +147,7 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="pt-4">
+          <div className="pt-4 space-y-3">
             <Link
               to="/experiences"
               className="block text-center btn-gold !py-3.5 text-base"
@@ -152,6 +155,12 @@ export default function Navbar() {
             >
               Book Now
             </Link>
+            <a href="tel:+12036170645" className="flex items-center justify-center gap-2 text-slate-300 hover:text-gold text-sm transition-colors py-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+              </svg>
+              (203) 617-0645
+            </a>
           </div>
         </div>
       </div>
