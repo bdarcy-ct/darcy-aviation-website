@@ -97,7 +97,7 @@ const FleetManager: React.FC = () => {
       try {
         const fd = new FormData();
         fd.append('file', file);
-        const res = await fetch('/api/admin/media', {
+        const res = await fetch('/api/admin/media/upload', {
           method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd,
         });
         if (res.ok) {
