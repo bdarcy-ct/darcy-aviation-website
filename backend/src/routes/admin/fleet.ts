@@ -8,7 +8,8 @@ const router = express.Router();
 router.get('/', authenticateAdmin, (_req, res) => {
   try {
     const fleet = db.prepare('SELECT * FROM fleet ORDER BY id').all();
-    res.json(fleet);
+    const parsed = (fleet as any[]).map((a: any) => ({ ...a, images: JSON.parse(a.images || '[]') }));
+    res.json(parsed);
   } catch (error) {
     console.error('Error fetching fleet:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -18,18 +19,18 @@ router.get('/', authenticateAdmin, (_req, res) => {
 // Create new aircraft
 router.post('/', authenticateAdmin, (req, res) => {
   try {
-    const { name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, available = 1 } = req.body;
+    const { name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, images, available = 1 } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'Aircraft name is required' });
     }
 
     const stmt = db.prepare(`
-      INSERT INTO fleet (name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, available)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO fleet (name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, images, available)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(name, type || '', engine || '', seats || 0, horsepower || 0, cruise_speed || '', range || '', description || '', image_url || '', available ? 1 : 0);
+    const result = stmt.run(name, type || '', engine || '', seats || 0, horsepower || 0, cruise_speed || '', range || '', description || '', image_url || '', JSON.stringify(images || []), available ? 1 : 0);
     const aircraft = db.prepare('SELECT * FROM fleet WHERE id = ?').get(result.lastInsertRowid);
     res.json({ success: true, aircraft });
   } catch (error) {
@@ -42,7 +43,7 @@ router.post('/', authenticateAdmin, (req, res) => {
 router.put('/:id', authenticateAdmin, (req, res) => {
   try {
     const { id } = req.params;
-    const { name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, available } = req.body;
+    const { name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, images, available } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'Aircraft name is required' });
@@ -51,11 +52,11 @@ router.put('/:id', authenticateAdmin, (req, res) => {
     const stmt = db.prepare(`
       UPDATE fleet SET
         name = ?, type = ?, engine = ?, seats = ?, horsepower = ?,
-        cruise_speed = ?, range = ?, description = ?, image_url = ?, available = ?
+        cruise_speed = ?, range = ?, description = ?, image_url = ?, images = ?, available = ?
       WHERE id = ?
     `);
 
-    stmt.run(name, type || '', engine || '', seats || 0, horsepower || 0, cruise_speed || '', range || '', description || '', image_url || '', available ? 1 : 0, id);
+    stmt.run(name, type || '', engine || '', seats || 0, horsepower || 0, cruise_speed || '', range || '', description || '', image_url || '', JSON.stringify(images || []), available ? 1 : 0, id);
     const aircraft = db.prepare('SELECT * FROM fleet WHERE id = ?').get(id);
     res.json({ success: true, aircraft });
   } catch (error) {

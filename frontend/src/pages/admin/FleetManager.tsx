@@ -13,12 +13,13 @@ interface Aircraft {
   range: string;
   description: string;
   image_url: string;
+  images: string[];
   available: number;
 }
 
-const emptyAircraft = {
+const emptyForm = {
   name: '', type: 'Single Engine', engine: '', seats: 4, horsepower: 0,
-  cruise_speed: '', range: '', description: '', image_url: '', available: 1,
+  cruise_speed: '', range: '', description: '', image_url: '', images: [] as string[], available: 1,
 };
 
 const FleetManager: React.FC = () => {
@@ -26,7 +27,7 @@ const FleetManager: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [editing, setEditing] = useState<Aircraft | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(emptyAircraft);
+  const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const { token } = useAdmin();
   const { toast } = useToast();
@@ -38,22 +39,25 @@ const FleetManager: React.FC = () => {
   const fetchFleet = async () => {
     try {
       const res = await fetch('/api/admin/fleet', { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setFleet(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setFleet(data.map((a: any) => ({ ...a, images: Array.isArray(a.images) ? a.images : [] })));
+      }
     } catch (e) { console.error('Failed to fetch fleet:', e); }
     finally { setIsLoading(false); }
   };
 
   const startEdit = (a: Aircraft) => {
     setEditing(a);
-    setForm({ name: a.name, type: a.type, engine: a.engine, seats: a.seats, horsepower: a.horsepower, cruise_speed: a.cruise_speed, range: a.range, description: a.description, image_url: a.image_url, available: a.available });
+    setForm({
+      name: a.name, type: a.type, engine: a.engine, seats: a.seats, horsepower: a.horsepower,
+      cruise_speed: a.cruise_speed, range: a.range, description: a.description,
+      image_url: a.image_url, images: a.images || [], available: a.available,
+    });
     setShowForm(true);
   };
 
-  const startAdd = () => {
-    setEditing(null);
-    setForm({ ...emptyAircraft });
-    setShowForm(true);
-  };
+  const startAdd = () => { setEditing(null); setForm({ ...emptyForm, images: [] }); setShowForm(true); };
 
   const handleSave = async () => {
     if (!form.name) { toast('error', 'Name is required'); return; }
@@ -61,9 +65,11 @@ const FleetManager: React.FC = () => {
     try {
       const url = editing ? `/api/admin/fleet/${editing.id}` : '/api/admin/fleet';
       const method = editing ? 'PUT' : 'POST';
+      // Use first image as image_url fallback
+      const payload = { ...form, image_url: form.images[0] || form.image_url || '' };
       const res = await fetch(url, {
         method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (res.ok) { toast('success', editing ? 'Aircraft updated' : 'Aircraft added'); await fetchFleet(); setShowForm(false); setEditing(null); }
       else toast('error', 'Failed to save aircraft');
@@ -81,27 +87,43 @@ const FleetManager: React.FC = () => {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { toast('error', 'Please select an image file'); return; }
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/admin/media', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setForm({ ...form, image_url: data.url || `/uploads/${data.filename}` });
-        toast('success', 'Image uploaded');
-      } else {
-        toast('error', 'Failed to upload image');
-      }
-    } catch (err) { toast('error', 'Failed to upload image'); }
-    finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
+    const newImages = [...form.images];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith('image/')) continue;
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch('/api/admin/media', {
+          method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          newImages.push(data.url || `/uploads/${data.filename}`);
+        }
+      } catch { /* skip failed uploads */ }
+    }
+    setForm({ ...form, images: newImages });
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    toast('success', `${newImages.length - form.images.length} image(s) uploaded`);
+  };
+
+  const removeImage = (idx: number) => {
+    const imgs = [...form.images];
+    imgs.splice(idx, 1);
+    setForm({ ...form, images: imgs });
+  };
+
+  const moveImage = (idx: number, dir: -1 | 1) => {
+    const imgs = [...form.images];
+    const target = idx + dir;
+    if (target < 0 || target >= imgs.length) return;
+    [imgs[idx], imgs[target]] = [imgs[target], imgs[idx]];
+    setForm({ ...form, images: imgs });
   };
 
   const toggleAvail = async (id: number) => {
@@ -127,7 +149,7 @@ const FleetManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Fleet Manager</h1>
-          <p className="text-slate-300 text-sm sm:text-base">Manage your aircraft fleet — changes appear on the live site</p>
+          <p className="text-slate-300 text-sm sm:text-base">Manage your aircraft fleet — add multiple photos that cycle on the tile</p>
         </div>
         <button onClick={startAdd} className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap">+ Add Aircraft</button>
       </div>
@@ -169,26 +191,6 @@ const FleetManager: React.FC = () => {
               <label className="block text-sm font-medium text-slate-300 mb-1">Range</label>
               <input className={inputCls} value={form.range} onChange={e => setForm({ ...form, range: e.target.value })} placeholder="e.g., 640 nm" />
             </div>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className="block text-sm font-medium text-slate-300 mb-1">Aircraft Photo</label>
-              <div className="flex flex-col sm:flex-row gap-4 items-start">
-                {form.image_url && (
-                  <div className="relative w-40 h-28 rounded-lg overflow-hidden border border-white/20 flex-shrink-0">
-                    <img src={form.image_url} alt="Aircraft" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                    <button onClick={() => setForm({ ...form, image_url: '' })} className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
-                  </div>
-                )}
-                <div className="flex-1 space-y-2">
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="bg-aviation-blue/20 hover:bg-aviation-blue/30 text-aviation-blue border border-aviation-blue/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                      {uploading ? 'Uploading...' : '📷 Upload Photo'}
-                    </button>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                  </div>
-                  <input className={inputCls + ' text-sm'} value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} placeholder="Or paste image URL..." />
-                </div>
-              </div>
-            </div>
             <div className="flex items-end">
               <label className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-lg cursor-pointer">
                 <input type="checkbox" checked={!!form.available} onChange={e => setForm({ ...form, available: e.target.checked ? 1 : 0 })} className="w-5 h-5 rounded accent-gold" />
@@ -196,6 +198,43 @@ const FleetManager: React.FC = () => {
               </label>
             </div>
           </div>
+
+          {/* Multi-Image Upload */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-slate-300 mb-2">Aircraft Photos (cycle every 2s on tile)</label>
+            
+            {/* Thumbnails */}
+            {form.images.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-3">
+                {form.images.map((url, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={url} alt={`Photo ${idx + 1}`} className="w-24 h-18 rounded-lg object-cover border border-white/20" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
+                      {idx > 0 && (
+                        <button onClick={() => moveImage(idx, -1)} className="bg-white/20 hover:bg-white/40 text-white rounded p-1 text-xs">←</button>
+                      )}
+                      <button onClick={() => removeImage(idx)} className="bg-red-500/80 hover:bg-red-500 text-white rounded p-1 text-xs">✕</button>
+                      {idx < form.images.length - 1 && (
+                        <button onClick={() => moveImage(idx, 1)} className="bg-white/20 hover:bg-white/40 text-white rounded p-1 text-xs">→</button>
+                      )}
+                    </div>
+                    {idx === 0 && (
+                      <span className="absolute -top-1 -left-1 bg-gold text-navy-900 text-[10px] font-bold px-1.5 py-0.5 rounded">Main</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="bg-aviation-blue/20 hover:bg-aviation-blue/30 text-aviation-blue border border-aviation-blue/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                {uploading ? 'Uploading...' : `📷 Add Photo${form.images.length > 0 ? 's' : ''}`}
+              </button>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
+              <span className="text-slate-500 text-xs self-center">{form.images.length} photo{form.images.length !== 1 ? 's' : ''} • Select multiple at once</span>
+            </div>
+          </div>
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
             <textarea className={inputCls} rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Aircraft description..." />
@@ -217,15 +256,15 @@ const FleetManager: React.FC = () => {
               <div key={a.id} className="bg-white/10 border border-white/20 rounded-lg p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    {a.image_url ? (
-                      <img src={a.image_url} alt={a.name} className="w-16 h-12 rounded-lg object-cover flex-shrink-0 border border-white/10" />
+                    {(a.images?.length > 0 || a.image_url) ? (
+                      <img src={a.images?.[0] || a.image_url} alt={a.name} className="w-16 h-12 rounded-lg object-cover flex-shrink-0 border border-white/10" />
                     ) : (
                       <div className="w-16 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-2xl">🛩️</div>
                     )}
                     <span className={`w-3 h-3 rounded-full flex-shrink-0 ${a.available ? 'bg-green-400' : 'bg-red-400'}`} />
                     <div className="min-w-0">
                       <h3 className="text-white font-medium truncate">{a.name}</h3>
-                      <p className="text-slate-400 text-sm">{a.type} • {a.seats} seats • {a.horsepower} HP • {a.cruise_speed}</p>
+                      <p className="text-slate-400 text-sm">{a.type} • {a.seats} seats • {a.images?.length || 0} photos</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -236,7 +275,6 @@ const FleetManager: React.FC = () => {
                     <button onClick={() => handleDelete(a.id, a.name)} className="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-3 py-1 rounded text-xs font-medium transition-colors">Delete</button>
                   </div>
                 </div>
-                {a.description && <p className="text-slate-400 text-sm mt-2 line-clamp-2">{a.description}</p>}
               </div>
             ))}
           </div>

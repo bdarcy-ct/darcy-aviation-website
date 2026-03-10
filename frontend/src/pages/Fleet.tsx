@@ -17,7 +17,33 @@ interface Aircraft {
   range: string;
   description: string;
   image_url: string;
+  images: string[];
   available: number;
+}
+
+// Image carousel component — cycles every 2 seconds with crossfade
+function ImageCycler({ images, alt }: { images: string[]; alt: string }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const timer = setInterval(() => setIdx(prev => (prev + 1) % images.length), 2000);
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="absolute inset-0">
+      {images.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt={`${alt} ${i + 1}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === idx ? 'opacity-100' : 'opacity-0'}`}
+        />
+      ))}
+    </div>
+  );
 }
 
 const PlaneIcon = ({ className = "w-16 h-16" }: { className?: string }) => (
@@ -93,17 +119,31 @@ export default function Fleet() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {fleet.map((aircraft, i) => (
               <GlassCard key={aircraft.id} delay={i * 150} className="!p-0 overflow-hidden">
-                {/* Image placeholder with gradient */}
-                <div className="h-48 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative">
+                {/* Aircraft images with cycling */}
+                <div className="h-48 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative overflow-hidden">
+                  {(aircraft.images?.length > 0) ? (
+                    <ImageCycler images={aircraft.images} alt={aircraft.name} />
+                  ) : aircraft.image_url ? (
+                    <img src={aircraft.image_url} alt={aircraft.name} className="absolute inset-0 w-full h-full object-cover" />
+                  ) : null}
                   <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
-                  <div className="relative z-10 w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-aviation-blue">
-                    {getTypeIcon(aircraft.type)}
-                  </div>
+                  {!aircraft.images?.length && !aircraft.image_url && (
+                    <div className="relative z-10 w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-aviation-blue">
+                      {getTypeIcon(aircraft.type)}
+                    </div>
+                  )}
                   <div className="absolute top-4 right-4 z-10">
-                    <span className="bg-aviation-blue/20 border border-aviation-blue/50 text-aviation-blue text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-aviation-blue/20 border border-aviation-blue/50 text-aviation-blue text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">
                       {aircraft.type}
                     </span>
                   </div>
+                  {aircraft.images?.length > 1 && (
+                    <div className="absolute bottom-2 right-2 z-10 flex gap-1">
+                      {aircraft.images.map((_, di) => (
+                        <span key={di} className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-6">

@@ -54,6 +54,7 @@ export function initializeDatabase(): void {
       range TEXT,
       description TEXT,
       image_url TEXT,
+      images TEXT DEFAULT '[]',
       available BOOLEAN DEFAULT 1
     );
 
@@ -201,6 +202,10 @@ export function initializeDatabase(): void {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  // Migrations: add columns to existing tables
+  try { db.prepare("SELECT images FROM fleet LIMIT 1").get(); }
+  catch { db.exec("ALTER TABLE fleet ADD COLUMN images TEXT DEFAULT '[]'"); }
 
   // Seed data if tables are empty
   const fleetCount = db.prepare('SELECT COUNT(*) as count FROM fleet').get() as { count: number };
