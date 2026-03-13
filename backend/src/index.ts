@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { initializeDatabase } from './database';
 import fleetRoutes from './routes/fleet';
 import testimonialRoutes from './routes/testimonials';
@@ -77,7 +78,8 @@ app.all('/api/*', (_req, res) => {
 });
 
 // Serve uploaded media files (accessible at /uploads/...)
-const uploadsDir = path.join(__dirname, '../uploads');
+// Check Railway volume first, fallback to local
+const uploadsDir = fs.existsSync('/data/uploads') ? '/data/uploads' : path.join(__dirname, '../uploads');
 app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
 
 // Serve frontend in production

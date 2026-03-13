@@ -2,7 +2,8 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const dataDir = path.join(__dirname, '../../data');
+// Use Railway volume (/data) if available, otherwise local ./data
+const dataDir = fs.existsSync('/data') ? '/data' : path.join(__dirname, '../../data');
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }

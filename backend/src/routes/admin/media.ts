@@ -7,8 +7,8 @@ import { authenticateAdmin } from '../../middleware/auth';
 
 const router = express.Router();
 
-// Create upload directories if they don't exist
-const uploadsDir = path.join(__dirname, '../../../uploads');
+// Use Railway volume (/data/uploads) if available, otherwise local
+const uploadsDir = fs.existsSync('/data') ? '/data/uploads' : path.join(__dirname, '../../../uploads');
 const staticUploadsDir = path.join(__dirname, '../../../../static/uploads');
 
 [uploadsDir, staticUploadsDir].forEach(dir => {
