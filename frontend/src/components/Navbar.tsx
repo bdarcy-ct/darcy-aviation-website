@@ -58,8 +58,8 @@ export default function Navbar() {
               <div className="hidden sm:block">
                 <div className="text-white font-semibold text-sm leading-tight">Darcy Aviation</div>
                 <div className="text-gold text-[10px] leading-tight tracking-wider uppercase">Danbury, Connecticut</div>
-                <a href="tel:+12036170645" className="text-slate-400 hover:text-white text-[10px] leading-tight transition-colors" onClick={e => e.stopPropagation()}>
-                  (203) 617-0645
+                <a href="tel:+12036170645" className="text-gold hover:text-yellow-300 text-[10px] leading-tight tracking-wider transition-colors flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                  📞 (203) 617-0645
                 </a>
               </div>
             </Link>
@@ -79,11 +79,8 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <a href="tel:+12036170645" className="flex items-center gap-1.5 px-3 py-2 text-sm text-gold hover:text-yellow-300 transition-colors font-medium">
-                <span>📞</span> (203) 617-0645
-              </a>
               <WeatherBadge />
-              <Link to="/experiences" className="btn-gold ml-2 !px-5 !py-2 text-sm">
+              <Link to="/experiences" className="btn-gold ml-3 !px-5 !py-2 text-sm">
                 Book Now
               </Link>
             </div>
