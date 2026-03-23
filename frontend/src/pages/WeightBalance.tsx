@@ -19,9 +19,10 @@ interface Aircraft {
 // CG envelopes verified against POH data for each type
 
 const AIRCRAFT: Aircraft[] = [
-  // ── Cessna 172 — N121MS ──
-  // Normal fwd: vertical 35.0 to 1950, diagonal to 40.5 at 2300
-  // Utility: same fwd, aft=40.5, max 2000. At 2000: interpFwd = 35+(50/350)*5.5 = 35.79
+  // ── Cessna 172 — N121MS (C172N, max 2300) ──
+  // TCDS 3A12 + WVFC verified:
+  // Normal: fwd 35.0 at ≤1950, linear to 40.5 at 2300, aft 47.3 constant
+  // Utility: fwd 35.0 at ≤1950, linear to 35.5 at 2000, aft 40.5, max 2000
   {
     tailNumber: 'N121MS', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1493.44, basicEmptyArm: 39.39, basicEmptyMoment: 58819.45,
@@ -39,10 +40,10 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 35.8, aft: 40.5 },
+      { weight: 2000, fwd: 35.5, aft: 40.5 },
     ],
   },
-  // ── Cessna 172 — N6475D ──
+  // ── Cessna 172 — N6475D (C172N, max 2300) ──
   {
     tailNumber: 'N6475D', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1478.95, basicEmptyArm: 39.13, basicEmptyMoment: 57865.08,
@@ -60,12 +61,13 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 35.8, aft: 40.5 },
+      { weight: 2000, fwd: 35.5, aft: 40.5 },
     ],
   },
-  // ── Cessna 172 180HP — N34LC ──
-  // Normal fwd: vertical 35.0 to 1950, diagonal to 41.0 at 2550
-  // Utility max 2000. At 2000: interpFwd = 35+(50/600)*6 = 35.5
+  // ── Cessna 172 180HP — N34LC (max 2550) ──
+  // TCDS 3A12 (C172SP class envelope at 2550):
+  // Normal: fwd 35.0 at ≤1950, linear to 41.0 at 2550, aft 47.3 constant
+  // Utility: fwd 35.0 at ≤1950, linear to 37.5 at 2200, aft 40.5, max 2200
   {
     tailNumber: 'N34LC', type: 'Cessna 172 (180 HP)', model: 'C172-180',
     basicEmptyWeight: 1498.10, basicEmptyArm: 38.71, basicEmptyMoment: 57994.26,
@@ -83,7 +85,7 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 35.5, aft: 40.5 },
+      { weight: 2200, fwd: 37.5, aft: 40.5 },
     ],
   },
   // ── Cessna 152 — N65563 ──
