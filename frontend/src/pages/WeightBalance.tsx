@@ -36,7 +36,8 @@ const AIRCRAFT: Aircraft[] = [
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 37.0, aft: 40.5 },
+      { weight: 1950, fwd: 35.0, aft: 40.5 },
+      { weight: 2000, fwd: 35.7, aft: 40.5 },
     ],
   },
   // ── Cessna 172 — N6475D ──
@@ -56,7 +57,8 @@ const AIRCRAFT: Aircraft[] = [
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 37.0, aft: 40.5 },
+      { weight: 1950, fwd: 35.0, aft: 40.5 },
+      { weight: 2000, fwd: 35.7, aft: 40.5 },
     ],
   },
   // ── Cessna 172 180HP — N34LC ──
@@ -97,6 +99,7 @@ const AIRCRAFT: Aircraft[] = [
     ],
     utilityEnvelope: [
       { weight: 1100, fwd: 29.0, aft: 33.5 },
+      { weight: 1350, fwd: 29.0, aft: 33.5 },
       { weight: 1500, fwd: 30.5, aft: 33.5 },
     ],
   },
@@ -117,6 +120,7 @@ const AIRCRAFT: Aircraft[] = [
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 91.0 },
+      { weight: 1800, fwd: 82.0, aft: 91.0 },
       { weight: 1950, fwd: 83.5, aft: 91.0 },
     ],
   },
@@ -137,6 +141,7 @@ const AIRCRAFT: Aircraft[] = [
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 91.0 },
+      { weight: 1800, fwd: 82.0, aft: 91.0 },
       { weight: 1950, fwd: 83.5, aft: 91.0 },
     ],
   },
