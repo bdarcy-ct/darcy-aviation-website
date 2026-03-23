@@ -395,7 +395,7 @@ export default function WeightBalance() {
   const now = new Date();
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-white py-6 px-4" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+    <div className="min-h-screen bg-[#0a0e1a] text-white py-4 sm:py-6 px-2 sm:px-4" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
       <div className="max-w-[900px] mx-auto">
 
         {/* Header */}
@@ -418,10 +418,10 @@ export default function WeightBalance() {
         </div>
 
         {/* ═══ MAIN LAYOUT ═══ */}
-        <div className="flex gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
 
           {/* ─── LEFT: Conditions + Performance ─── */}
-          <GlassCard className="w-[210px] flex-shrink-0 p-3 space-y-1">
+          <GlassCard className="w-full lg:w-[210px] lg:flex-shrink-0 p-3 space-y-1">
             <SecBar dark>Conditions</SecBar>
             <div className="flex text-[10px] font-semibold text-white/40">
               <div className="flex-1 text-center">Departure</div>
@@ -482,15 +482,15 @@ export default function WeightBalance() {
           </GlassCard>
 
           {/* ─── RIGHT COLUMN ─── */}
-          <div className="flex-1 min-w-0 space-y-4">
+          <div className="flex-1 min-w-0 space-y-4 overflow-x-hidden">
 
             {/* W&B TABLE */}
             <GlassCard className="p-4">
-              <div className="flex justify-between items-end border-b border-white/10 pb-2 mb-3 text-[11px]">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 border-b border-white/10 pb-2 mb-3 text-[11px]">
                 {[
                   ['Max Weight', String(ac.maxGrossWeight)],
                   ['Useful Load', f(ac.usefulLoad)],
-                  ['Basic Empty Weight', f(ac.basicEmptyWeight)],
+                  ['BEW', f(ac.basicEmptyWeight)],
                   ['Arm', f(ac.basicEmptyArm)],
                   ['Moment', f(ac.basicEmptyMoment)],
                 ].map(([lbl, val]) => (
@@ -501,7 +501,7 @@ export default function WeightBalance() {
                 ))}
               </div>
 
-              <table className="w-full text-xs border-collapse">
+              <table className="w-full text-[11px] sm:text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-white/10">
                     <th className="text-right pr-1 py-1 w-auto" />
