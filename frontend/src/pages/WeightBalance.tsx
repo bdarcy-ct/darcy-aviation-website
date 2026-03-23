@@ -22,7 +22,7 @@ const AIRCRAFT: Aircraft[] = [
   // ── Cessna 172 — N121MS (C172N, max 2300) ──
   // TCDS 3A12 + WVFC verified:
   // Normal: fwd 35.0 at ≤1950, linear to 40.5 at 2300, aft 47.3 constant
-  // Utility: fwd 35.0 at ≤1950, linear to 35.5 at 2000, aft 40.5, max 2000
+  // Utility: fwd 35.0 at ≤1950, fwd 35.8 at 2000 (clamped to normal interp 35.79), aft 40.5, max 2000
   {
     tailNumber: 'N121MS', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1493.44, basicEmptyArm: 39.39, basicEmptyMoment: 58819.45,
@@ -40,7 +40,7 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 35.5, aft: 40.5 },
+      { weight: 2000, fwd: 35.8, aft: 40.5 },
     ],
   },
   // ── Cessna 172 — N6475D (C172N, max 2300) ──
@@ -61,7 +61,7 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 35.5, aft: 40.5 },
+      { weight: 2000, fwd: 35.8, aft: 40.5 },
     ],
   },
   // ── Cessna 172 180HP — N34LC (max 2550) ──
