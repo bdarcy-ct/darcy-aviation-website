@@ -518,15 +518,15 @@ export default function WeightBalance() {
                   {ac.hasRear && <TRowE l={ac.rearLabel} o="+" w={rw} a={ac.rearArm} m={c.rm} oM="+" set={setRw} />}
                   <TRowE l={`${ac.bag1Label} (Max ${ac.bag1Max})`} o="+" w={b1} a={ac.bag1Arm} m={c.b1m} oM="+" set={setB1} />
                   {ac.hasBag2 && <TRowE l={`${ac.bag2Label} (Max ${ac.bag2Max})`} o="+" w={b2} a={ac.bag2Arm} m={c.b2m} oM="+" set={setB2} />}
-                  <TRow l="Zero Fuel Weight" o="=" w={c.zfw} a={c.zA} m={c.zM} oM="=" green line />
+                  <TRow l="Zero Fuel Weight" o="=" w={c.zfw} a={c.zA} m={c.zM} oM="=" line color="text-purple-400" />
                   <TRowE l={ac.fuelLabel} o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" set={setFuel}
                     hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} max`} />
                   <TRow l="Ramp Weight" o="=" w={c.rW} a={c.rA} m={c.rM} oM="=" green line />
                   <TRow l="Taxi Fuel" o="-" w={ac.taxiFuelLbs} a={ac.fuelArm} m={c.tM} oM="-" />
-                  <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" green line ok={c.toOk} />
+                  <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" line ok={c.toOk} color="text-blue-400" />
                   <TRowE l="Fuel Burn" o="-" w={burn} a={ac.fuelArm} m={c.bM} oM="-" set={setBurn}
                     hint={`${Math.round(burn / 6)} gal`} />
-                  <TRow l="Landing Weight" o="=" w={c.lW} a={c.lA} m={c.lM} oM="=" green line ok={c.lOk} />
+                  <TRow l="Landing Weight" o="=" w={c.lW} a={c.lA} m={c.lM} oM="=" line ok={c.lOk} color="text-emerald-400" />
                 </tbody>
               </table>
 
@@ -576,11 +576,11 @@ export default function WeightBalance() {
 
 // ─── Table Rows ──────────────────────────────────────────────────────────────
 
-function TRow({ l, o, w, a, m, oM, green, line, ok }: {
+function TRow({ l, o, w, a, m, oM, green, line, ok, color }: {
   l: string; o: string; w: number; a: number; m: number; oM: string;
-  green?: boolean; line?: boolean; ok?: boolean;
+  green?: boolean; line?: boolean; ok?: boolean; color?: string;
 }) {
-  const gc = green ? 'font-bold text-emerald-400' : 'text-white/80';
+  const gc = color ? `font-bold ${color}` : green ? 'font-bold text-emerald-400' : 'text-white/80';
   const bg = ok === false ? 'bg-red-500/10' : '';
   return (
     <tr className={`${line ? 'border-t border-white/10' : ''} ${bg}`}>
