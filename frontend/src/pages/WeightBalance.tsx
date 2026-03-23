@@ -20,6 +20,8 @@ interface Aircraft {
 
 const AIRCRAFT: Aircraft[] = [
   // ── Cessna 172 — N121MS ──
+  // Normal fwd: vertical 35.0 to 1950, diagonal to 40.5 at 2300
+  // Utility: same fwd, aft=40.5, max 2000. At 2000: interpFwd = 35+(50/350)*5.5 = 35.79
   {
     tailNumber: 'N121MS', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1493.44, basicEmptyArm: 39.39, basicEmptyMoment: 58819.45,
@@ -37,7 +39,7 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 35.7, aft: 40.5 },
+      { weight: 2000, fwd: 35.8, aft: 40.5 },
     ],
   },
   // ── Cessna 172 — N6475D ──
@@ -58,10 +60,12 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 35.7, aft: 40.5 },
+      { weight: 2000, fwd: 35.8, aft: 40.5 },
     ],
   },
   // ── Cessna 172 180HP — N34LC ──
+  // Normal fwd: vertical 35.0 to 1950, diagonal to 41.0 at 2550
+  // Utility max 2000. At 2000: interpFwd = 35+(50/600)*6 = 35.5
   {
     tailNumber: 'N34LC', type: 'Cessna 172 (180 HP)', model: 'C172-180',
     basicEmptyWeight: 1498.10, basicEmptyArm: 38.71, basicEmptyMoment: 57994.26,
@@ -79,10 +83,12 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
       { weight: 1950, fwd: 35.0, aft: 40.5 },
-      { weight: 2000, fwd: 37.0, aft: 40.5 },
+      { weight: 2000, fwd: 35.5, aft: 40.5 },
     ],
   },
   // ── Cessna 152 — N65563 ──
+  // Normal fwd: vertical 29.0 to 1350, diagonal to 33.0 at 1670
+  // Utility max 1500. At 1500: interpFwd = 29+(150/320)*4 = 30.875
   {
     tailNumber: 'N65563', type: 'Cessna 152', model: 'C152',
     basicEmptyWeight: 1161.1, basicEmptyArm: 30.27, basicEmptyMoment: 35146.50,
@@ -100,10 +106,12 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1100, fwd: 29.0, aft: 33.5 },
       { weight: 1350, fwd: 29.0, aft: 33.5 },
-      { weight: 1500, fwd: 30.5, aft: 33.5 },
+      { weight: 1500, fwd: 30.9, aft: 33.5 },
     ],
   },
   // ── Piper Warrior II — N8715C ──
+  // Normal fwd: vertical 82.0 to 1800, diagonal to 87.0 at 2325
+  // Utility max 1950. At 1950: interpFwd = 82+(150/525)*5 = 83.43
   {
     tailNumber: 'N8715C', type: 'Piper Warrior II', model: 'PA-28-161',
     basicEmptyWeight: 1498.84, basicEmptyArm: 85.32, basicEmptyMoment: 127881.03,
@@ -121,7 +129,7 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 91.0 },
       { weight: 1800, fwd: 82.0, aft: 91.0 },
-      { weight: 1950, fwd: 83.5, aft: 91.0 },
+      { weight: 1950, fwd: 83.4, aft: 91.0 },
     ],
   },
   // ── Piper Warrior II — N84001 ──
@@ -142,7 +150,7 @@ const AIRCRAFT: Aircraft[] = [
     utilityEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 91.0 },
       { weight: 1800, fwd: 82.0, aft: 91.0 },
-      { weight: 1950, fwd: 83.5, aft: 91.0 },
+      { weight: 1950, fwd: 83.4, aft: 91.0 },
     ],
   },
 ];
