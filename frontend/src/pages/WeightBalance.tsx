@@ -76,8 +76,6 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 47.3 },
       { weight: 1950, fwd: 35.0, aft: 47.3 },
-      { weight: 2100, fwd: 38.0, aft: 47.3 },
-      { weight: 2300, fwd: 39.5, aft: 47.3 },
       { weight: 2550, fwd: 41.0, aft: 47.3 },
     ],
     utilityEnvelope: [
@@ -258,12 +256,12 @@ function CgChart({ aircraft, points }: {
       {wT.map(w => <g key={w}><line x1={p.l} y1={sy(w)} x2={p.l + pW} y2={sy(w)} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" /><text x={p.l - 6} y={sy(w) + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="9">{w}</text></g>)}
       {cT.map(c => <g key={c}><line x1={sx(c)} y1={p.t} x2={sx(c)} y2={p.t + pH} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" /><text x={sx(c)} y={p.t + pH + 14} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="9">{c}</text></g>)}
 
-      {/* Normal category — solid green fill */}
-      <polygon points={[...fwdN, ...aftN].join(' ')} fill="rgba(34,197,94,0.12)" stroke="rgba(34,197,94,0.6)" strokeWidth="1.5" />
+      {/* Normal category — solid green fill, straight lines */}
+      <polygon points={[...fwdN, ...aftN].join(' ')} fill="rgba(34,197,94,0.12)" stroke="rgba(34,197,94,0.6)" strokeWidth="2" strokeLinejoin="miter" shapeRendering="crispEdges" />
 
-      {/* Utility category — dashed yellow */}
+      {/* Utility category — dashed yellow, straight lines */}
       {utilPoly && (
-        <polygon points={utilPoly} fill="rgba(234,179,8,0.06)" stroke="rgba(234,179,8,0.5)" strokeWidth="1.5" strokeDasharray="6,4" />
+        <polygon points={utilPoly} fill="rgba(234,179,8,0.06)" stroke="rgba(234,179,8,0.5)" strokeWidth="2" strokeDasharray="8,4" strokeLinejoin="miter" shapeRendering="crispEdges" />
       )}
 
       {/* Legend */}
@@ -424,11 +422,11 @@ export default function WeightBalance() {
               <div className="flex-1 text-center">Departure</div>
               <div className="flex-1 text-center">Destination</div>
             </div>
-            <div className="flex gap-1">
+            <div className="grid grid-cols-2 gap-1">
               <input type="text" value={dep} onChange={e => setDep(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="flex-1 text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1 uppercase focus:border-emerald-400/50 focus:outline-none transition" />
+                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:outline-none transition" />
               <input type="text" value={dest} onChange={e => setDest(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="flex-1 text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1 uppercase focus:border-emerald-400/50 focus:outline-none transition" />
+                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:outline-none transition" />
             </div>
             {ldWx && <div className="text-center text-[10px] text-white/30 py-0.5">Loading...</div>}
 
