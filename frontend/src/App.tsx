@@ -25,6 +25,7 @@ const FAQ = lazy(() => import('./pages/FAQ'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Experiences = lazy(() => import('./pages/Experiences'));
 const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
+const WeightBalance = lazy(() => import('./pages/WeightBalance'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function ScrollToTop() {
@@ -55,6 +56,9 @@ export default function App() {
         <Routes>
           {/* Admin Routes - separate from main app */}
           <Route path="/admin/*" element={<AdminPage />} />
+          
+          {/* Weight & Balance Calculator - standalone */}
+          <Route path="/wb" element={<WeightBalance />} />
           
           {/* Main App Routes */}
           <Route path="/*" element={
