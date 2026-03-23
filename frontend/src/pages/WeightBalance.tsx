@@ -109,13 +109,13 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 1500, fwd: 30.9, aft: 33.5 },
     ],
   },
-  // ── Piper Warrior II — N8715C ──
-  // Normal fwd: vertical 82.0 to 1800, diagonal to 87.0 at 2325
-  // Utility max 1950. At 1950: interpFwd = 82+(150/525)*5 = 83.43
+  // ── Piper Warrior II — N8715C (PA-28-161) ──
+  // Normal fwd: vertical 82.0 to 1800, diagonal to 87.0 at 2440
+  // Utility max 1950. At 1950: interpFwd = 82+(150/640)*5 = 83.17
   {
     tailNumber: 'N8715C', type: 'Piper Warrior II', model: 'PA-28-161',
     basicEmptyWeight: 1498.84, basicEmptyArm: 85.32, basicEmptyMoment: 127881.03,
-    maxGrossWeight: 2325, usefulLoad: 826.16,
+    maxGrossWeight: 2440, usefulLoad: 941.16,
     fuelArm: 95.0, maxFuelLbs: 288, taxiFuelLbs: 8,
     frontArm: 80.5, rearArm: 118.1, bag1Arm: 142.8, bag2Arm: 0,
     bag1Max: 200, bag2Max: 0, hasRear: true, hasBag2: false,
@@ -124,17 +124,20 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 93.0 },
       { weight: 1800, fwd: 82.0, aft: 93.0 },
-      { weight: 2325, fwd: 87.0, aft: 93.0 },
+      { weight: 2440, fwd: 87.0, aft: 93.0 },
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 91.0 },
       { weight: 1800, fwd: 82.0, aft: 91.0 },
-      { weight: 1950, fwd: 83.4, aft: 91.0 },
+      { weight: 1950, fwd: 83.2, aft: 91.0 },
     ],
   },
-  // ── Piper Warrior II — N84001 ──
+  // ── Piper Warrior — N84001 (PA-28-151) ──
+  // Lower max gross than PA-28-161
+  // Normal fwd: vertical 82.0 to 1800, diagonal to 87.0 at 2325
+  // Utility max 1950. At 1950: interpFwd = 82+(150/525)*5 = 83.43
   {
-    tailNumber: 'N84001', type: 'Piper Warrior II', model: 'PA-28-161',
+    tailNumber: 'N84001', type: 'Piper Warrior', model: 'PA-28-151',
     basicEmptyWeight: 1467.70, basicEmptyArm: 84.10, basicEmptyMoment: 123389.00,
     maxGrossWeight: 2325, usefulLoad: 857.30,
     fuelArm: 95.0, maxFuelLbs: 288, taxiFuelLbs: 8,
@@ -539,9 +542,9 @@ export default function WeightBalance() {
             <GlassCard className="p-4">
               <div className="text-sm font-bold text-center mb-2 text-white/80">Center of Gravity Envelope</div>
               <CgChart aircraft={ac} points={[
-                { label: 'Ramp', weight: c.rW, cg: c.rA, color: '#a855f7' },
-                { label: 'T/O', weight: c.toW, cg: c.toA, color: '#22c55e' },
-                { label: 'Ldg', weight: c.lW, cg: c.lA, color: '#3b82f6' },
+                { label: 'ZFW', weight: c.zfw, cg: c.zA, color: '#a855f7' },
+                { label: 'T/O', weight: c.toW, cg: c.toA, color: '#3b82f6' },
+                { label: 'Ldg', weight: c.lW, cg: c.lA, color: '#22c55e' },
               ]} />
             </GlassCard>
 
