@@ -128,9 +128,8 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 2440, fwd: 87.0, aft: 93.0 },
     ],
     utilityEnvelope: [
-      { weight: 1200, fwd: 83.0, aft: 93.0 },
-      { weight: 1950, fwd: 83.0, aft: 93.0 },
-      { weight: 2020, fwd: 83.8, aft: 93.0 },
+      { weight: 1200, fwd: 82.5, aft: 93.0 },
+      { weight: 2000, fwd: 84.0, aft: 93.0 },
     ],
   },
   // ── Piper Warrior — N84001 (PA-28-151) ──
