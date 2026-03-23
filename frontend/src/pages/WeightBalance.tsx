@@ -110,8 +110,9 @@ const AIRCRAFT: Aircraft[] = [
     ],
   },
   // ── Piper Warrior II — N8715C (PA-28-161) ──
-  // Normal fwd: vertical 82.0 to 1800, diagonal to 87.0 at 2440
-  // Utility max 1950. At 1950: interpFwd = 82+(150/640)*5 = 83.17
+  // TCDS 2A13: Normal (+83.0)-(+93.0) at ≤1950, (+87.0)-(+93.0) at 2440
+  // Utility (+83.0)-(+93.0) at ≤1950, (+83.8)-(+93.0) at 2020
+  // Straight line variation between points. Aft limit 93.0 same for both categories.
   {
     tailNumber: 'N8715C', type: 'Piper Warrior II', model: 'PA-28-161',
     basicEmptyWeight: 1498.84, basicEmptyArm: 85.32, basicEmptyMoment: 127881.03,
@@ -122,20 +123,20 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage Back', bag2Label: '', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1500, fwd: 82.0, aft: 93.0 },
-      { weight: 1800, fwd: 82.0, aft: 93.0 },
+      { weight: 1200, fwd: 83.0, aft: 93.0 },
+      { weight: 1950, fwd: 83.0, aft: 93.0 },
       { weight: 2440, fwd: 87.0, aft: 93.0 },
     ],
     utilityEnvelope: [
-      { weight: 1500, fwd: 82.0, aft: 91.0 },
-      { weight: 1800, fwd: 82.0, aft: 91.0 },
-      { weight: 1950, fwd: 83.2, aft: 91.0 },
+      { weight: 1200, fwd: 83.0, aft: 93.0 },
+      { weight: 1950, fwd: 83.0, aft: 93.0 },
+      { weight: 2020, fwd: 83.8, aft: 93.0 },
     ],
   },
   // ── Piper Warrior — N84001 (PA-28-151) ──
-  // Lower max gross than PA-28-161
-  // Normal fwd: vertical 82.0 to 1800, diagonal to 87.0 at 2325
-  // Utility max 1950. At 1950: interpFwd = 82+(150/525)*5 = 83.43
+  // TCDS 2A13: Same CG limits as PA-28-161, lower max gross (2325 vs 2440)
+  // Normal (+83.0)-(+93.0) at ≤1950, (+87.0)-(+93.0) at 2325
+  // Utility (+83.0)-(+93.0) at ≤1950, (+83.8)-(+93.0) at 2020
   {
     tailNumber: 'N84001', type: 'Piper Warrior', model: 'PA-28-151',
     basicEmptyWeight: 1467.70, basicEmptyArm: 84.10, basicEmptyMoment: 123389.00,
@@ -146,14 +147,14 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage Back', bag2Label: '', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1500, fwd: 82.0, aft: 93.0 },
-      { weight: 1800, fwd: 82.0, aft: 93.0 },
+      { weight: 1200, fwd: 83.0, aft: 93.0 },
+      { weight: 1950, fwd: 83.0, aft: 93.0 },
       { weight: 2325, fwd: 87.0, aft: 93.0 },
     ],
     utilityEnvelope: [
-      { weight: 1500, fwd: 82.0, aft: 91.0 },
-      { weight: 1800, fwd: 82.0, aft: 91.0 },
-      { weight: 1950, fwd: 83.4, aft: 91.0 },
+      { weight: 1200, fwd: 83.0, aft: 93.0 },
+      { weight: 1950, fwd: 83.0, aft: 93.0 },
+      { weight: 2020, fwd: 83.8, aft: 93.0 },
     ],
   },
 ];
