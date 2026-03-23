@@ -12,10 +12,14 @@ interface Aircraft {
   frontArm: number; rearArm: number; bag1Arm: number; bag2Arm: number;
   bag1Max: number; bag2Max: number; hasRear: boolean; hasBag2: boolean;
   cgEnvelope: CgLimit[];
+  utilityEnvelope?: CgLimit[];
   frontLabel: string; rearLabel: string; bag1Label: string; bag2Label: string; fuelLabel: string;
 }
 
+// CG envelopes verified against POH data for each type
+
 const AIRCRAFT: Aircraft[] = [
+  // ── Cessna 172 — N121MS ──
   {
     tailNumber: 'N121MS', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1493.44, basicEmptyArm: 39.39, basicEmptyMoment: 58819.45,
@@ -26,13 +30,18 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage 1', bag2Label: 'Baggage 2', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1500, fwd: 35.0, aft: 47.0 }, { weight: 1600, fwd: 35.0, aft: 47.0 },
-      { weight: 1700, fwd: 35.0, aft: 47.0 }, { weight: 1800, fwd: 37.0, aft: 47.0 },
-      { weight: 1900, fwd: 38.0, aft: 47.0 }, { weight: 2000, fwd: 39.0, aft: 47.0 },
-      { weight: 2100, fwd: 40.0, aft: 47.0 }, { weight: 2200, fwd: 40.5, aft: 47.0 },
-      { weight: 2300, fwd: 41.0, aft: 47.0 },
+      { weight: 1500, fwd: 35.0, aft: 47.3 },
+      { weight: 1950, fwd: 35.0, aft: 47.3 },
+      { weight: 2100, fwd: 38.5, aft: 47.3 },
+      { weight: 2300, fwd: 40.5, aft: 47.3 },
+    ],
+    utilityEnvelope: [
+      { weight: 1500, fwd: 35.0, aft: 40.5 },
+      { weight: 1950, fwd: 35.0, aft: 40.5 },
+      { weight: 2000, fwd: 37.0, aft: 40.5 },
     ],
   },
+  // ── Cessna 172 — N6475D ──
   {
     tailNumber: 'N6475D', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1478.95, basicEmptyArm: 39.13, basicEmptyMoment: 57865.08,
@@ -43,13 +52,18 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage 1', bag2Label: 'Baggage 2', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1500, fwd: 35.0, aft: 47.0 }, { weight: 1600, fwd: 35.0, aft: 47.0 },
-      { weight: 1700, fwd: 35.0, aft: 47.0 }, { weight: 1800, fwd: 37.0, aft: 47.0 },
-      { weight: 1900, fwd: 38.0, aft: 47.0 }, { weight: 2000, fwd: 39.0, aft: 47.0 },
-      { weight: 2100, fwd: 40.0, aft: 47.0 }, { weight: 2200, fwd: 40.5, aft: 47.0 },
-      { weight: 2300, fwd: 41.0, aft: 47.0 },
+      { weight: 1500, fwd: 35.0, aft: 47.3 },
+      { weight: 1950, fwd: 35.0, aft: 47.3 },
+      { weight: 2100, fwd: 38.5, aft: 47.3 },
+      { weight: 2300, fwd: 40.5, aft: 47.3 },
+    ],
+    utilityEnvelope: [
+      { weight: 1500, fwd: 35.0, aft: 40.5 },
+      { weight: 1950, fwd: 35.0, aft: 40.5 },
+      { weight: 2000, fwd: 37.0, aft: 40.5 },
     ],
   },
+  // ── Cessna 172 180HP — N34LC ──
   {
     tailNumber: 'N34LC', type: 'Cessna 172 (180 HP)', model: 'C172-180',
     basicEmptyWeight: 1498.10, basicEmptyArm: 38.71, basicEmptyMoment: 57994.26,
@@ -60,14 +74,19 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage 1', bag2Label: 'Baggage 2', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1500, fwd: 35.0, aft: 47.0 }, { weight: 1600, fwd: 35.0, aft: 47.0 },
-      { weight: 1700, fwd: 35.0, aft: 47.0 }, { weight: 1800, fwd: 36.0, aft: 47.0 },
-      { weight: 1900, fwd: 37.0, aft: 47.0 }, { weight: 2000, fwd: 38.0, aft: 47.0 },
-      { weight: 2100, fwd: 38.5, aft: 47.0 }, { weight: 2200, fwd: 39.5, aft: 47.0 },
-      { weight: 2300, fwd: 40.5, aft: 47.0 }, { weight: 2400, fwd: 41.0, aft: 47.0 },
-      { weight: 2550, fwd: 41.0, aft: 47.0 },
+      { weight: 1500, fwd: 35.0, aft: 47.3 },
+      { weight: 1950, fwd: 35.0, aft: 47.3 },
+      { weight: 2100, fwd: 38.0, aft: 47.3 },
+      { weight: 2300, fwd: 39.5, aft: 47.3 },
+      { weight: 2550, fwd: 41.0, aft: 47.3 },
+    ],
+    utilityEnvelope: [
+      { weight: 1500, fwd: 35.0, aft: 40.5 },
+      { weight: 1950, fwd: 35.0, aft: 40.5 },
+      { weight: 2000, fwd: 37.0, aft: 40.5 },
     ],
   },
+  // ── Cessna 152 — N65563 ──
   {
     tailNumber: 'N65563', type: 'Cessna 152', model: 'C152',
     basicEmptyWeight: 1161.1, basicEmptyArm: 30.27, basicEmptyMoment: 35146.50,
@@ -78,12 +97,18 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Seats', rearLabel: '',
     bag1Label: 'Baggage 1', bag2Label: 'Baggage 2', fuelLabel: 'Usable Fuel',
     cgEnvelope: [
-      { weight: 1100, fwd: 31.0, aft: 36.5 }, { weight: 1200, fwd: 31.5, aft: 36.5 },
-      { weight: 1300, fwd: 32.0, aft: 36.5 }, { weight: 1400, fwd: 33.0, aft: 36.5 },
-      { weight: 1500, fwd: 33.5, aft: 36.5 }, { weight: 1600, fwd: 34.0, aft: 36.5 },
-      { weight: 1670, fwd: 34.5, aft: 36.5 },
+      { weight: 1100, fwd: 29.0, aft: 36.5 },
+      { weight: 1350, fwd: 29.0, aft: 36.5 },
+      { weight: 1500, fwd: 30.5, aft: 36.5 },
+      { weight: 1670, fwd: 33.0, aft: 36.5 },
+    ],
+    utilityEnvelope: [
+      { weight: 1100, fwd: 29.0, aft: 33.5 },
+      { weight: 1350, fwd: 29.0, aft: 33.5 },
+      { weight: 1500, fwd: 30.5, aft: 33.5 },
     ],
   },
+  // ── Piper Warrior II — N8715C ──
   {
     tailNumber: 'N8715C', type: 'Piper Warrior II', model: 'PA-28-161',
     basicEmptyWeight: 1498.84, basicEmptyArm: 85.32, basicEmptyMoment: 127881.03,
@@ -94,13 +119,19 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage Back', bag2Label: '', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1200, fwd: 83.0, aft: 93.0 }, { weight: 1400, fwd: 83.0, aft: 93.0 },
-      { weight: 1600, fwd: 83.0, aft: 93.0 }, { weight: 1800, fwd: 83.0, aft: 93.0 },
-      { weight: 1900, fwd: 84.0, aft: 93.0 }, { weight: 2000, fwd: 85.0, aft: 93.0 },
-      { weight: 2100, fwd: 86.0, aft: 93.0 }, { weight: 2200, fwd: 87.0, aft: 93.0 },
+      { weight: 1500, fwd: 82.0, aft: 93.0 },
+      { weight: 1800, fwd: 82.0, aft: 93.0 },
+      { weight: 1900, fwd: 83.0, aft: 93.0 },
+      { weight: 2100, fwd: 85.0, aft: 93.0 },
       { weight: 2325, fwd: 87.0, aft: 93.0 },
     ],
+    utilityEnvelope: [
+      { weight: 1500, fwd: 82.0, aft: 91.0 },
+      { weight: 1800, fwd: 82.0, aft: 91.0 },
+      { weight: 1950, fwd: 83.5, aft: 91.0 },
+    ],
   },
+  // ── Piper Warrior II — N84001 ──
   {
     tailNumber: 'N84001', type: 'Piper Warrior II', model: 'PA-28-161',
     basicEmptyWeight: 1467.70, basicEmptyArm: 84.10, basicEmptyMoment: 123389.00,
@@ -111,11 +142,16 @@ const AIRCRAFT: Aircraft[] = [
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage Back', bag2Label: '', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1200, fwd: 83.0, aft: 93.0 }, { weight: 1400, fwd: 83.0, aft: 93.0 },
-      { weight: 1600, fwd: 83.0, aft: 93.0 }, { weight: 1800, fwd: 83.0, aft: 93.0 },
-      { weight: 1900, fwd: 84.0, aft: 93.0 }, { weight: 2000, fwd: 85.0, aft: 93.0 },
-      { weight: 2100, fwd: 86.0, aft: 93.0 }, { weight: 2200, fwd: 87.0, aft: 93.0 },
+      { weight: 1500, fwd: 82.0, aft: 93.0 },
+      { weight: 1800, fwd: 82.0, aft: 93.0 },
+      { weight: 1900, fwd: 83.0, aft: 93.0 },
+      { weight: 2100, fwd: 85.0, aft: 93.0 },
       { weight: 2325, fwd: 87.0, aft: 93.0 },
+    ],
+    utilityEnvelope: [
+      { weight: 1500, fwd: 82.0, aft: 91.0 },
+      { weight: 1800, fwd: 82.0, aft: 91.0 },
+      { weight: 1950, fwd: 83.5, aft: 91.0 },
     ],
   },
 ];
@@ -132,9 +168,9 @@ interface MetarData {
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
 function normalizeAlt(v: number | null): number { if (v === null) return 29.92; return v > 100 ? v * 0.02953 : v; }
-function pa(elev: number, alt: number) { return elev + (29.92 - alt) * 1000; }
-function da(pressAlt: number, t: number) { return pressAlt + 120 * (t - (15 - pressAlt / 1000 * 2)); }
-function wc(dir: number | string, spd: number, rwy: number) {
+function pressAlt(elev: number, alt: number) { return elev + (29.92 - alt) * 1000; }
+function densAlt(p: number, t: number) { return p + 120 * (t - (15 - p / 1000 * 2)); }
+function wComp(dir: number | string, spd: number, rwy: number) {
   if (typeof dir === 'string' || isNaN(Number(dir))) return { hw: 0, xw: 0 };
   const d = ((Number(dir) - rwy + 360) % 360) * Math.PI / 180;
   return { hw: Math.round(spd * Math.cos(d)), xw: Math.round(Math.abs(spd * Math.sin(d))) };
@@ -176,21 +212,39 @@ function NumIn({ value, onChange, cls }: { value: number; onChange: (v: number) 
   );
 }
 
-// ─── CG Chart ────────────────────────────────────────────────────────────────
+// ─── CG Chart with Utility Category ─────────────────────────────────────────
 
 function CgChart({ aircraft, points }: {
   aircraft: Aircraft; points: { label: string; weight: number; cg: number; color: string }[];
 }) {
   const env = aircraft.cgEnvelope;
-  const minW = env[0].weight - 100, maxW = env[env.length - 1].weight + 75;
-  const cgs = env.flatMap(e => [e.fwd, e.aft]);
-  const minC = Math.min(...cgs) - 2, maxC = Math.max(...cgs) + 2;
+  const util = aircraft.utilityEnvelope;
+
+  // Compute axis bounds from both envelopes
+  const allEnvs = util ? [...env, ...util] : env;
+  const allW = allEnvs.map(e => e.weight);
+  const allC = allEnvs.flatMap(e => [e.fwd, e.aft]);
+  const minW = Math.min(...allW) - 100, maxW = Math.max(...allW) + 75;
+  const minC = Math.min(...allC) - 2, maxC = Math.max(...allC) + 2;
+
   const W = 460, H = 300, p = { t: 15, r: 20, b: 40, l: 55 };
   const pW = W - p.l - p.r, pH = H - p.t - p.b;
   const sx = (c: number) => p.l + ((c - minC) / (maxC - minC)) * pW;
   const sy = (w: number) => p.t + pH - ((w - minW) / (maxW - minW)) * pH;
-  const fwd = env.map(e => `${sx(e.fwd)},${sy(e.weight)}`);
-  const aft = [...env].reverse().map(e => `${sx(e.aft)},${sy(e.weight)}`);
+
+  // Build normal envelope polygon
+  const fwdN = env.map(e => `${sx(e.fwd)},${sy(e.weight)}`);
+  const aftN = [...env].reverse().map(e => `${sx(e.aft)},${sy(e.weight)}`);
+
+  // Build utility envelope polygon (if exists)
+  let utilPoly = '';
+  if (util && util.length >= 2) {
+    const fwdU = util.map(e => `${sx(e.fwd)},${sy(e.weight)}`);
+    const aftU = [...util].reverse().map(e => `${sx(e.aft)},${sy(e.weight)}`);
+    utilPoly = [...fwdU, ...aftU].join(' ');
+  }
+
+  // Grid
   const wS = maxW - minW > 800 ? 200 : 100, cS = maxC - minC > 20 ? 5 : 2;
   const wT: number[] = [], cT: number[] = [];
   for (let w = Math.ceil(minW / wS) * wS; w <= maxW; w += wS) wT.push(w);
@@ -200,28 +254,45 @@ function CgChart({ aircraft, points }: {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
       <rect width={W} height={H} fill="transparent" />
       <rect x={p.l} y={p.t} width={pW} height={pH} fill="rgba(255,255,255,0.03)" rx="4" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+
       {wT.map(w => <g key={w}><line x1={p.l} y1={sy(w)} x2={p.l + pW} y2={sy(w)} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" /><text x={p.l - 6} y={sy(w) + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="9">{w}</text></g>)}
       {cT.map(c => <g key={c}><line x1={sx(c)} y1={p.t} x2={sx(c)} y2={p.t + pH} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" /><text x={sx(c)} y={p.t + pH + 14} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="9">{c}</text></g>)}
-      <polygon points={[...fwd, ...aft].join(' ')} fill="rgba(34,197,94,0.12)" stroke="rgba(34,197,94,0.6)" strokeWidth="1.5" />
+
+      {/* Normal category — solid green fill */}
+      <polygon points={[...fwdN, ...aftN].join(' ')} fill="rgba(34,197,94,0.12)" stroke="rgba(34,197,94,0.6)" strokeWidth="1.5" />
+
+      {/* Utility category — dashed yellow */}
+      {utilPoly && (
+        <polygon points={utilPoly} fill="rgba(234,179,8,0.06)" stroke="rgba(234,179,8,0.5)" strokeWidth="1.5" strokeDasharray="6,4" />
+      )}
+
+      {/* Legend */}
+      {util && (
+        <g>
+          <line x1={p.l + 8} y1={p.t + 12} x2={p.l + 28} y2={p.t + 12} stroke="rgba(34,197,94,0.6)" strokeWidth="1.5" />
+          <text x={p.l + 32} y={p.t + 15} fill="rgba(255,255,255,0.5)" fontSize="8">Normal</text>
+          <line x1={p.l + 8} y1={p.t + 24} x2={p.l + 28} y2={p.t + 24} stroke="rgba(234,179,8,0.5)" strokeWidth="1.5" strokeDasharray="4,3" />
+          <text x={p.l + 32} y={p.t + 27} fill="rgba(255,255,255,0.5)" fontSize="8">Utility</text>
+        </g>
+      )}
+
+      {/* Data points */}
       {points.filter(pt => pt.weight > 0).map((pt, i) => {
         const x = sx(pt.cg), y = sy(pt.weight);
         if (x < p.l || x > p.l + pW || y < p.t || y > p.t + pH) return null;
         return <g key={i}><circle cx={x} cy={y} r="5" fill={pt.color} stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" /><text x={x + 8} y={y + 3} fill="rgba(255,255,255,0.7)" fontSize="9" fontWeight="bold">{pt.label}</text></g>;
       })}
+
       <text x={p.l + pW / 2} y={H - 4} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontWeight="bold">C.G. Location (inches)</text>
       <text x={14} y={p.t + pH / 2} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontWeight="bold" transform={`rotate(-90, 14, ${p.t + pH / 2})`}>Weight (lbs)</text>
     </svg>
   );
 }
 
-// ─── Section Bar ─────────────────────────────────────────────────────────────
+// ─── Section Bar & DualVal ───────────────────────────────────────────────────
 
 function SecBar({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
-  return (
-    <div className={`text-center text-[11px] font-semibold py-1 px-2 rounded-lg ${dark ? 'bg-white/10 text-white' : 'bg-white/[0.06] text-white/70'}`}>
-      {children}
-    </div>
-  );
+  return <div className={`text-center text-[11px] font-semibold py-1 px-2 rounded-lg ${dark ? 'bg-white/10 text-white' : 'bg-white/[0.06] text-white/70'}`}>{children}</div>;
 }
 
 function DualVal({ l, r, accent }: { l: string; r: string; accent?: boolean }) {
@@ -270,17 +341,16 @@ export default function WeightBalance() {
   }, [dep, dest, fetchM]);
   useEffect(() => { const t = setTimeout(() => { if (dep.length >= 3 || dest.length >= 3) loadWx(); }, 800); return () => clearTimeout(t); }, [dep, dest, loadWx]);
 
-  // Weather computed
   const wxD = useMemo(() => {
     if (!depM) return null;
     const alt = normalizeAlt(depM.altimeter_inhg), t = depM.temp_c ?? 15, el = depM.elevation_ft || 0;
-    const p = pa(el, alt), d = da(p, t), w = wc(depM.wind_dir, depM.wind_speed_kt, rwy);
+    const p = pressAlt(el, alt), d = densAlt(p, t), w = wComp(depM.wind_dir, depM.wind_speed_kt, rwy);
     return { alt, t, dp: depM.dewpoint_c, pa: p, da: d, wDir: depM.wind_dir, wSpd: depM.wind_speed_kt, ...w };
   }, [depM, rwy]);
   const wxA = useMemo(() => {
     if (!destM) return null;
     const alt = normalizeAlt(destM.altimeter_inhg), t = destM.temp_c ?? 15, el = destM.elevation_ft || 0;
-    const p = pa(el, alt), d = da(p, t), w = wc(destM.wind_dir, destM.wind_speed_kt, rwy);
+    const p = pressAlt(el, alt), d = densAlt(p, t), w = wComp(destM.wind_dir, destM.wind_speed_kt, rwy);
     return { alt, t, dp: destM.dewpoint_c, pa: p, da: d, wDir: destM.wind_dir, wSpd: destM.wind_speed_kt, ...w };
   }, [destM, rwy]);
 
@@ -300,7 +370,6 @@ export default function WeightBalance() {
   const vaTo = c.toW > 0 ? vaBase * Math.sqrt(c.toW / ac.maxGrossWeight) : 0;
   const vaLd = c.lW > 0 ? vaBase * Math.sqrt(c.lW / ac.maxGrossWeight) : 0;
 
-  // Submit
   const submit = async () => {
     if (!pilot.trim() || !c.ok) return;
     setSending(true); setMsg('');
@@ -338,7 +407,6 @@ export default function WeightBalance() {
           </div>
         </div>
 
-        {/* Aircraft selector */}
         <div className="text-center mb-4">
           <select value={sel} onChange={e => setSel(e.target.value)}
             className="bg-white/[0.06] backdrop-blur border border-white/10 text-white text-sm font-semibold rounded-xl px-4 py-2 focus:outline-none focus:border-white/30 cursor-pointer transition">
@@ -349,7 +417,7 @@ export default function WeightBalance() {
         {/* ═══ MAIN LAYOUT ═══ */}
         <div className="flex gap-4">
 
-          {/* ─── LEFT: Conditions + Performance (1 glass tile) ─── */}
+          {/* ─── LEFT: Conditions + Performance ─── */}
           <GlassCard className="w-[210px] flex-shrink-0 p-3 space-y-1">
             <SecBar dark>Conditions</SecBar>
             <div className="flex text-[10px] font-semibold text-white/40">
@@ -387,7 +455,6 @@ export default function WeightBalance() {
             <SecBar><u>Density Altitude</u></SecBar>
             <DualVal l={wxD ? f(wxD.da) : '—'} r={wxA ? f(wxA.da) : '—'} />
 
-            {/* Performance */}
             <SecBar dark>Performance</SecBar>
             <SecBar><u>Maneuvering speed (V<sub>A</sub>)</u></SecBar>
             <div className="flex text-[10px] font-semibold text-white/40">
@@ -414,9 +481,8 @@ export default function WeightBalance() {
           {/* ─── RIGHT COLUMN ─── */}
           <div className="flex-1 min-w-0 space-y-4">
 
-            {/* ─── W&B TABLE (glass tile) ─── */}
+            {/* W&B TABLE */}
             <GlassCard className="p-4">
-              {/* Summary bar */}
               <div className="flex justify-between items-end border-b border-white/10 pb-2 mb-3 text-[11px]">
                 {[
                   ['Max Weight', String(ac.maxGrossWeight)],
@@ -461,9 +527,16 @@ export default function WeightBalance() {
                   <TRow l="Landing Weight" o="=" w={c.lW} a={c.lA} m={c.lM} oM="=" green line ok={c.lOk} />
                 </tbody>
               </table>
+
+              <div className="mt-3 pt-2 border-t border-white/10 grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
+                <div className="flex justify-between"><span className="text-white/30">Max Gross</span><span className="text-white/90 font-bold">{ac.maxGrossWeight} lbs</span></div>
+                <div className="flex justify-between"><span className="text-white/30">T/O Margin</span>
+                  <span className={`font-bold ${ac.maxGrossWeight - c.toW >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{f(ac.maxGrossWeight - c.toW, 0)} lbs</span>
+                </div>
+              </div>
             </GlassCard>
 
-            {/* ─── CG CHART (glass tile) ─── */}
+            {/* CG CHART */}
             <GlassCard className="p-4">
               <div className="text-sm font-bold text-center mb-2 text-white/80">Center of Gravity Envelope</div>
               <CgChart aircraft={ac} points={[
@@ -473,7 +546,7 @@ export default function WeightBalance() {
               ]} />
             </GlassCard>
 
-            {/* ─── SUBMIT (glass tile) ─── */}
+            {/* SUBMIT */}
             <GlassCard className="p-4 print:hidden">
               <div className="flex items-center gap-3">
                 <input type="text" value={pilot} onChange={e => setPilot(e.target.value)}
