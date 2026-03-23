@@ -32,12 +32,10 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 47.3 },
       { weight: 1950, fwd: 35.0, aft: 47.3 },
-      { weight: 2100, fwd: 38.5, aft: 47.3 },
       { weight: 2300, fwd: 40.5, aft: 47.3 },
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
-      { weight: 1950, fwd: 35.0, aft: 40.5 },
       { weight: 2000, fwd: 37.0, aft: 40.5 },
     ],
   },
@@ -54,12 +52,10 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 47.3 },
       { weight: 1950, fwd: 35.0, aft: 47.3 },
-      { weight: 2100, fwd: 38.5, aft: 47.3 },
       { weight: 2300, fwd: 40.5, aft: 47.3 },
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
-      { weight: 1950, fwd: 35.0, aft: 40.5 },
       { weight: 2000, fwd: 37.0, aft: 40.5 },
     ],
   },
@@ -97,12 +93,10 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1100, fwd: 29.0, aft: 36.5 },
       { weight: 1350, fwd: 29.0, aft: 36.5 },
-      { weight: 1500, fwd: 30.5, aft: 36.5 },
       { weight: 1670, fwd: 33.0, aft: 36.5 },
     ],
     utilityEnvelope: [
       { weight: 1100, fwd: 29.0, aft: 33.5 },
-      { weight: 1350, fwd: 29.0, aft: 33.5 },
       { weight: 1500, fwd: 30.5, aft: 33.5 },
     ],
   },
@@ -119,13 +113,10 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 93.0 },
       { weight: 1800, fwd: 82.0, aft: 93.0 },
-      { weight: 1900, fwd: 83.0, aft: 93.0 },
-      { weight: 2100, fwd: 85.0, aft: 93.0 },
       { weight: 2325, fwd: 87.0, aft: 93.0 },
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 91.0 },
-      { weight: 1800, fwd: 82.0, aft: 91.0 },
       { weight: 1950, fwd: 83.5, aft: 91.0 },
     ],
   },
@@ -142,13 +133,10 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 93.0 },
       { weight: 1800, fwd: 82.0, aft: 93.0 },
-      { weight: 1900, fwd: 83.0, aft: 93.0 },
-      { weight: 2100, fwd: 85.0, aft: 93.0 },
       { weight: 2325, fwd: 87.0, aft: 93.0 },
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 82.0, aft: 91.0 },
-      { weight: 1800, fwd: 82.0, aft: 91.0 },
       { weight: 1950, fwd: 83.5, aft: 91.0 },
     ],
   },
