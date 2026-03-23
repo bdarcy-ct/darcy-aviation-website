@@ -111,27 +111,28 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 1500, fwd: 30.9, aft: 33.5 },
     ],
   },
-  // ── Piper Warrior II — N8715C (PA-28-161) ──
-  // TCDS 2A13: Normal (+83.0)-(+93.0) at ≤1950, (+87.0)-(+93.0) at 2440
-  // Utility (+83.0)-(+93.0) at ≤1950, (+83.8)-(+93.0) at 2020
-  // Straight line variation between points. Aft limit 93.0 same for both categories.
+  // ── Piper Warrior — N8715C (PA-28-151 w/ high-compression STC) ──
+  // FAA registry: PA-28-151, S/N 28-7615124, 1976, engine O&VO-360 (180HP via STC)
+  // Airframe is -151 so max gross = 2325 lbs, same CG envelope as N84001
+  // Normal: fwd 82.0 vertical to 1950, diagonal to 87.0 at 2325, aft 93.0
+  // Utility: fwd 82.0, aft 86.5, max 1950 (from N84001 POH)
   {
-    tailNumber: 'N8715C', type: 'Piper Warrior II', model: 'PA-28-161',
+    tailNumber: 'N8715C', type: 'Piper Warrior', model: 'PA-28-151',
     basicEmptyWeight: 1498.84, basicEmptyArm: 85.32, basicEmptyMoment: 127881.03,
-    maxGrossWeight: 2440, usefulLoad: 941.16,
+    maxGrossWeight: 2325, usefulLoad: 826.16,
     fuelArm: 95.0, maxFuelLbs: 288, taxiFuelLbs: 8,
     frontArm: 80.5, rearArm: 118.1, bag1Arm: 142.8, bag2Arm: 0,
     bag1Max: 200, bag2Max: 0, hasRear: true, hasBag2: false,
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage Back', bag2Label: '', fuelLabel: 'Usable Fuel (wings)',
     cgEnvelope: [
-      { weight: 1200, fwd: 83.0, aft: 93.0 },
-      { weight: 1950, fwd: 83.0, aft: 93.0 },
-      { weight: 2440, fwd: 87.0, aft: 93.0 },
+      { weight: 1200, fwd: 82.0, aft: 93.0 },
+      { weight: 1950, fwd: 82.0, aft: 93.0 },
+      { weight: 2325, fwd: 87.0, aft: 93.0 },
     ],
     utilityEnvelope: [
-      { weight: 1200, fwd: 83.0, aft: 93.0 },
-      { weight: 2020, fwd: 83.8, aft: 93.0 },
+      { weight: 1200, fwd: 82.0, aft: 86.5 },
+      { weight: 1950, fwd: 82.0, aft: 86.5 },
     ],
   },
   // ── Piper Warrior — N84001 (PA-28-151) ──
