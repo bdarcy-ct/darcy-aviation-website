@@ -446,13 +446,42 @@ export default function WeightBalance() {
     if (!pilot.trim() || !c.ok) return;
     setSending(true); setMsg('');
     try {
+      // Build W&B rows for the email template
+      const rows = [
+        { label: 'Basic Empty Weight', op: '', weight: ac.basicEmptyWeight, arm: ac.basicEmptyArm, moment: ac.basicEmptyMoment, opM: '' },
+        { label: ac.frontLabel, op: '+', weight: fw, arm: ac.frontArm, moment: c.fm, opM: '+' },
+        ...(ac.hasRear ? [{ label: ac.rearLabel, op: '+', weight: rw, arm: ac.rearArm, moment: c.rm, opM: '+' }] : []),
+        { label: ac.bag1Label, op: '+', weight: b1, arm: ac.bag1Arm, moment: c.b1m, opM: '+' },
+        ...(ac.hasBag2 ? [{ label: ac.bag2Label, op: '+', weight: b2, arm: ac.bag2Arm, moment: c.b2m, opM: '+' }] : []),
+        { label: 'Zero Fuel Weight', op: '=', weight: c.zfw, arm: c.zA, moment: c.zM, opM: '=', bold: true, subtotal: true, color: 'purple' },
+        { label: ac.fuelLabel, op: '+', weight: fuel, arm: ac.fuelArm, moment: c.fM, opM: '+' },
+        { label: 'Ramp Weight', op: '=', weight: c.rW, arm: c.rA, moment: c.rM, opM: '=', bold: true, subtotal: true, color: 'green' },
+        { label: 'Taxi Fuel', op: '-', weight: ac.taxiFuelLbs, arm: ac.fuelArm, moment: c.tM, opM: '-' },
+        { label: 'Takeoff Weight', op: '=', weight: c.toW, arm: c.toA, moment: c.toM, opM: '=', bold: true, subtotal: true, color: 'blue', overweight: !c.toOk },
+        { label: 'Fuel Burn', op: '-', weight: burn, arm: ac.fuelArm, moment: c.bM, opM: '-' },
+        { label: 'Landing Weight', op: '=', weight: c.lW, arm: c.lA, moment: c.lM, opM: '=', bold: true, subtotal: true, color: 'green', overweight: !c.lOk },
+      ];
+
       const r = await fetch('/api/wb/dispatch', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          pilotName: pilot, aircraft: ac.tailNumber, aircraftType: ac.type,
+          pilotName: pilot, aircraft: ac.tailNumber, aircraftType: ac.type, model: ac.model,
           departure: dep, destination: dest, depMetar: depM?.raw, destMetar: destM?.raw,
           takeoffWeight: c.toW, takeoffCg: c.toA, landingWeight: c.lW, landingCg: c.lA,
-          fuelLbs: fuel, fuelBurnLbs: burn, frontWeight: fw, rearWeight: rw, baggage1: b1, baggage2: b2,
+          maxGross: ac.maxGrossWeight, usefulLoad: ac.usefulLoad,
+          bew: ac.basicEmptyWeight, bewArm: ac.basicEmptyArm, bewMoment: ac.basicEmptyMoment,
+          // Conditions
+          depWinds: wxD ? `${wxD.wDir}° @ ${wxD.wSpd}` : '', destWinds: wxA ? `${wxA.wDir}° @ ${wxA.wSpd}` : '',
+          depHwCw: `${hwDep || '—'} / ${xwDep || '—'}`, destHwCw: `${hwDest || '—'} / ${xwDest || '—'}`,
+          depTemp: wxD ? `${wxD.t}°C / ${wxD.dp ?? '—'}°C` : '', destTemp: wxA ? `${wxA.t}°C / ${wxA.dp ?? '—'}°C` : '',
+          depAlt: wxD ? wxD.alt.toFixed(2) : '', destAlt: wxA ? wxA.alt.toFixed(2) : '',
+          depPA: wxD ? wxD.pa.toFixed(0) : '', destPA: wxA ? wxA.pa.toFixed(0) : '',
+          depDA: wxD ? wxD.da.toFixed(0) : '', destDA: wxA ? wxA.da.toFixed(0) : '',
+          // Performance
+          vaTo: vaTo.toFixed(1), vaLd: vaLd.toFixed(1),
+          toGr, toObs, ldGrDep, ldObsDep, ldGrDest, ldObsDest,
+          // W&B rows
+          rows,
           timestamp: new Date().toISOString(),
         }),
       });

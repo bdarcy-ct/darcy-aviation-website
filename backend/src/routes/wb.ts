@@ -128,68 +128,145 @@ router.get('/winds', async (req: Request, res: Response) => {
   }
 });
 
+// ─── HTML Email Builder ─────────────────────────────────────────────────────
+
+function buildDispatchHTML(d: any): string {
+  const f = (n: number) => n?.toFixed(2) ?? '—';
+  const rows = d.rows || [];
+
+  const rowsHTML = rows.map((r: any) => {
+    const color = r.color === 'purple' ? '#7c3aed' : r.color === 'blue' ? '#2563eb' : r.color === 'green' ? '#059669' : r.color === 'red' ? '#dc2626' : '#333';
+    const bold = r.bold ? 'font-weight:700;' : '';
+    const bg = r.overweight ? 'background:#fee2e2;' : r.subtotal ? 'border-top:1.5px solid #999;' : '';
+    return `<tr style="${bg}">
+      <td style="padding:3px 6px;text-align:right;${bold}color:${color}">${r.label}</td>
+      <td style="padding:3px 4px;text-align:center;color:#666">${r.op || ''}</td>
+      <td style="padding:3px 6px;text-align:right;font-family:monospace;${bold}color:${color}">${f(r.weight)}</td>
+      <td style="padding:3px 4px;text-align:center;color:#ccc">×</td>
+      <td style="padding:3px 6px;text-align:right;font-family:monospace;color:${color}">${f(r.arm)}</td>
+      <td style="padding:3px 4px;text-align:center;color:#666">${r.opM || ''}</td>
+      <td style="padding:3px 6px;text-align:right;font-family:monospace;color:${color}">${f(r.moment)}</td>
+    </tr>`;
+  }).join('\n');
+
+  const condRow = (label: string, depVal: string, destVal: string) =>
+    `<tr><td style="padding:2px 6px;color:#666;font-size:11px">${label}</td><td style="padding:2px 6px;text-align:center;font-size:11px">${depVal}</td><td style="padding:2px 6px;text-align:center;font-size:11px">${destVal}</td></tr>`;
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:20px;background:#f5f5f5;font-family:Inter,Helvetica,Arial,sans-serif;color:#1a1a1a;font-size:12px">
+<div style="max-width:720px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08)">
+
+  <!-- Header -->
+  <div style="background:#111827;color:white;padding:16px 24px;text-align:center">
+    <div style="font-size:20px;font-weight:700;letter-spacing:0.5px">Weight &amp; Balance</div>
+    <div style="font-size:10px;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-top:2px">Darcy Aviation — KDXR</div>
+  </div>
+
+  <div style="padding:16px 20px">
+
+    <!-- Info bar -->
+    <table style="width:100%;margin-bottom:12px;font-size:12px"><tr>
+      <td><strong>Aircraft:</strong> ${d.aircraft} (${d.aircraftType})</td>
+      <td style="text-align:center"><strong>Route:</strong> ${d.departure || '—'} → ${d.destination || '—'}</td>
+      <td style="text-align:right"><strong>Date:</strong> ${d.dateStr}</td>
+    </tr></table>
+
+    <div style="display:flex;gap:12px">
+
+      <!-- LEFT: Conditions -->
+      <div style="width:200px;flex-shrink:0;border:1px solid #e5e7eb;border-radius:6px;padding:8px">
+        <div style="text-align:center;font-weight:700;font-size:11px;background:#f3f4f6;border-radius:4px;padding:3px;margin-bottom:6px">Conditions</div>
+        <table style="width:100%;font-size:11px;border-collapse:collapse">
+          <tr><td></td><td style="text-align:center;font-size:9px;color:#999;font-weight:600">DEP</td><td style="text-align:center;font-size:9px;color:#999;font-weight:600">DEST</td></tr>
+          ${condRow('Winds', d.depWinds || '—', d.destWinds || '—')}
+          ${condRow('HW / CW', d.depHwCw || '— / —', d.destHwCw || '— / —')}
+          ${condRow('Temp / Dp', d.depTemp || '—', d.destTemp || '—')}
+          ${condRow('Altimeter', d.depAlt || '—', d.destAlt || '—')}
+          ${condRow('Press Alt', d.depPA || '—', d.destPA || '—')}
+          ${condRow('Dens Alt', d.depDA || '—', d.destDA || '—')}
+        </table>
+        <div style="text-align:center;font-weight:700;font-size:11px;background:#f3f4f6;border-radius:4px;padding:3px;margin:8px 0 6px">Performance</div>
+        <table style="width:100%;font-size:11px;border-collapse:collapse">
+          <tr><td style="padding:2px 6px;color:#666">Va (T/O / Ldg)</td><td style="text-align:center">${d.vaTo || '—'} / ${d.vaLd || '—'}</td></tr>
+          <tr><td style="padding:2px 6px;color:#666">T/O Roll / 50'</td><td style="text-align:center">${d.toGr || '—'} / ${d.toObs || '—'}</td></tr>
+          <tr><td style="padding:2px 6px;color:#666">Ldg Roll / 50' (dep)</td><td style="text-align:center">${d.ldGrDep || '—'} / ${d.ldObsDep || '—'}</td></tr>
+          <tr><td style="padding:2px 6px;color:#666">Ldg Roll / 50' (dest)</td><td style="text-align:center">${d.ldGrDest || '—'} / ${d.ldObsDest || '—'}</td></tr>
+        </table>
+      </div>
+
+      <!-- RIGHT: W&B Table -->
+      <div style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:8px">
+        <table style="width:100%;font-size:11px;margin-bottom:6px"><tr>
+          <td style="text-align:center"><div style="color:#999;font-size:9px">Max Wt</div><strong>${d.maxGross}</strong></td>
+          <td style="text-align:center"><div style="color:#999;font-size:9px">Useful</div><strong>${f(d.usefulLoad)}</strong></td>
+          <td style="text-align:center"><div style="color:#999;font-size:9px">BEW</div><strong>${f(d.bew)}</strong></td>
+          <td style="text-align:center"><div style="color:#999;font-size:9px">Arm</div><strong>${f(d.bewArm)}</strong></td>
+          <td style="text-align:center"><div style="color:#999;font-size:9px">Moment</div><strong>${f(d.bewMoment)}</strong></td>
+        </tr></table>
+        <table style="width:100%;font-size:11px;border-collapse:collapse">
+          <tr style="border-bottom:1px solid #ddd">
+            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600"></th>
+            <th style="width:20px"></th>
+            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600">Weight</th>
+            <th style="width:20px;text-align:center;color:#ccc">×</th>
+            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600">Arm</th>
+            <th style="width:20px"></th>
+            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600">Moment</th>
+          </tr>
+          ${rowsHTML}
+        </table>
+      </div>
+    </div>
+
+    <!-- METAR raw -->
+    <div style="margin-top:12px;padding:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:10px;font-family:monospace;color:#666">
+      <div><strong>DEP METAR:</strong> ${d.depMetar || 'N/A'}</div>
+      ${d.destMetar ? `<div><strong>DEST METAR:</strong> ${d.destMetar}</div>` : ''}
+    </div>
+
+    <!-- Signature -->
+    <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:11px">
+      <div><strong>Pilot/Student:</strong> ${d.pilotName}</div>
+      <div><strong>Date:</strong> ${d.dateStr}</div>
+    </div>
+    <div style="margin-top:14px;display:flex;justify-content:space-between;font-size:11px;color:#999">
+      <div>Signature: ________________________</div>
+      <div>Instructor: ________________________</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;padding:10px;font-size:9px;color:#999;border-top:1px solid #eee">
+    Darcy Aviation — KDXR Danbury, CT · For planning purposes — verify with POH/AFM
+  </div>
+</div></body></html>`;
+}
+
 // ─── POST /api/wb/dispatch ──────────────────────────────────────────────────
 
 router.post('/dispatch', async (req: Request, res: Response) => {
-  const {
-    pilotName, aircraft, aircraftType, departure, destination, route,
-    depMetar, destMetar, takeoffWeight, takeoffCg, landingWeight, landingCg,
-    fuelGallons, fuelBurnGallons, frontWeight, rearWeight, baggage1, baggage2,
-    performance, timestamp,
-  } = req.body;
+  const d = req.body;
 
-  if (!pilotName || !aircraft) {
+  if (!d.pilotName || !d.aircraft) {
     res.status(400).json({ error: 'Pilot name and aircraft required' });
     return;
   }
 
-  // Build email body
-  const now = new Date(timestamp || Date.now());
-  const dateStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const now = new Date(d.timestamp || Date.now());
+  d.dateStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
 
-  const emailBody = `
-WEIGHT & BALANCE SHEET — DARCY AVIATION
-========================================
-Date: ${dateStr}
-Pilot/Student: ${pilotName}
-Aircraft: ${aircraft} (${aircraftType})
-Route: ${departure || '—'} → ${destination || '—'}${route ? ` (${route})` : ''}
+  const htmlBody = buildDispatchHTML(d);
 
-WEATHER
--------
-Departure METAR: ${depMetar || 'N/A'}
-Destination METAR: ${destMetar || 'N/A'}
-${performance ? `
-PERFORMANCE
------------
-Pressure Altitude: ${performance.pressureAlt?.toFixed(0) || '—'} ft
-Density Altitude: ${performance.densityAlt?.toFixed(0) || '—'} ft
-Headwind: ${performance.headwind || 0} kt
-Crosswind: ${performance.crosswind || 0} kt
-Va (Takeoff): ${performance.vaTo?.toFixed(1) || '—'} kt
-Va (Landing): ${performance.vaLdg?.toFixed(1) || '—'} kt
-` : ''}
-LOADING
--------
-Front Seats: ${frontWeight || 0} lbs
-Rear Seats: ${rearWeight || 0} lbs
-Baggage 1: ${baggage1 || 0} lbs
-Baggage 2: ${baggage2 || 0} lbs
-Fuel: ${fuelGallons || 0} gal (${(fuelGallons || 0) * 6} lbs)
-Fuel Burn: ${fuelBurnGallons || 0} gal (${(fuelBurnGallons || 0) * 6} lbs)
+  // Plain-text fallback
+  const textBody = `WEIGHT & BALANCE — DARCY AVIATION
+Date: ${d.dateStr}
+Pilot: ${d.pilotName}
+Aircraft: ${d.aircraft} (${d.aircraftType})
+Route: ${d.departure || '—'} → ${d.destination || '—'}
+Takeoff: ${d.takeoffWeight?.toFixed(1)} lbs / CG ${d.takeoffCg?.toFixed(2)}"
+Landing: ${d.landingWeight?.toFixed(1)} lbs / CG ${d.landingCg?.toFixed(2)}"
+DEP METAR: ${d.depMetar || 'N/A'}
+DEST METAR: ${d.destMetar || 'N/A'}`;
 
-RESULTS
--------
-Takeoff Weight: ${takeoffWeight?.toFixed(2)} lbs | CG: ${takeoffCg?.toFixed(2)}"
-Landing Weight: ${landingWeight?.toFixed(2)} lbs | CG: ${landingCg?.toFixed(2)}"
-
-STATUS: ✅ WITHIN LIMITS
-
-========================================
-Generated by Darcy Aviation W&B Calculator
-`.trim();
-
-  // Try to send email via nodemailer (if configured), otherwise log & store
   const SMTP_HOST = process.env.SMTP_HOST;
   const SMTP_PORT = process.env.SMTP_PORT;
   const SMTP_USER = process.env.SMTP_USER;
@@ -198,7 +275,6 @@ Generated by Darcy Aviation W&B Calculator
 
   if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
     try {
-      // Dynamic import nodemailer if available
       const nodemailer = require('nodemailer');
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
@@ -210,24 +286,23 @@ Generated by Darcy Aviation W&B Calculator
       await transporter.sendMail({
         from: `"Darcy Aviation W&B" <${SMTP_USER}>`,
         to: DISPATCH_EMAIL,
-        subject: `W&B Sheet — ${aircraft} — ${pilotName} — ${departure || 'KDXR'} → ${destination || '?'}`,
-        text: emailBody,
+        subject: `W&B Sheet — ${d.aircraft} — ${d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`,
+        text: textBody,
+        html: htmlBody,
       });
 
-      console.log(`✈️ W&B dispatch email sent for ${aircraft} (${pilotName})`);
+      console.log(`✈️ W&B dispatch email sent for ${d.aircraft} (${d.pilotName})`);
       res.json({ success: true, message: 'Weight & Balance sheet sent to dispatch' });
       return;
     } catch (emailErr: any) {
       console.error('Email send failed:', emailErr.message);
-      // Fall through to log-only
     }
   }
 
-  // If no email config, log it and return success (so the form still works)
-  console.log('═══════════════════════════════════════');
-  console.log(emailBody);
-  console.log('═══════════════════════════════════════');
-  console.log(`📋 W&B dispatch logged (no SMTP configured). Would send to: ${DISPATCH_EMAIL}`);
+  // No SMTP — log and return success
+  console.log(`📋 W&B dispatch logged (no SMTP). Pilot: ${d.pilotName}, Aircraft: ${d.aircraft}`);
+  console.log(`   Route: ${d.departure || '—'} → ${d.destination || '—'}`);
+  console.log(`   T/O: ${d.takeoffWeight?.toFixed(1)} lbs, Ldg: ${d.landingWeight?.toFixed(1)} lbs`);
 
   res.json({
     success: true,
