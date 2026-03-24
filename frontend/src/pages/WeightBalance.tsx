@@ -456,32 +456,20 @@ export default function WeightBalance() {
               <div className="flex-1 text-center">Departure</div>
               <div className="flex-1 text-center">Destination</div>
             </div>
-            <div className="grid grid-cols-2 gap-1">
-              <div className="space-y-0.5">
-                <div className="flex gap-0.5">
-                  <span className="text-white/30 text-[9px] leading-6">RWY</span>
-                  <input type="text" value={rwyDep} onChange={e => setRwyDep(e.target.value)} placeholder="—"
-                    className="w-8 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                </div>
-                <div className="flex gap-0.5">
-                  <input type="text" value={hwDep} onChange={e => setHwDep(e.target.value)} placeholder="HW"
-                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                  <input type="text" value={xwDep} onChange={e => setXwDep(e.target.value)} placeholder="XW"
-                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center justify-center gap-0.5">
+                <input type="text" value={hwDep} onChange={e => setHwDep(e.target.value)} placeholder="HW"
+                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                <span className="text-white/40 text-[11px]">/</span>
+                <input type="text" value={xwDep} onChange={e => setXwDep(e.target.value)} placeholder="CW"
+                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
               </div>
-              <div className="space-y-0.5">
-                <div className="flex gap-0.5">
-                  <span className="text-white/30 text-[9px] leading-6">RWY</span>
-                  <input type="text" value={rwyDest} onChange={e => setRwyDest(e.target.value)} placeholder="—"
-                    className="w-8 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                </div>
-                <div className="flex gap-0.5">
-                  <input type="text" value={hwDest} onChange={e => setHwDest(e.target.value)} placeholder="HW"
-                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                  <input type="text" value={xwDest} onChange={e => setXwDest(e.target.value)} placeholder="XW"
-                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                </div>
+              <div className="flex items-center justify-center gap-0.5">
+                <input type="text" value={hwDest} onChange={e => setHwDest(e.target.value)} placeholder="HW"
+                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                <span className="text-white/40 text-[11px]">/</span>
+                <input type="text" value={xwDest} onChange={e => setXwDest(e.target.value)} placeholder="CW"
+                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
               </div>
             </div>
 
