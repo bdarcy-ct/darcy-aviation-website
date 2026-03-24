@@ -200,7 +200,7 @@ function f(n: number, d = 2) { return n.toFixed(d); }
 
 // ─── Glass Card ──────────────────────────────────────────────────────────────
 
-const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]';
+const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-white/[0.12] transition-all duration-300';
 
 function GlassCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={`${glass} ${className || ''}`}>{children}</div>;
@@ -257,19 +257,26 @@ function CgChart({ aircraft, points }: {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
+      <defs>
+        <filter id="glow-green" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="glow-yellow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="glow-dot" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
       <rect width={W} height={H} fill="transparent" />
-      <rect x={p.l} y={p.t} width={pW} height={pH} fill="rgba(255,255,255,0.03)" rx="4" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+      <rect x={p.l} y={p.t} width={pW} height={pH} fill="rgba(255,255,255,0.02)" rx="6" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
 
-      {wT.map(w => <g key={w}><line x1={p.l} y1={sy(w)} x2={p.l + pW} y2={sy(w)} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" /><text x={p.l - 6} y={sy(w) + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="9">{w}</text></g>)}
-      {cT.map(c => <g key={c}><line x1={sx(c)} y1={p.t} x2={sx(c)} y2={p.t + pH} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" /><text x={sx(c)} y={p.t + pH + 14} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="9">{c}</text></g>)}
+      {wT.map(w => <g key={w}><line x1={p.l} y1={sy(w)} x2={p.l + pW} y2={sy(w)} stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" /><text x={p.l - 6} y={sy(w) + 3} textAnchor="end" fill="rgba(255,255,255,0.35)" fontSize="9">{w}</text></g>)}
+      {cT.map(c => <g key={c}><line x1={sx(c)} y1={p.t} x2={sx(c)} y2={p.t + pH} stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" /><text x={sx(c)} y={p.t + pH + 14} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9">{c}</text></g>)}
 
-      {/* Normal category — solid green fill, straight lines */}
-      <polygon points={[...fwdN, ...aftN].join(' ')} fill="rgba(34,197,94,0.12)" stroke="rgba(34,197,94,0.6)" strokeWidth="2" strokeLinejoin="miter" shapeRendering="crispEdges" />
+      {/* Normal category — glowing green */}
+      <polygon points={[...fwdN, ...aftN].join(' ')} fill="rgba(34,197,94,0.08)" stroke="rgba(34,197,94,0.5)" strokeWidth="1.5" strokeLinejoin="miter" shapeRendering="crispEdges" />
+      <polygon points={[...fwdN, ...aftN].join(' ')} fill="none" stroke="rgba(34,197,94,0.3)" strokeWidth="4" strokeLinejoin="miter" filter="url(#glow-green)" shapeRendering="crispEdges" />
 
-      {/* Utility category — dashed yellow, straight lines */}
-      {utilPoly && (
-        <polygon points={utilPoly} fill="rgba(234,179,8,0.06)" stroke="rgba(234,179,8,0.5)" strokeWidth="2" strokeDasharray="8,4" strokeLinejoin="miter" shapeRendering="crispEdges" />
-      )}
+      {/* Utility category — glowing amber dashed */}
+      {utilPoly && <>
+        <polygon points={utilPoly} fill="rgba(234,179,8,0.05)" stroke="rgba(234,179,8,0.45)" strokeWidth="1.5" strokeDasharray="8,4" strokeLinejoin="miter" shapeRendering="crispEdges" />
+        <polygon points={utilPoly} fill="none" stroke="rgba(234,179,8,0.2)" strokeWidth="3" strokeDasharray="8,4" filter="url(#glow-yellow)" strokeLinejoin="miter" shapeRendering="crispEdges" />
+      </>}
 
       {/* Legend */}
       {util && (
@@ -281,15 +288,19 @@ function CgChart({ aircraft, points }: {
         </g>
       )}
 
-      {/* Data points */}
+      {/* Data points with glow */}
       {points.filter(pt => pt.weight > 0).map((pt, i) => {
         const x = sx(pt.cg), y = sy(pt.weight);
         if (x < p.l || x > p.l + pW || y < p.t || y > p.t + pH) return null;
-        return <g key={i}><circle cx={x} cy={y} r="5" fill={pt.color} stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" /><text x={x + 8} y={y + 3} fill="rgba(255,255,255,0.7)" fontSize="9" fontWeight="bold">{pt.label}</text></g>;
+        return <g key={i}>
+          <circle cx={x} cy={y} r="7" fill={pt.color} opacity="0.3" filter="url(#glow-dot)" />
+          <circle cx={x} cy={y} r="5" fill={pt.color} stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" />
+          <text x={x + 9} y={y + 3} fill="rgba(255,255,255,0.8)" fontSize="9" fontWeight="bold">{pt.label}</text>
+        </g>;
       })}
 
-      <text x={p.l + pW / 2} y={H - 4} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontWeight="bold">C.G. Location (inches)</text>
-      <text x={14} y={p.t + pH / 2} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontWeight="bold" transform={`rotate(-90, 14, ${p.t + pH / 2})`}>Weight (lbs)</text>
+      <text x={p.l + pW / 2} y={H - 4} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="bold">C.G. Location (inches)</text>
+      <text x={14} y={p.t + pH / 2} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="bold" transform={`rotate(-90, 14, ${p.t + pH / 2})`}>Weight (lbs)</text>
     </svg>
   );
 }
@@ -297,7 +308,7 @@ function CgChart({ aircraft, points }: {
 // ─── Section Bar & DualVal ───────────────────────────────────────────────────
 
 function SecBar({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
-  return <div className={`text-center text-[11px] font-semibold py-1 px-2 rounded-lg ${dark ? 'bg-white/10 text-white' : 'bg-white/[0.06] text-white/70'}`}>{children}</div>;
+  return <div className={`text-center text-[11px] font-semibold py-1 px-2 rounded-lg ${dark ? 'bg-gradient-to-r from-white/[0.06] via-white/[0.12] to-white/[0.06] text-white border border-white/[0.06]' : 'bg-white/[0.06] text-white/70'}`}>{children}</div>;
 }
 
 function DualVal({ l, r, accent }: { l: string; r: string; accent?: boolean }) {
@@ -410,14 +421,20 @@ export default function WeightBalance() {
   const now = new Date();
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-white py-4 sm:py-6 px-2 sm:px-4" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
-      <div className="max-w-[900px] mx-auto">
+    <div className="min-h-screen bg-[#0a0e1a] text-white py-4 sm:py-6 px-2 sm:px-4 relative overflow-hidden" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+      {/* Ambient glow orbs */}
+      <div className="pointer-events-none absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-blue-500/[0.07] rounded-full blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-150px] right-[-100px] w-[400px] h-[400px] bg-emerald-500/[0.05] rounded-full blur-[120px]" />
+      <div className="pointer-events-none absolute top-[40%] left-[50%] w-[300px] h-[300px] bg-purple-500/[0.04] rounded-full blur-[100px] -translate-x-1/2" />
+
+      <div className="max-w-[900px] mx-auto relative z-10">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1" />
           <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">Weight & Balance</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-100 to-white/60 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(59,130,246,0.3)]">Weight & Balance</h1>
+            <div className="text-[10px] text-white/20 tracking-[0.3em] uppercase mt-0.5">Darcy Aviation — KDXR</div>
           </div>
           <div className="flex-1 text-right text-xs text-white/30">
             <div>{now.toLocaleDateString('en-US', { timeZone: 'America/New_York' })}</div>
@@ -427,7 +444,7 @@ export default function WeightBalance() {
 
         <div className="text-center mb-4">
           <select value={sel} onChange={e => setSel(e.target.value)}
-            className="bg-white/[0.06] backdrop-blur border border-white/10 text-white text-sm font-semibold rounded-xl px-4 py-2 focus:outline-none focus:border-white/30 cursor-pointer transition">
+            className="bg-white/[0.06] backdrop-blur-lg border border-white/10 text-white text-sm font-semibold rounded-xl px-5 py-2.5 focus:outline-none focus:border-blue-400/40 focus:shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20">
             {AIRCRAFT.map(a => <option key={a.tailNumber} value={a.tailNumber} className="bg-[#1a1f2e] text-white">{a.tailNumber} {a.type} ({a.model})</option>)}
           </select>
         </div>
@@ -444,9 +461,9 @@ export default function WeightBalance() {
             </div>
             <div className="grid grid-cols-2 gap-1">
               <input type="text" value={dep} onChange={e => setDep(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:outline-none transition" />
+                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
               <input type="text" value={dest} onChange={e => setDest(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:outline-none transition" />
+                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
             </div>
             {ldWx && <div className="text-center text-[10px] text-white/30 py-0.5">Loading...</div>}
 
@@ -601,11 +618,11 @@ export default function WeightBalance() {
               <div className="flex items-center gap-3">
                 <input type="text" value={pilot} onChange={e => setPilot(e.target.value)}
                   placeholder="Pilot / Student Name"
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition" />
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-400/30 focus:shadow-[0_0_10px_rgba(59,130,246,0.1)] transition-all duration-300" />
                 <button onClick={submit} disabled={sending || !c.ok || !pilot.trim()}
-                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
+                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
                     c.ok && pilot.trim()
-                      ? 'bg-emerald-500/80 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 active:scale-95'
+                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-400/40 hover:shadow-xl active:scale-95'
                       : 'bg-white/5 text-white/20 cursor-not-allowed'
                   }`}>
                   {sending ? 'Sending...' : '📧 Email to Dispatch'}
