@@ -1,5 +1,48 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
+// Print styles — white background, dark text, one page, no ink waste
+const printStyles = `
+@media print {
+  @page { size: letter; margin: 0.4in; }
+  html, body { background: white !important; color: black !important; font-size: 10px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print\\:hidden { display: none !important; }
+  .print\\:block { display: block !important; }
+  .print\\:flex { display: flex !important; }
+  .print\\:text-black { color: black !important; }
+
+  /* Override dark theme */
+  .wb-root { background: white !important; color: #1a1a1a !important; padding: 0 !important; min-height: auto !important; overflow: visible !important; }
+  .wb-root * { color: #1a1a1a !important; border-color: #ccc !important; }
+  .wb-root .glass-card { background: white !important; backdrop-filter: none !important; border: 1px solid #ddd !important; box-shadow: none !important; border-radius: 6px !important; }
+  .wb-root select, .wb-root input { background: white !important; border: 1px solid #999 !important; color: black !important; }
+  .wb-root table { font-size: 9px !important; }
+  .wb-root td, .wb-root th { padding: 2px 4px !important; color: #1a1a1a !important; }
+  .wb-root .glow-orb { display: none !important; }
+
+  /* Status colors preserved for print */
+  .wb-root .text-emerald-400 { color: #059669 !important; }
+  .wb-root .text-blue-400 { color: #2563eb !important; }
+  .wb-root .text-purple-400 { color: #7c3aed !important; }
+  .wb-root .text-red-400 { color: #dc2626 !important; }
+  .wb-root .bg-red-500\\/10 { background: #fee2e2 !important; }
+
+  /* CG chart — darken for print */
+  .wb-root svg text { fill: #333 !important; }
+  .wb-root svg line { stroke: #ddd !important; }
+  .wb-root svg rect { stroke: #ccc !important; }
+
+  /* Fit one page */
+  .wb-root .max-w-\\[900px\\] { max-width: 100% !important; }
+  .wb-root .flex-col { flex-direction: row !important; }
+  .wb-root .lg\\:flex-row { flex-direction: row !important; }
+  .wb-root .lg\\:w-\\[210px\\] { width: 200px !important; flex-shrink: 0 !important; }
+  .wb-root .space-y-4 > * + * { margin-top: 8px !important; }
+  .wb-root .gap-4 { gap: 8px !important; }
+  .wb-root .p-4 { padding: 8px !important; }
+  .wb-root .p-3 { padding: 6px !important; }
+}
+`;
+
 // ─── Aircraft Database ───────────────────────────────────────────────────────
 
 interface CgLimit { weight: number; fwd: number; aft: number; }
@@ -203,7 +246,7 @@ function f(n: number, d = 2) { return n.toFixed(d); }
 const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-white/[0.12] transition-all duration-300';
 
 function GlassCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={`${glass} ${className || ''}`}>{children}</div>;
+  return <div className={`glass-card ${glass} ${className || ''}`}>{children}</div>;
 }
 
 // ─── Editable Input ──────────────────────────────────────────────────────────
@@ -421,11 +464,13 @@ export default function WeightBalance() {
   const now = new Date();
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-white py-4 sm:py-6 px-2 sm:px-4 relative overflow-hidden" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+    <>
+    <style dangerouslySetInnerHTML={{ __html: printStyles }} />
+    <div className="wb-root min-h-screen bg-[#0a0e1a] text-white py-4 sm:py-6 px-2 sm:px-4 relative overflow-hidden" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
       {/* Ambient glow orbs */}
-      <div className="pointer-events-none absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-blue-500/[0.07] rounded-full blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-150px] right-[-100px] w-[400px] h-[400px] bg-emerald-500/[0.05] rounded-full blur-[120px]" />
-      <div className="pointer-events-none absolute top-[40%] left-[50%] w-[300px] h-[300px] bg-purple-500/[0.04] rounded-full blur-[100px] -translate-x-1/2" />
+      <div className="glow-orb pointer-events-none absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-blue-500/[0.07] rounded-full blur-[120px]" />
+      <div className="glow-orb pointer-events-none absolute bottom-[-150px] right-[-100px] w-[400px] h-[400px] bg-emerald-500/[0.05] rounded-full blur-[120px]" />
+      <div className="glow-orb pointer-events-none absolute top-[40%] left-[50%] w-[300px] h-[300px] bg-purple-500/[0.04] rounded-full blur-[100px] -translate-x-1/2" />
 
       <div className="max-w-[900px] mx-auto relative z-10">
 
@@ -613,12 +658,16 @@ export default function WeightBalance() {
               ]} />
             </GlassCard>
 
-            {/* SUBMIT */}
+            {/* SUBMIT + PRINT */}
             <GlassCard className="p-4 print:hidden">
               <div className="flex items-center gap-3">
                 <input type="text" value={pilot} onChange={e => setPilot(e.target.value)}
                   placeholder="Pilot / Student Name"
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-400/30 focus:shadow-[0_0_10px_rgba(59,130,246,0.1)] transition-all duration-300" />
+                <button onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-white/[0.08] hover:bg-white/[0.15] text-white/80 hover:text-white border border-white/10 hover:border-white/20 transition-all duration-300 active:scale-95">
+                  🖨️ Print
+                </button>
                 <button onClick={submit} disabled={sending || !c.ok || !pilot.trim()}
                   className={`px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
                     c.ok && pilot.trim()
@@ -630,12 +679,25 @@ export default function WeightBalance() {
               </div>
               {msg && <p className={`text-xs mt-2 text-center ${msg.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{msg}</p>}
             </GlassCard>
+
+            {/* Print-only: Pilot name + signature line */}
+            <div className="hidden print:block" style={{ marginTop: 8, padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                <div><strong>Pilot/Student:</strong> {pilot || '________________________'}</div>
+                <div><strong>Date:</strong> {now.toLocaleDateString('en-US', { timeZone: 'America/New_York' })} {now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false })}</div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 12 }}>
+                <div>Signature: ________________________</div>
+                <div>Instructor: ________________________</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <p className="text-center text-[9px] text-white/20 mt-6">Darcy Aviation — KDXR Danbury, CT · For planning purposes — verify with POH/AFM</p>
+        <p className="text-center text-[9px] text-white/20 mt-6 print:text-black/40">Darcy Aviation — KDXR Danbury, CT · For planning purposes — verify with POH/AFM</p>
       </div>
     </div>
+    </>
   );
 }
 
