@@ -317,7 +317,18 @@ export default function WeightBalance() {
   const [dest, setDest] = useState('');
   const [depM, setDepM] = useState<MetarData | null>(null);
   const [destM, setDestM] = useState<MetarData | null>(null);
-  const [rwy, setRwy] = useState(0);
+  const [rwyDep, setRwyDep] = useState('');
+  const [rwyDest, setRwyDest] = useState('');
+  const [hwDep, setHwDep] = useState('');
+  const [xwDep, setXwDep] = useState('');
+  const [hwDest, setHwDest] = useState('');
+  const [xwDest, setXwDest] = useState('');
+  const [toGr, setToGr] = useState('');
+  const [toObs, setToObs] = useState('');
+  const [ldGrDep, setLdGrDep] = useState('');
+  const [ldObsDep, setLdObsDep] = useState('');
+  const [ldGrDest, setLdGrDest] = useState('');
+  const [ldObsDest, setLdObsDest] = useState('');
   const [ldWx, setLdWx] = useState(false);
 
   const [fw, setFw] = useState(0);
@@ -349,15 +360,15 @@ export default function WeightBalance() {
   const wxD = useMemo(() => {
     if (!depM) return null;
     const alt = normalizeAlt(depM.altimeter_inhg), t = depM.temp_c ?? 15, el = depM.elevation_ft || 0;
-    const p = pressAlt(el, alt), d = densAlt(p, t), w = wComp(depM.wind_dir, depM.wind_speed_kt, rwy);
-    return { alt, t, dp: depM.dewpoint_c, pa: p, da: d, wDir: depM.wind_dir, wSpd: depM.wind_speed_kt, ...w };
-  }, [depM, rwy]);
+    const p = pressAlt(el, alt), d = densAlt(p, t);
+    return { alt, t, dp: depM.dewpoint_c, pa: p, da: d, wDir: depM.wind_dir, wSpd: depM.wind_speed_kt };
+  }, [depM]);
   const wxA = useMemo(() => {
     if (!destM) return null;
     const alt = normalizeAlt(destM.altimeter_inhg), t = destM.temp_c ?? 15, el = destM.elevation_ft || 0;
-    const p = pressAlt(el, alt), d = densAlt(p, t), w = wComp(destM.wind_dir, destM.wind_speed_kt, rwy);
-    return { alt, t, dp: destM.dewpoint_c, pa: p, da: d, wDir: destM.wind_dir, wSpd: destM.wind_speed_kt, ...w };
-  }, [destM, rwy]);
+    const p = pressAlt(el, alt), d = densAlt(p, t);
+    return { alt, t, dp: destM.dewpoint_c, pa: p, da: d, wDir: destM.wind_dir, wSpd: destM.wind_speed_kt };
+  }, [destM]);
 
   // W&B
   const c = useMemo(() => {
@@ -441,11 +452,37 @@ export default function WeightBalance() {
             <DualVal l={wxD ? `${wxD.wDir}° @ ${wxD.wSpd}` : '—'} r={wxA ? `${wxA.wDir}° @ ${wxA.wSpd}` : '—'} />
 
             <SecBar>Headwind / Crosswind</SecBar>
-            <div className="flex items-center justify-center gap-1 text-[11px] text-white/70">
-              <span className="text-white/30 text-[9px]">RWY</span>
-              <input type="number" value={rwy || ''} onChange={e => setRwy(Number(e.target.value))} placeholder="°" min={0} max={360}
-                className="w-8 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-              <span>: {wxD ? `${wxD.hw} / ${wxD.xw}` : '— / —'}</span>
+            <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
+              <div className="flex-1 text-center">Departure</div>
+              <div className="flex-1 text-center">Destination</div>
+            </div>
+            <div className="grid grid-cols-2 gap-1">
+              <div className="space-y-0.5">
+                <div className="flex gap-0.5">
+                  <span className="text-white/30 text-[9px] leading-6">RWY</span>
+                  <input type="text" value={rwyDep} onChange={e => setRwyDep(e.target.value)} placeholder="—"
+                    className="w-8 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                </div>
+                <div className="flex gap-0.5">
+                  <input type="text" value={hwDep} onChange={e => setHwDep(e.target.value)} placeholder="HW"
+                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                  <input type="text" value={xwDep} onChange={e => setXwDep(e.target.value)} placeholder="XW"
+                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                </div>
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex gap-0.5">
+                  <span className="text-white/30 text-[9px] leading-6">RWY</span>
+                  <input type="text" value={rwyDest} onChange={e => setRwyDest(e.target.value)} placeholder="—"
+                    className="w-8 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                </div>
+                <div className="flex gap-0.5">
+                  <input type="text" value={hwDest} onChange={e => setHwDest(e.target.value)} placeholder="HW"
+                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                  <input type="text" value={xwDest} onChange={e => setXwDest(e.target.value)} placeholder="XW"
+                    className="flex-1 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+                </div>
+              </div>
             </div>
 
             <SecBar>Temperature / Dew point</SecBar>
@@ -469,18 +506,36 @@ export default function WeightBalance() {
             <DualVal l={f(vaTo)} r={f(vaLd)} />
 
             <SecBar>Takeoff</SecBar>
-            <div className="flex text-[10px] font-semibold text-white/40">
+            <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
               <div className="flex-1 text-center">Ground Roll</div>
               <div className="flex-1 text-center">50' OBS</div>
             </div>
-            <DualVal l="—" r="—" />
+            <div className="grid grid-cols-2 gap-1">
+              <input type="text" value={toGr} onChange={e => setToGr(e.target.value)} placeholder="—"
+                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+              <input type="text" value={toObs} onChange={e => setToObs(e.target.value)} placeholder="—"
+                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+            </div>
 
             <SecBar>Landing</SecBar>
-            <div className="flex text-[10px] font-semibold text-white/40">
-              <div className="flex-1 text-center">Departure</div>
-              <div className="flex-1 text-center">Destination</div>
+            <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
+              <div className="flex-1 text-center">Ground Roll</div>
+              <div className="flex-1 text-center">50' OBS</div>
             </div>
-            <DualVal l="—" r="—" />
+            <div className="text-[9px] text-white/30 text-center mb-0.5">Departure</div>
+            <div className="grid grid-cols-2 gap-1">
+              <input type="text" value={ldGrDep} onChange={e => setLdGrDep(e.target.value)} placeholder="—"
+                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+              <input type="text" value={ldObsDep} onChange={e => setLdObsDep(e.target.value)} placeholder="—"
+                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+            </div>
+            <div className="text-[9px] text-white/30 text-center mt-0.5 mb-0.5">Destination</div>
+            <div className="grid grid-cols-2 gap-1">
+              <input type="text" value={ldGrDest} onChange={e => setLdGrDest(e.target.value)} placeholder="—"
+                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+              <input type="text" value={ldObsDest} onChange={e => setLdObsDest(e.target.value)} placeholder="—"
+                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+            </div>
           </GlassCard>
 
           {/* ─── RIGHT COLUMN ─── */}
