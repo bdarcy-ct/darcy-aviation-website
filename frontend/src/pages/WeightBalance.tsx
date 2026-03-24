@@ -344,6 +344,8 @@ export default function WeightBalance() {
 
   const ac = useMemo(() => AIRCRAFT.find(a => a.tailNumber === sel)!, [sel]);
   useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); }, [sel]);
+  // Auto-clamp burn if fuel is reduced below it
+  useEffect(() => { if (burn > fuel) setBurn(fuel); }, [fuel]);
 
   // Weather
   const fetchM = useCallback(async (icao: string): Promise<MetarData | null> => {
@@ -562,15 +564,15 @@ export default function WeightBalance() {
                   <TRow l="Basic Empty Weight" o="" w={ac.basicEmptyWeight} a={ac.basicEmptyArm} m={ac.basicEmptyMoment} oM="" />
                   <TRowE l={ac.frontLabel} o="+" w={fw} a={ac.frontArm} m={c.fm} oM="+" set={setFw} />
                   {ac.hasRear && <TRowE l={ac.rearLabel} o="+" w={rw} a={ac.rearArm} m={c.rm} oM="+" set={setRw} />}
-                  <TRowE l={`${ac.bag1Label} (Max ${ac.bag1Max})`} o="+" w={b1} a={ac.bag1Arm} m={c.b1m} oM="+" set={setB1} />
-                  {ac.hasBag2 && <TRowE l={`${ac.bag2Label} (Max ${ac.bag2Max})`} o="+" w={b2} a={ac.bag2Arm} m={c.b2m} oM="+" set={setB2} />}
+                  <TRowE l={`${ac.bag1Label} (Max ${ac.bag1Max})`} o="+" w={b1} a={ac.bag1Arm} m={c.b1m} oM="+" set={v => setB1(Math.min(v, ac.bag1Max))} />
+                  {ac.hasBag2 && <TRowE l={`${ac.bag2Label} (Max ${ac.bag2Max})`} o="+" w={b2} a={ac.bag2Arm} m={c.b2m} oM="+" set={v => setB2(Math.min(v, ac.bag2Max))} />}
                   <TRow l="Zero Fuel Weight" o="=" w={c.zfw} a={c.zA} m={c.zM} oM="=" line color="text-purple-400" />
-                  <TRowE l={ac.fuelLabel} o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" set={setFuel}
+                  <TRowE l={ac.fuelLabel} o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" set={v => setFuel(Math.min(v, ac.maxFuelLbs))}
                     hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} max`} />
                   <TRow l="Ramp Weight" o="=" w={c.rW} a={c.rA} m={c.rM} oM="=" green line />
                   <TRow l="Taxi Fuel" o="-" w={ac.taxiFuelLbs} a={ac.fuelArm} m={c.tM} oM="-" />
                   <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" line ok={c.toOk} color="text-blue-400" />
-                  <TRowE l="Fuel Burn" o="-" w={burn} a={ac.fuelArm} m={c.bM} oM="-" set={setBurn}
+                  <TRowE l="Fuel Burn" o="-" w={burn} a={ac.fuelArm} m={c.bM} oM="-" set={v => setBurn(Math.min(v, fuel))}
                     hint={`${Math.round(burn / 6)} gal`} />
                   <TRow l="Landing Weight" o="=" w={c.lW} a={c.lA} m={c.lM} oM="=" line ok={c.lOk} color="text-emerald-400" />
                 </tbody>
