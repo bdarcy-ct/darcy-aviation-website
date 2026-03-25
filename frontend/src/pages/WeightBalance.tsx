@@ -461,7 +461,7 @@ export default function WeightBalance() {
         { label: 'Zero Fuel Weight', op: '=', weight: c.zfw, arm: c.zA, moment: c.zM, opM: '=', bold: true, subtotal: true, color: 'purple' },
         { label: ac.fuelLabel, op: '+', weight: fuel, arm: ac.fuelArm, moment: c.fM, opM: '+' },
         { label: 'Ramp Weight', op: '=', weight: c.rW, arm: c.rA, moment: c.rM, opM: '=', bold: true, subtotal: true, color: 'green' },
-        { label: 'Taxi Fuel', op: '-', weight: ac.taxiFuelLbs, arm: ac.fuelArm, moment: c.tM, opM: '-' },
+        { label: 'Taxi Fuel', op: '-', weight: taxi, arm: ac.fuelArm, moment: c.tM, opM: '-' },
         { label: 'Takeoff Weight', op: '=', weight: c.toW, arm: c.toA, moment: c.toM, opM: '=', bold: true, subtotal: true, color: 'blue', overweight: !c.toOk },
         { label: 'Fuel Burn', op: '-', weight: burn, arm: ac.fuelArm, moment: c.bM, opM: '-' },
         { label: 'Landing Weight', op: '=', weight: c.lW, arm: c.lA, moment: c.lM, opM: '=', bold: true, subtotal: true, color: 'green', overweight: !c.lOk },
