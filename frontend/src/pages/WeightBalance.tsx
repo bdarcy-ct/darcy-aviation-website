@@ -598,15 +598,11 @@ export default function WeightBalance() {
                 className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
             </div>
 
-            <SecBar>Landing</SecBar>
-            <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
-              <div className="flex-1 text-center">Departure</div>
-              <div className="flex-1 text-center">Destination</div>
-            </div>
+            <SecBar>Landing Performance</SecBar>
             <div className="grid grid-cols-2 gap-1">
-              <input type="text" value={ldGrDep} onChange={e => setLdGrDep(e.target.value)} placeholder="GR / 50'"
+              <input type="text" value={ldGrDep} onChange={e => setLdGrDep(e.target.value)}
                 className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-              <input type="text" value={ldGrDest} onChange={e => setLdGrDest(e.target.value)} placeholder="GR / 50'"
+              <input type="text" value={ldGrDest} onChange={e => setLdGrDest(e.target.value)}
                 className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
             </div>
           </GlassCard>
