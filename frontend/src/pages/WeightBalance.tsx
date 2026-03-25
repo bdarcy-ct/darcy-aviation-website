@@ -600,21 +600,13 @@ export default function WeightBalance() {
 
             <SecBar>Landing</SecBar>
             <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
-              <div className="flex-1 text-center">Ground Roll</div>
-              <div className="flex-1 text-center">50' OBS</div>
+              <div className="flex-1 text-center">Departure</div>
+              <div className="flex-1 text-center">Destination</div>
             </div>
-            <div className="text-[9px] text-white/30 text-center mb-0.5">Departure</div>
             <div className="grid grid-cols-2 gap-1">
-              <input type="text" value={ldGrDep} onChange={e => setLdGrDep(e.target.value)} placeholder="—"
+              <input type="text" value={ldGrDep} onChange={e => setLdGrDep(e.target.value)} placeholder="GR / 50'"
                 className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-              <input type="text" value={ldObsDep} onChange={e => setLdObsDep(e.target.value)} placeholder="—"
-                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-            </div>
-            <div className="text-[9px] text-white/30 text-center mt-0.5 mb-0.5">Destination</div>
-            <div className="grid grid-cols-2 gap-1">
-              <input type="text" value={ldGrDest} onChange={e => setLdGrDest(e.target.value)} placeholder="—"
-                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-              <input type="text" value={ldObsDest} onChange={e => setLdObsDest(e.target.value)} placeholder="—"
+              <input type="text" value={ldGrDest} onChange={e => setLdGrDest(e.target.value)} placeholder="GR / 50'"
                 className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
             </div>
           </GlassCard>
