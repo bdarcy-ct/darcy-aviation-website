@@ -107,14 +107,14 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 2000, fwd: 35.8, aft: 40.5 },
     ],
   },
-  // ── Cessna 172 180HP — N34LC (max 2550) ──
-  // TCDS 3A12 (C172SP class envelope at 2550):
-  // Normal: fwd 35.0 at ≤1950, linear to 41.0 at 2550, aft 47.3 constant
+  // ── Cessna 172N 180HP — N9426E (replaces N34LC, sold) ──
+  // FAA: Cessna 172N, 1979, S/N 17272261, Lycoming O-320 w/ 180HP STC
+  // Normal: fwd 35.0 at ≤1950, linear to 41.0 at 2537, aft 47.3 constant
   // Utility: fwd 35.0 at ≤1950, linear to 37.5 at 2200, aft 40.5, max 2200
   {
-    tailNumber: 'N34LC', type: 'Cessna 172 (180 HP)', model: 'C172-180',
-    basicEmptyWeight: 1498.10, basicEmptyArm: 38.71, basicEmptyMoment: 57994.26,
-    maxGrossWeight: 2550, usefulLoad: 1051.90,
+    tailNumber: 'N9426E', type: 'Cessna 172 (180 HP)', model: 'C172-180',
+    basicEmptyWeight: 1527.25, basicEmptyArm: 39.63, basicEmptyMoment: 60522.01,
+    maxGrossWeight: 2537, usefulLoad: 1009.75,
     fuelArm: 47.9, maxFuelLbs: 336, taxiFuelLbs: 8,
     frontArm: 37, rearArm: 73, bag1Arm: 95, bag2Arm: 123,
     bag1Max: 120, bag2Max: 120, hasRear: true, hasBag2: true,
@@ -123,7 +123,7 @@ const AIRCRAFT: Aircraft[] = [
     cgEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 47.3 },
       { weight: 1950, fwd: 35.0, aft: 47.3 },
-      { weight: 2550, fwd: 41.0, aft: 47.3 },
+      { weight: 2537, fwd: 41.0, aft: 47.3 },
     ],
     utilityEnvelope: [
       { weight: 1500, fwd: 35.0, aft: 40.5 },
