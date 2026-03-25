@@ -248,10 +248,18 @@ function f(n: number, d = 2) { return n.toFixed(d); }
 
 // ─── Glass Card ──────────────────────────────────────────────────────────────
 
-const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-white/[0.12] transition-all duration-300';
+const glass = 'bg-white/[0.04] backdrop-blur-xl border rounded-2xl transition-all duration-300';
+const glassIdle = 'border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-white/[0.12]';
+const glassActive = 'border-blue-400/30 shadow-[0_0_24px_rgba(59,130,246,0.15),0_0_48px_rgba(59,130,246,0.08)]';
 
 function GlassCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={`glass-card ${glass} ${className || ''}`}>{children}</div>;
+  const [active, setActive] = useState(false);
+  return (
+    <div className={`glass-card ${glass} ${active ? glassActive : glassIdle} ${className || ''}`}
+      onFocusCapture={() => setActive(true)} onBlurCapture={() => setActive(false)}>
+      {children}
+    </div>
+  );
 }
 
 // ─── Editable Input ──────────────────────────────────────────────────────────
