@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import nodemailer from 'nodemailer';
 
 const router = Router();
 
@@ -275,7 +276,6 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
 
   if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
     try {
-      const nodemailer = require('nodemailer');
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
         port: parseInt(SMTP_PORT || '587'),
