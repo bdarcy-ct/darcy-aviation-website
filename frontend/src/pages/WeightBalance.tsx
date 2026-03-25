@@ -694,8 +694,12 @@ export default function WeightBalance() {
                 <input type="text" value={pilot} onChange={e => setPilot(e.target.value)}
                   placeholder="Pilot / Student Name"
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-400/30 focus:shadow-[0_0_10px_rgba(59,130,246,0.1)] transition-all duration-300" />
-                <button onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl text-sm font-bold bg-white/[0.08] hover:bg-white/[0.15] text-white/80 hover:text-white border border-white/10 hover:border-white/20 transition-all duration-300 active:scale-95">
+                <button onClick={() => window.print()} disabled={!c.ok || !pilot.trim()}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
+                    c.ok && pilot.trim()
+                      ? 'bg-white/[0.08] hover:bg-white/[0.15] text-white/80 hover:text-white border border-white/10 hover:border-white/20 active:scale-95'
+                      : 'bg-white/5 text-white/20 cursor-not-allowed'
+                  }`}>
                   🖨️ Print
                 </button>
                 <button onClick={submit} disabled={sending || !c.ok || !pilot.trim()}
