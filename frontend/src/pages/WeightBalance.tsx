@@ -519,7 +519,7 @@ export default function WeightBalance() {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <img src="/logo-darcy-v3.png?v=1772822630" alt="Darcy Aviation" className="h-14 w-auto brightness-[1.8] contrast-[1.2] drop-shadow-[0_0_12px_rgba(59,130,246,0.3)]" />
+            <img src="/logo-darcy-v3.png?v=1772822630" alt="Darcy Aviation" className="h-20 w-auto brightness-[1.8] contrast-[1.2] drop-shadow-[0_0_12px_rgba(59,130,246,0.3)] lg:ml-[65px]" />
           </div>
           <div className="text-center">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-100 to-white/60 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(59,130,246,0.3)]">Weight & Balance</h1>
