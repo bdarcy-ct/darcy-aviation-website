@@ -1,7 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
-// Print styles — white background, dark text, one page, no ink waste
+// Hide number input spinners + print styles
 const printStyles = `
+/* Kill all number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
 @media print {
   @page { size: letter; margin: 0.4in; }
   html, body { background: white !important; color: black !important; font-size: 10px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -253,10 +258,9 @@ function GlassCard({ children, className }: { children: React.ReactNode; classNa
 
 function NumIn({ value, onChange, cls }: { value: number; onChange: (v: number) => void; cls?: string }) {
   return (
-    <input type="number" value={value || ''} onChange={e => onChange(Number(e.target.value) || 0)}
-      placeholder="0" min={0}
-      className={`w-full bg-white/5 text-right font-mono rounded px-1.5 py-0.5 border border-white/10 focus:border-blue-400/50 focus:bg-white/10 focus:outline-none transition ${cls || 'text-white'}`}
-      style={{ MozAppearance: 'textfield' }} />
+    <input type="text" inputMode="decimal" value={value || ''} onChange={e => onChange(Number(e.target.value) || 0)}
+      placeholder="0"
+      className={`w-full bg-white/5 text-right font-mono rounded px-1.5 py-0.5 border border-white/10 focus:border-blue-400/50 focus:bg-white/10 focus:outline-none transition ${cls || 'text-white'}`} />
   );
 }
 
@@ -391,13 +395,14 @@ export default function WeightBalance() {
   const [b2, setB2] = useState(0);
   const [fuel, setFuel] = useState(0);
   const [burn, setBurn] = useState(0);
+  const [taxi, setTaxi] = useState(0);
 
   const [pilot, setPilot] = useState('');
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState('');
 
   const ac = useMemo(() => AIRCRAFT.find(a => a.tailNumber === sel)!, [sel]);
-  useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); }, [sel]);
+  useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); setTaxi(ac.taxiFuelLbs); }, [sel, ac]);
   // Auto-clamp burn if fuel is reduced below it
   useEffect(() => { if (burn > fuel) setBurn(fuel); }, [fuel]);
 
@@ -431,12 +436,12 @@ export default function WeightBalance() {
     const fm = fw * ac.frontArm, rm = rw * ac.rearArm, b1m = b1 * ac.bag1Arm, b2m = b2 * ac.bag2Arm;
     const zfw = ac.basicEmptyWeight + fw + rw + b1 + b2, zM = ac.basicEmptyMoment + fm + rm + b1m + b2m, zA = zfw > 0 ? zM / zfw : 0;
     const fM = fuel * ac.fuelArm, rW = zfw + fuel, rM = zM + fM, rA = rW > 0 ? rM / rW : 0;
-    const tM = ac.taxiFuelLbs * ac.fuelArm, toW = rW - ac.taxiFuelLbs, toM = rM - tM, toA = toW > 0 ? toM / toW : 0;
+    const tM = taxi * ac.fuelArm, toW = rW - taxi, toM = rM - tM, toA = toW > 0 ? toM / toW : 0;
     const bM = burn * ac.fuelArm, lW = toW - burn, lM = toM - bM, lA = lW > 0 ? lM / lW : 0;
     const toOk = cgOk(ac.cgEnvelope, toW, toA) && toW <= ac.maxGrossWeight;
     const lOk = cgOk(ac.cgEnvelope, lW, lA) && lW <= ac.maxGrossWeight && lW > 0;
     return { fm, rm, b1m, b2m, zfw, zA, zM, fM, rW, rA, rM, tM, toW, toA, toM, bM, lW, lA, lM, toOk, lOk, ok: toOk && lOk };
-  }, [ac, fw, rw, b1, b2, fuel, burn]);
+  }, [ac, fw, rw, b1, b2, fuel, burn, taxi]);
 
   const vaBase = ac.model.startsWith('PA-') ? 111 : ac.model === 'C152' ? 88 : ac.model === 'C172-180' ? 104 : 99;
   const vaTo = c.toW > 0 ? vaBase * Math.sqrt(c.toW / ac.maxGrossWeight) : 0;
@@ -649,7 +654,7 @@ export default function WeightBalance() {
                   <TRowE l={ac.fuelLabel} o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" set={v => setFuel(Math.min(v, ac.maxFuelLbs))}
                     hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} max`} />
                   <TRow l="Ramp Weight" o="=" w={c.rW} a={c.rA} m={c.rM} oM="=" green line />
-                  <TRow l="Taxi Fuel" o="-" w={ac.taxiFuelLbs} a={ac.fuelArm} m={c.tM} oM="-" />
+                  <TRowE l="Taxi Fuel" o="-" w={taxi} a={ac.fuelArm} m={c.tM} oM="-" set={v => setTaxi(Math.min(v, fuel))} />
                   <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" line ok={c.toOk} color="text-blue-400" />
                   <TRowE l="Fuel Burn" o="-" w={burn} a={ac.fuelArm} m={c.bM} oM="-" set={v => setBurn(Math.min(v, fuel))}
                     hint={`${Math.round(burn / 6)} gal`} />
