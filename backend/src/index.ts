@@ -9,6 +9,7 @@ import testimonialRoutes from './routes/testimonials';
 import weatherRoutes from './routes/weather';
 import adminRoutes from './routes/admin';
 import publicRoutes from './routes/public';
+import wbRoutes from './routes/wb';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -71,6 +72,7 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/wb', wbRoutes);
 
 // API 404 catch-all — MUST come before SPA fallback
 app.all('/api/*', (_req, res) => {
