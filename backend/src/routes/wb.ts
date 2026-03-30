@@ -129,6 +129,86 @@ router.get('/winds', async (req: Request, res: Response) => {
   }
 });
 
+// ─── SVG CG Chart Builder ───────────────────────────────────────────────────
+
+function buildCgChartSVG(d: any): string {
+  const env = d.cgEnvelope || [];
+  const util = d.utilityEnvelope || null;
+  if (env.length < 2) return '';
+
+  const points = [
+    { label: 'ZFW', weight: d.zfwWeight || 0, cg: d.zfwCg || 0, color: '#7c3aed' },
+    { label: 'T/O', weight: d.takeoffWeight || 0, cg: d.takeoffCg || 0, color: '#2563eb' },
+    { label: 'Ldg', weight: d.landingWeight || 0, cg: d.landingCg || 0, color: '#059669' },
+  ];
+
+  const allEnvs = util ? [...env, ...util] : env;
+  const allW = allEnvs.map((e: any) => e.weight);
+  const allC = allEnvs.flatMap((e: any) => [e.fwd, e.aft]);
+  const minW = Math.min(...allW) - 100, maxW = Math.max(...allW) + 75;
+  const minC = Math.min(...allC) - 2, maxC = Math.max(...allC) + 2;
+
+  const W = 460, H = 280;
+  const p = { t: 15, r: 20, b: 35, l: 50 };
+  const pW = W - p.l - p.r, pH = H - p.t - p.b;
+  const sx = (c: number) => p.l + ((c - minC) / (maxC - minC)) * pW;
+  const sy = (w: number) => p.t + pH - ((w - minW) / (maxW - minW)) * pH;
+
+  const fwdN = env.map((e: any) => `${sx(e.fwd).toFixed(1)},${sy(e.weight).toFixed(1)}`);
+  const aftN = [...env].reverse().map((e: any) => `${sx(e.aft).toFixed(1)},${sy(e.weight).toFixed(1)}`);
+  const normalPoly = [...fwdN, ...aftN].join(' ');
+
+  let utilPoly = '';
+  if (util && util.length >= 2) {
+    const fwdU = util.map((e: any) => `${sx(e.fwd).toFixed(1)},${sy(e.weight).toFixed(1)}`);
+    const aftU = [...util].reverse().map((e: any) => `${sx(e.aft).toFixed(1)},${sy(e.weight).toFixed(1)}`);
+    utilPoly = [...fwdU, ...aftU].join(' ');
+  }
+
+  // Grid lines
+  const wS = maxW - minW > 800 ? 200 : 100, cS = maxC - minC > 20 ? 5 : 2;
+  let gridLines = '';
+  for (let w = Math.ceil(minW / wS) * wS; w <= maxW; w += wS) {
+    gridLines += `<line x1="${p.l}" y1="${sy(w).toFixed(1)}" x2="${p.l + pW}" y2="${sy(w).toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
+    gridLines += `<text x="${p.l - 4}" y="${(sy(w) + 3).toFixed(1)}" text-anchor="end" fill="#888" font-size="8">${w}</text>`;
+  }
+  for (let c = Math.ceil(minC / cS) * cS; c <= maxC; c += cS) {
+    gridLines += `<line x1="${sx(c).toFixed(1)}" y1="${p.t}" x2="${sx(c).toFixed(1)}" y2="${p.t + pH}" stroke="#ddd" stroke-width="0.5"/>`;
+    gridLines += `<text x="${sx(c).toFixed(1)}" y="${p.t + pH + 12}" text-anchor="middle" fill="#888" font-size="8">${c}</text>`;
+  }
+
+  // Data points
+  let dotsHTML = '';
+  for (const pt of points) {
+    if (pt.weight <= 0) continue;
+    const x = sx(pt.cg), y = sy(pt.weight);
+    if (x < p.l || x > p.l + pW || y < p.t || y > p.t + pH) continue;
+    dotsHTML += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${pt.color}" stroke="white" stroke-width="1.5"/>`;
+    dotsHTML += `<text x="${(x + 8).toFixed(1)}" y="${(y + 3).toFixed(1)}" fill="${pt.color}" font-size="9" font-weight="bold">${pt.label}</text>`;
+  }
+
+  // Legend
+  let legend = '';
+  if (util) {
+    legend = `<line x1="${p.l + 8}" y1="${p.t + 10}" x2="${p.l + 24}" y2="${p.t + 10}" stroke="#059669" stroke-width="1.5"/>
+      <text x="${p.l + 28}" y="${p.t + 13}" fill="#666" font-size="7">Normal</text>
+      <line x1="${p.l + 8}" y1="${p.t + 20}" x2="${p.l + 24}" y2="${p.t + 20}" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="${p.l + 28}" y="${p.t + 23}" fill="#666" font-size="7">Utility</text>`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%;height:auto;font-family:Arial,sans-serif">
+    <rect width="${W}" height="${H}" fill="white" rx="4"/>
+    <rect x="${p.l}" y="${p.t}" width="${pW}" height="${pH}" fill="#fafafa" rx="3" stroke="#eee" stroke-width="0.5"/>
+    ${gridLines}
+    <polygon points="${normalPoly}" fill="rgba(34,197,94,0.12)" stroke="#059669" stroke-width="1.5" stroke-linejoin="miter"/>
+    ${utilPoly ? `<polygon points="${utilPoly}" fill="rgba(217,119,6,0.08)" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6,3" stroke-linejoin="miter"/>` : ''}
+    ${legend}
+    ${dotsHTML}
+    <text x="${p.l + pW / 2}" y="${H - 4}" text-anchor="middle" fill="#888" font-size="9" font-weight="bold">C.G. Location (inches)</text>
+    <text x="12" y="${p.t + pH / 2}" text-anchor="middle" fill="#888" font-size="9" font-weight="bold" transform="rotate(-90, 12, ${p.t + pH / 2})">Weight (lbs)</text>
+  </svg>`;
+}
+
 // ─── HTML Email Builder ─────────────────────────────────────────────────────
 
 function buildDispatchHTML(d: any): string {
@@ -138,105 +218,154 @@ function buildDispatchHTML(d: any): string {
   const rowsHTML = rows.map((r: any) => {
     const color = r.color === 'purple' ? '#7c3aed' : r.color === 'blue' ? '#2563eb' : r.color === 'green' ? '#059669' : r.color === 'red' ? '#dc2626' : '#333';
     const bold = r.bold ? 'font-weight:700;' : '';
-    const bg = r.overweight ? 'background:#fee2e2;' : r.subtotal ? 'border-top:1.5px solid #999;' : '';
+    const bg = r.overweight ? 'background:#fee2e2;' : r.subtotal ? 'border-top:1.5px solid #bbb;' : '';
     return `<tr style="${bg}">
-      <td style="padding:3px 6px;text-align:right;${bold}color:${color}">${r.label}</td>
-      <td style="padding:3px 4px;text-align:center;color:#666">${r.op || ''}</td>
-      <td style="padding:3px 6px;text-align:right;font-family:monospace;${bold}color:${color}">${f(r.weight)}</td>
-      <td style="padding:3px 4px;text-align:center;color:#ccc">×</td>
-      <td style="padding:3px 6px;text-align:right;font-family:monospace;color:${color}">${f(r.arm)}</td>
-      <td style="padding:3px 4px;text-align:center;color:#666">${r.opM || ''}</td>
-      <td style="padding:3px 6px;text-align:right;font-family:monospace;color:${color}">${f(r.moment)}</td>
+      <td style="padding:4px 6px;text-align:right;${bold}color:${color};font-size:11px">${r.label}</td>
+      <td style="padding:4px 4px;text-align:center;color:#999;font-size:11px">${r.op || ''}</td>
+      <td style="padding:4px 6px;text-align:right;font-family:'Courier New',monospace;${bold}color:${color};font-size:11px">${f(r.weight)}</td>
+      <td style="padding:4px 4px;text-align:center;color:#ccc;font-size:10px">×</td>
+      <td style="padding:4px 6px;text-align:right;font-family:'Courier New',monospace;color:${color};font-size:11px">${f(r.arm)}</td>
+      <td style="padding:4px 4px;text-align:center;color:#999;font-size:11px">${r.opM || ''}</td>
+      <td style="padding:4px 6px;text-align:right;font-family:'Courier New',monospace;color:${color};font-size:11px">${f(r.moment)}</td>
     </tr>`;
   }).join('\n');
 
   const condRow = (label: string, depVal: string, destVal: string) =>
-    `<tr><td style="padding:2px 6px;color:#666;font-size:11px">${label}</td><td style="padding:2px 6px;text-align:center;font-size:11px">${depVal}</td><td style="padding:2px 6px;text-align:center;font-size:11px">${destVal}</td></tr>`;
+    `<tr><td style="padding:2px 6px;color:#555;font-size:11px">${label}</td><td style="padding:2px 6px;text-align:center;font-size:11px">${depVal}</td><td style="padding:2px 6px;text-align:center;font-size:11px">${destVal}</td></tr>`;
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:20px;background:#f5f5f5;font-family:Inter,Helvetica,Arial,sans-serif;color:#1a1a1a;font-size:12px">
-<div style="max-width:720px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08)">
+  const toOk = d.toOk !== false;
+  const lOk = d.lOk !== false;
+  const toMargin = d.toMargin ?? (d.maxGross - (d.takeoffWeight || 0));
+  const statusColor = toOk && lOk ? '#059669' : '#dc2626';
+  const statusText = toOk && lOk ? '✅ WITHIN LIMITS' : '⚠️ OUT OF LIMITS';
+
+  const cgChart = buildCgChartSVG(d);
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:20px;background:#f0f2f5;font-family:'Segoe UI',Inter,Helvetica,Arial,sans-serif;color:#1a1a1a;font-size:12px">
+<div style="max-width:750px;margin:0 auto;background:white;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
 
   <!-- Header -->
-  <div style="background:#111827;color:white;padding:16px 24px;text-align:center">
-    <div style="font-size:20px;font-weight:700;letter-spacing:0.5px">Weight &amp; Balance</div>
-    <div style="font-size:10px;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-top:2px">Darcy Aviation — KDXR</div>
+  <div style="background:#0f172a;color:white;padding:20px 28px">
+    <table style="width:100%"><tr>
+      <td style="vertical-align:middle"><div style="font-size:22px;font-weight:800;letter-spacing:0.5px">Weight &amp; Balance</div>
+        <div style="font-size:10px;color:#64748b;letter-spacing:2px;text-transform:uppercase;margin-top:3px">Darcy Aviation — KDXR Danbury, CT</div></td>
+      <td style="text-align:right;vertical-align:middle;color:#94a3b8;font-size:11px">
+        <div>${d.dateStr}</div>
+        <div style="margin-top:2px;font-size:13px;font-weight:700;color:white">${d.aircraft}</div>
+        <div style="color:#64748b">${d.aircraftType}</div></td>
+    </tr></table>
   </div>
 
-  <div style="padding:16px 20px">
+  <!-- Status Banner -->
+  <div style="background:${statusColor};color:white;text-align:center;padding:8px;font-weight:700;font-size:13px;letter-spacing:0.5px">${statusText}</div>
 
-    <!-- Info bar -->
-    <table style="width:100%;margin-bottom:12px;font-size:12px"><tr>
-      <td><strong>Aircraft:</strong> ${d.aircraft} (${d.aircraftType})</td>
-      <td style="text-align:center"><strong>Route:</strong> ${d.departure || '—'} → ${d.destination || '—'}</td>
-      <td style="text-align:right"><strong>Date:</strong> ${d.dateStr}</td>
-    </tr></table>
+  <div style="padding:20px 24px">
 
-    <div style="display:flex;gap:12px">
+    <!-- Route & Pilot Info -->
+    <table style="width:100%;margin-bottom:16px;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden">
+      <tr style="background:#f8fafc">
+        <td style="padding:8px 12px;border-right:1px solid #e5e7eb"><strong>Pilot:</strong> ${d.pilotName}</td>
+        <td style="padding:8px 12px;border-right:1px solid #e5e7eb;text-align:center"><strong>Route:</strong> ${d.departure || '—'} → ${d.destination || '—'}</td>
+        <td style="padding:8px 12px;text-align:right"><strong>Max Gross:</strong> ${d.maxGross} lbs</td>
+      </tr>
+    </table>
 
-      <!-- LEFT: Conditions -->
-      <div style="width:200px;flex-shrink:0;border:1px solid #e5e7eb;border-radius:6px;padding:8px">
-        <div style="text-align:center;font-weight:700;font-size:11px;background:#f3f4f6;border-radius:4px;padding:3px;margin-bottom:6px">Conditions</div>
-        <table style="width:100%;font-size:11px;border-collapse:collapse">
-          <tr><td></td><td style="text-align:center;font-size:9px;color:#999;font-weight:600">DEP</td><td style="text-align:center;font-size:9px;color:#999;font-weight:600">DEST</td></tr>
-          ${condRow('Winds', d.depWinds || '—', d.destWinds || '—')}
-          ${condRow('HW / CW', d.depHwCw || '— / —', d.destHwCw || '— / —')}
-          ${condRow('Temp / Dp', d.depTemp || '—', d.destTemp || '—')}
-          ${condRow('Altimeter', d.depAlt || '—', d.destAlt || '—')}
-          ${condRow('Press Alt', d.depPA || '—', d.destPA || '—')}
-          ${condRow('Dens Alt', d.depDA || '—', d.destDA || '—')}
-        </table>
-        <div style="text-align:center;font-weight:700;font-size:11px;background:#f3f4f6;border-radius:4px;padding:3px;margin:8px 0 6px">Performance</div>
-        <table style="width:100%;font-size:11px;border-collapse:collapse">
-          <tr><td style="padding:2px 6px;color:#666">Va (T/O / Ldg)</td><td style="text-align:center">${d.vaTo || '—'} / ${d.vaLd || '—'}</td></tr>
-          <tr><td style="padding:2px 6px;color:#666">T/O Roll / 50'</td><td style="text-align:center">${d.toGr || '—'} / ${d.toObs || '—'}</td></tr>
-          <tr><td style="padding:2px 6px;color:#666">Ldg Roll / 50' (dep)</td><td style="text-align:center">${d.ldGrDep || '—'} / ${d.ldObsDep || '—'}</td></tr>
-          <tr><td style="padding:2px 6px;color:#666">Ldg Roll / 50' (dest)</td><td style="text-align:center">${d.ldGrDest || '—'} / ${d.ldObsDest || '—'}</td></tr>
-        </table>
-      </div>
+    <!-- Two-column layout using table for email compat -->
+    <table style="width:100%;border-spacing:12px 0;border-collapse:separate">
+      <tr valign="top">
+
+      <!-- LEFT: Conditions + Performance -->
+      <td style="width:210px;vertical-align:top">
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:12px">
+          <div style="text-align:center;font-weight:700;font-size:11px;background:#f1f5f9;border-radius:4px;padding:4px;margin-bottom:8px;color:#334155">CONDITIONS</div>
+          <table style="width:100%;font-size:10px;border-collapse:collapse">
+            <tr><td></td><td style="text-align:center;font-size:9px;color:#94a3b8;font-weight:700;padding-bottom:4px">DEP</td><td style="text-align:center;font-size:9px;color:#94a3b8;font-weight:700;padding-bottom:4px">DEST</td></tr>
+            ${condRow('Winds', d.depWinds || '—', d.destWinds || '—')}
+            ${condRow('HW / CW', d.depHwCw || '— / —', d.destHwCw || '— / —')}
+            ${condRow('Temp / Dp', d.depTemp || '—', d.destTemp || '—')}
+            ${condRow('Altimeter', d.depAlt || '—', d.destAlt || '—')}
+            ${condRow('Press Alt', d.depPA || '—', d.destPA || '—')}
+            ${condRow('Dens Alt', d.depDA || '—', d.destDA || '—')}
+          </table>
+
+          <div style="text-align:center;font-weight:700;font-size:11px;background:#f1f5f9;border-radius:4px;padding:4px;margin:10px 0 8px;color:#334155">PERFORMANCE</div>
+          <table style="width:100%;font-size:10px;border-collapse:collapse">
+            <tr><td style="padding:2px 6px;color:#555">V<sub>A</sub> (T/O / Ldg)</td><td style="text-align:center;font-weight:600">${d.vaTo || '—'} / ${d.vaLd || '—'}</td></tr>
+            <tr><td style="padding:2px 6px;color:#555">T/O Roll / 50'</td><td style="text-align:center">${d.toGr || '—'} / ${d.toObs || '—'}</td></tr>
+            <tr><td style="padding:2px 6px;color:#555">Ldg (dep)</td><td style="text-align:center">${d.ldGrDep || '—'} / ${d.ldObsDep || '—'}</td></tr>
+            <tr><td style="padding:2px 6px;color:#555">Ldg (dest)</td><td style="text-align:center">${d.ldGrDest || '—'} / ${d.ldObsDest || '—'}</td></tr>
+          </table>
+        </div>
+      </td>
 
       <!-- RIGHT: W&B Table -->
-      <div style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:8px">
-        <table style="width:100%;font-size:11px;margin-bottom:6px"><tr>
-          <td style="text-align:center"><div style="color:#999;font-size:9px">Max Wt</div><strong>${d.maxGross}</strong></td>
-          <td style="text-align:center"><div style="color:#999;font-size:9px">Useful</div><strong>${f(d.usefulLoad)}</strong></td>
-          <td style="text-align:center"><div style="color:#999;font-size:9px">BEW</div><strong>${f(d.bew)}</strong></td>
-          <td style="text-align:center"><div style="color:#999;font-size:9px">Arm</div><strong>${f(d.bewArm)}</strong></td>
-          <td style="text-align:center"><div style="color:#999;font-size:9px">Moment</div><strong>${f(d.bewMoment)}</strong></td>
-        </tr></table>
-        <table style="width:100%;font-size:11px;border-collapse:collapse">
-          <tr style="border-bottom:1px solid #ddd">
-            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600"></th>
-            <th style="width:20px"></th>
-            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600">Weight</th>
-            <th style="width:20px;text-align:center;color:#ccc">×</th>
-            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600">Arm</th>
-            <th style="width:20px"></th>
-            <th style="text-align:right;padding:3px 6px;color:#999;font-weight:600">Moment</th>
-          </tr>
-          ${rowsHTML}
-        </table>
-      </div>
-    </div>
+      <td style="vertical-align:top">
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px">
+          <!-- Summary bar -->
+          <table style="width:100%;font-size:11px;margin-bottom:8px;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden"><tr style="background:#f8fafc">
+            <td style="text-align:center;padding:4px 6px;border-right:1px solid #e5e7eb"><div style="color:#94a3b8;font-size:8px;font-weight:700">MAX WT</div><strong>${d.maxGross}</strong></td>
+            <td style="text-align:center;padding:4px 6px;border-right:1px solid #e5e7eb"><div style="color:#94a3b8;font-size:8px;font-weight:700">USEFUL</div><strong>${f(d.usefulLoad)}</strong></td>
+            <td style="text-align:center;padding:4px 6px;border-right:1px solid #e5e7eb"><div style="color:#94a3b8;font-size:8px;font-weight:700">BEW</div><strong>${f(d.bew)}</strong></td>
+            <td style="text-align:center;padding:4px 6px;border-right:1px solid #e5e7eb"><div style="color:#94a3b8;font-size:8px;font-weight:700">ARM</div><strong>${f(d.bewArm)}</strong></td>
+            <td style="text-align:center;padding:4px 6px"><div style="color:#94a3b8;font-size:8px;font-weight:700">MOMENT</div><strong>${f(d.bewMoment)}</strong></td>
+          </tr></table>
+
+          <!-- W&B Table -->
+          <table style="width:100%;font-size:11px;border-collapse:collapse">
+            <tr style="border-bottom:1.5px solid #cbd5e1">
+              <th style="text-align:right;padding:4px 6px;color:#94a3b8;font-weight:700;font-size:10px"></th>
+              <th style="width:18px"></th>
+              <th style="text-align:right;padding:4px 6px;color:#94a3b8;font-weight:700;font-size:10px">Weight</th>
+              <th style="width:18px;text-align:center;color:#cbd5e1;font-size:10px">×</th>
+              <th style="text-align:right;padding:4px 6px;color:#94a3b8;font-weight:700;font-size:10px">Arm</th>
+              <th style="width:18px"></th>
+              <th style="text-align:right;padding:4px 6px;color:#94a3b8;font-weight:700;font-size:10px">Moment</th>
+            </tr>
+            ${rowsHTML}
+          </table>
+
+          <!-- Margin -->
+          <table style="width:100%;margin-top:8px;border-top:1px solid #e5e7eb;padding-top:6px;font-size:11px">
+            <tr>
+              <td><span style="color:#94a3b8">T/O Margin:</span> <strong style="color:${toMargin >= 0 ? '#059669' : '#dc2626'}">${toMargin >= 0 ? '+' : ''}${Math.round(toMargin)} lbs</strong></td>
+              <td style="text-align:right"><span style="color:#94a3b8">T/O CG:</span> <strong style="color:${toOk ? '#2563eb' : '#dc2626'}">${f(d.takeoffCg)}"</strong>
+                &nbsp; <span style="color:#94a3b8">Ldg CG:</span> <strong style="color:${lOk ? '#059669' : '#dc2626'}">${f(d.landingCg)}"</strong></td>
+            </tr>
+          </table>
+        </div>
+      </td>
+      </tr>
+    </table>
+
+    <!-- CG Envelope Chart -->
+    ${cgChart ? `<div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center">
+      <div style="font-weight:700;font-size:12px;color:#334155;margin-bottom:8px">Center of Gravity Envelope</div>
+      ${cgChart}
+    </div>` : ''}
 
     <!-- METAR raw -->
-    <div style="margin-top:12px;padding:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:10px;font-family:monospace;color:#666">
-      <div><strong>DEP METAR:</strong> ${d.depMetar || 'N/A'}</div>
-      ${d.destMetar ? `<div><strong>DEST METAR:</strong> ${d.destMetar}</div>` : ''}
+    <div style="margin-top:14px;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:10px;font-family:'Courier New',monospace;color:#64748b;line-height:1.6">
+      <div><strong style="color:#475569">DEP METAR:</strong> ${d.depMetar || 'N/A'}</div>
+      ${d.destMetar ? `<div><strong style="color:#475569">DEST METAR:</strong> ${d.destMetar}</div>` : ''}
     </div>
 
-    <!-- Signature -->
-    <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:11px">
-      <div><strong>Pilot/Student:</strong> ${d.pilotName}</div>
-      <div><strong>Date:</strong> ${d.dateStr}</div>
-    </div>
-    <div style="margin-top:14px;display:flex;justify-content:space-between;font-size:11px;color:#999">
-      <div>Signature: ________________________</div>
-      <div>Instructor: ________________________</div>
-    </div>
+    <!-- Signature Block -->
+    <table style="width:100%;margin-top:20px;font-size:11px">
+      <tr>
+        <td><strong>Pilot/Student:</strong> ${d.pilotName}</td>
+        <td style="text-align:right"><strong>Date:</strong> ${d.dateStr}</td>
+      </tr>
+    </table>
+    <table style="width:100%;margin-top:16px;font-size:11px;color:#94a3b8">
+      <tr>
+        <td>Signature: ________________________</td>
+        <td style="text-align:right">Instructor: ________________________</td>
+      </tr>
+    </table>
   </div>
 
   <!-- Footer -->
-  <div style="text-align:center;padding:10px;font-size:9px;color:#999;border-top:1px solid #eee">
+  <div style="text-align:center;padding:12px;font-size:9px;color:#94a3b8;border-top:1px solid #e5e7eb;background:#f8fafc">
     Darcy Aviation — KDXR Danbury, CT · For planning purposes — verify with POH/AFM
   </div>
 </div></body></html>`;
