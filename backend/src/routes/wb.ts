@@ -276,11 +276,15 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
 
   if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
     try {
+      const port = parseInt(SMTP_PORT || '465');
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
-        port: parseInt(SMTP_PORT || '587'),
-        secure: SMTP_PORT === '465',
+        port,
+        secure: port === 465,
         auth: { user: SMTP_USER, pass: SMTP_PASS },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
       });
 
       await transporter.sendMail({
@@ -296,6 +300,8 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
       return;
     } catch (emailErr: any) {
       console.error('Email send failed:', emailErr.message);
+      res.json({ success: true, message: 'W&B sheet recorded (email delivery failed — check SMTP config)' });
+      return;
     }
   }
 
