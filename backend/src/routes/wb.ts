@@ -428,8 +428,8 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
       res.json({ success: true, message: 'Weight & Balance sheet sent to dispatch' });
       return;
     } catch (emailErr: any) {
-      console.error('Email send failed:', emailErr.message);
-      res.json({ success: true, message: 'W&B sheet recorded (email delivery failed — check SMTP config)' });
+      console.error('Email send failed:', emailErr.message, emailErr.code, emailErr.responseCode);
+      res.json({ success: false, message: `Email failed: ${emailErr.message || 'unknown error'}`, code: emailErr.code, responseCode: emailErr.responseCode });
       return;
     }
   }
