@@ -692,26 +692,28 @@ export default function WeightBalance() {
 
             {/* SUBMIT + PRINT */}
             <GlassCard className="p-4 print:hidden">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <input type="text" value={pilot} onChange={e => setPilot(e.target.value)}
                   placeholder="Pilot / Student Name"
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-400/30 focus:shadow-[0_0_10px_rgba(59,130,246,0.1)] transition-all duration-300" />
-                <button onClick={() => window.print()} disabled={!c.ok || !pilot.trim()}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
-                    c.ok && pilot.trim()
-                      ? 'bg-white/[0.08] hover:bg-white/[0.15] text-white/80 hover:text-white border border-white/10 hover:border-white/20 active:scale-95'
-                      : 'bg-white/5 text-white/20 cursor-not-allowed'
-                  }`}>
-                  🖨️ Print
-                </button>
-                <button onClick={submit} disabled={sending || !c.ok || !pilot.trim()}
-                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
-                    c.ok && pilot.trim()
-                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-400/40 hover:shadow-xl active:scale-95'
-                      : 'bg-white/5 text-white/20 cursor-not-allowed'
-                  }`}>
-                  {sending ? 'Sending...' : '📧 Email to Dispatch'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => window.print()} disabled={!c.ok || !pilot.trim()}
+                    className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
+                      c.ok && pilot.trim()
+                        ? 'bg-white/[0.08] hover:bg-white/[0.15] text-white/80 hover:text-white border border-white/10 hover:border-white/20 active:scale-95'
+                        : 'bg-white/5 text-white/20 cursor-not-allowed'
+                    }`}>
+                    🖨️ Print
+                  </button>
+                  <button onClick={submit} disabled={sending || !c.ok || !pilot.trim()}
+                    className={`flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
+                      c.ok && pilot.trim()
+                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-400/40 hover:shadow-xl active:scale-95'
+                        : 'bg-white/5 text-white/20 cursor-not-allowed'
+                    }`}>
+                    {sending ? 'Sending...' : '📧 Dispatch'}
+                  </button>
+                </div>
               </div>
               {msg && <p className={`text-xs mt-2 text-center ${msg.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{msg}</p>}
             </GlassCard>
