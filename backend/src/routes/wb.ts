@@ -384,55 +384,9 @@ router.post('/dispatch', async (req: Request, res: Response) => {
   const now = new Date(d.timestamp || Date.now());
   d.dateStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
 
-  // Build QuickChart CG envelope URL
-  if (d.cgEnvelope && d.cgEnvelope.length >= 2) {
-    const env = d.cgEnvelope;
-    const util = d.utilityEnvelope;
-    const fwdLine = env.map((e: any) => ({ x: e.fwd, y: e.weight }));
-    const aftLine = env.map((e: any) => ({ x: e.aft, y: e.weight }));
-    const datasets: any[] = [
-      { label: 'Fwd Limit', data: fwdLine, borderColor: '#059669', backgroundColor: 'rgba(34,197,94,0.1)', fill: false, showLine: true, pointRadius: 0, borderWidth: 2 },
-      { label: 'Aft Limit', data: aftLine, borderColor: '#059669', fill: '-1', showLine: true, pointRadius: 0, borderWidth: 2 },
-    ];
-    if (util && util.length >= 2) {
-      datasets.push(
-        { label: 'Util Fwd', data: util.map((e: any) => ({ x: e.fwd, y: e.weight })), borderColor: '#d97706', borderDash: [6, 3], fill: false, showLine: true, pointRadius: 0, borderWidth: 1.5 },
-        { label: 'Util Aft', data: [...util].reverse().map((e: any) => ({ x: e.aft, y: e.weight })), borderColor: '#d97706', borderDash: [6, 3], fill: false, showLine: true, pointRadius: 0, borderWidth: 1.5 },
-      );
-    }
-    const pts: any[] = [];
-    if (d.zfwWeight > 0) pts.push({ label: 'ZFW', data: [{ x: d.zfwCg, y: d.zfwWeight }], backgroundColor: '#7c3aed', borderColor: '#7c3aed', pointRadius: 6, pointStyle: 'circle', showLine: false });
-    if (d.takeoffWeight > 0) pts.push({ label: 'T/O', data: [{ x: d.takeoffCg, y: d.takeoffWeight }], backgroundColor: '#2563eb', borderColor: '#2563eb', pointRadius: 6, pointStyle: 'circle', showLine: false });
-    if (d.landingWeight > 0) pts.push({ label: 'Ldg', data: [{ x: d.landingCg, y: d.landingWeight }], backgroundColor: '#059669', borderColor: '#059669', pointRadius: 6, pointStyle: 'circle', showLine: false });
-    datasets.push(...pts);
-
-    const chartConfig = {
-      type: 'scatter',
-      data: { datasets },
-      options: {
-        scales: {
-          x: { title: { display: true, text: 'C.G. Location (inches)' } },
-          y: { title: { display: true, text: 'Weight (lbs)' } },
-        },
-        plugins: { legend: { display: true, position: 'top' } },
-      },
-    };
-    // Use QuickChart short URL API to avoid long URL issues
-    try {
-      const qcRes = await fetch('https://quickchart.io/chart/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ width: 500, height: 300, backgroundColor: 'white', chart: chartConfig }),
-        signal: AbortSignal.timeout(5000),
-      });
-      const qcData = await qcRes.json() as any;
-      if (qcData.success && qcData.url) {
-        d._chartUrl = qcData.url;
-        console.log('Chart URL:', d._chartUrl);
-      }
-    } catch (qcErr: any) {
-      console.error('QuickChart failed:', qcErr.message);
-    }
+  // Use chart URL from frontend (pre-generated via QuickChart)
+  if (d.chartUrl) {
+    d._chartUrl = d.chartUrl;
   }
 
   const htmlBody = buildDispatchHTML(d);

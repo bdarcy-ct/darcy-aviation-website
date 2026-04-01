@@ -475,6 +475,29 @@ export default function WeightBalance() {
         { label: 'Landing Weight', op: '=', weight: c.lW, arm: c.lA, moment: c.lM, opM: '=', bold: true, subtotal: true, color: 'green', overweight: !c.lOk },
       ];
 
+      // Build CG chart URL via QuickChart
+      let chartUrl = '';
+      try {
+        const env = ac.cgEnvelope;
+        const datasets: any[] = [
+          { label: 'Normal', data: [...env.map((e: any) => ({x:e.fwd,y:e.weight})), ...[...env].reverse().map((e: any) => ({x:e.aft,y:e.weight})), {x:env[0].fwd,y:env[0].weight}], borderColor:'#059669', backgroundColor:'rgba(34,197,94,0.12)', fill:true, showLine:true, pointRadius:0, borderWidth:2 },
+        ];
+        if (ac.utilityEnvelope) {
+          const u = ac.utilityEnvelope;
+          datasets.push({ label: 'Utility', data: [...u.map((e: any) => ({x:e.fwd,y:e.weight})), ...[...u].reverse().map((e: any) => ({x:e.aft,y:e.weight})), {x:u[0].fwd,y:u[0].weight}], borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.06)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5 });
+        }
+        if (c.zfw > 0) datasets.push({ label:'ZFW', data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#fff', pointRadius:7, pointBorderWidth:2, showLine:false });
+        if (c.toW > 0) datasets.push({ label:'T/O', data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#fff', pointRadius:7, pointBorderWidth:2, showLine:false });
+        if (c.lW > 0) datasets.push({ label:'Ldg', data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#fff', pointRadius:7, pointBorderWidth:2, showLine:false });
+        const cfg = { type:'scatter', data:{datasets}, options:{scales:{x:{title:{display:true,text:'CG (inches)'}},y:{title:{display:true,text:'Weight (lbs)'}}},plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}}} };
+        const qcRes = await fetch('https://quickchart.io/chart/create', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ width:500, height:300, backgroundColor:'white', chart: cfg }),
+        });
+        const qcData = await qcRes.json();
+        if (qcData.success && qcData.url) chartUrl = qcData.url;
+      } catch {}
+
       const r = await fetch('/api/wb/dispatch', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -489,6 +512,7 @@ export default function WeightBalance() {
           utilityEnvelope: ac.utilityEnvelope || null,
           toMargin: ac.maxGrossWeight - c.toW,
           toOk: c.toOk, lOk: c.lOk,
+          chartUrl,
           // Conditions
           depWinds: wxD ? `${wxD.wDir}° @ ${wxD.wSpd}` : '', destWinds: wxA ? `${wxA.wDir}° @ ${wxA.wSpd}` : '',
           depHwCw: `${hwDep || '—'} / ${xwDep || '—'}`, destHwCw: `${hwDest || '—'} / ${xwDest || '—'}`,
