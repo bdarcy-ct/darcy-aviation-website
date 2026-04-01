@@ -389,10 +389,11 @@ router.post('/dispatch', async (req: Request, res: Response) => {
     d._chartUrl = d.chartUrl;
   }
 
-  const htmlBody = buildDispatchHTML(d);
+  // Use pre-built HTML from relay source if available, otherwise build fresh
+  const htmlBody = d._prebuiltHtml || buildDispatchHTML(d);
 
   // Plain-text fallback
-  const textBody = `WEIGHT & BALANCE — DARCY AVIATION
+  const textBody = d._prebuiltText || `WEIGHT & BALANCE — DARCY AVIATION
 Date: ${d.dateStr}
 Pilot: ${d.pilotName}
 Aircraft: ${d.aircraft} (${d.aircraftType})
@@ -436,13 +437,14 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
       console.error('SMTP failed, trying relay:', emailErr.message);
 
       // Fallback: relay through the working Railway service over HTTPS
+      // Send pre-built HTML so relay doesn't need to regenerate
       const RELAY_URL = process.env.EMAIL_RELAY_URL;
       if (RELAY_URL) {
         try {
           const relayRes = await fetch(RELAY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(d),
+            body: JSON.stringify({ ...d, _prebuiltHtml: htmlBody, _prebuiltText: textBody }),
             signal: AbortSignal.timeout(15000),
           });
           const relayData = await relayRes.json() as any;
