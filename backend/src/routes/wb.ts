@@ -417,7 +417,22 @@ router.post('/dispatch', async (req: Request, res: Response) => {
         plugins: { legend: { display: true, position: 'top' } },
       },
     };
-    d._chartUrl = `https://quickchart.io/chart?w=500&h=300&bkg=white&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+    // Use QuickChart short URL API to avoid long URL issues
+    try {
+      const qcRes = await fetch('https://quickchart.io/chart/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ width: 500, height: 300, backgroundColor: 'white', chart: chartConfig }),
+        signal: AbortSignal.timeout(5000),
+      });
+      const qcData = await qcRes.json() as any;
+      if (qcData.success && qcData.url) {
+        d._chartUrl = qcData.url;
+        console.log('Chart URL:', d._chartUrl);
+      }
+    } catch (qcErr: any) {
+      console.error('QuickChart failed:', qcErr.message);
+    }
   }
 
   const htmlBody = buildDispatchHTML(d);
