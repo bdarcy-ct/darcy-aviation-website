@@ -340,7 +340,7 @@ function buildDispatchHTML(d: any): string {
     <!-- CG Envelope Chart -->
     ${cgChart ? `<div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center">
       <div style="font-weight:700;font-size:12px;color:#334155;margin-bottom:8px">Center of Gravity Envelope</div>
-      ${cgChart}
+      <img src="data:image/svg+xml;base64,${Buffer.from(cgChart).toString('base64')}" alt="CG Envelope" style="max-width:100%;height:auto" width="460" />
     </div>` : ''}
 
     <!-- METAR raw -->
