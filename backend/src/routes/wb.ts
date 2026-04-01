@@ -411,9 +411,9 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
         port,
         secure: port === 465,
         auth: { user: SMTP_USER, pass: SMTP_PASS },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
+        connectionTimeout: 3000,
+        greetingTimeout: 3000,
+        socketTimeout: 5000,
       });
 
       await transporter.sendMail({
