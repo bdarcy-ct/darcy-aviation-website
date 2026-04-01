@@ -428,8 +428,30 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
       res.json({ success: true, message: 'Weight & Balance sheet sent to dispatch' });
       return;
     } catch (emailErr: any) {
-      console.error('Email send failed:', emailErr.message, emailErr.code, emailErr.responseCode);
-      res.json({ success: false, message: `Email failed: ${emailErr.message || 'unknown error'}`, code: emailErr.code, responseCode: emailErr.responseCode });
+      console.error('SMTP failed, trying relay:', emailErr.message);
+
+      // Fallback: relay through the working Railway service over HTTPS
+      const RELAY_URL = process.env.EMAIL_RELAY_URL;
+      if (RELAY_URL) {
+        try {
+          const relayRes = await fetch(RELAY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(d),
+            signal: AbortSignal.timeout(15000),
+          });
+          const relayData = await relayRes.json() as any;
+          if (relayData.success) {
+            console.log(`✈️ W&B dispatch sent via relay for ${d.aircraft} (${d.pilotName})`);
+            res.json({ success: true, message: 'Weight & Balance sheet sent to dispatch' });
+            return;
+          }
+        } catch (relayErr: any) {
+          console.error('Relay also failed:', relayErr.message);
+        }
+      }
+
+      res.json({ success: false, message: `Email delivery failed. Please try again.` });
       return;
     }
   }
