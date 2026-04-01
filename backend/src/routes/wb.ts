@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import nodemailer from 'nodemailer';
-import sharp from 'sharp';
 
 const router = Router();
 
@@ -339,9 +338,9 @@ function buildDispatchHTML(d: any): string {
     </table>
 
     <!-- CG Envelope Chart -->
-    ${cgChart ? `<div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center">
+    ${d._chartUrl ? `<div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center">
       <div style="font-weight:700;font-size:12px;color:#334155;margin-bottom:8px">Center of Gravity Envelope</div>
-      <img src="cid:cgchart" alt="CG Envelope" style="max-width:100%;height:auto" width="460" />
+      <img src="${d._chartUrl}" alt="CG Envelope Chart" style="max-width:100%;height:auto" width="500" />
     </div>` : ''}
 
     <!-- METAR raw -->
@@ -385,6 +384,42 @@ router.post('/dispatch', async (req: Request, res: Response) => {
   const now = new Date(d.timestamp || Date.now());
   d.dateStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
 
+  // Build QuickChart CG envelope URL
+  if (d.cgEnvelope && d.cgEnvelope.length >= 2) {
+    const env = d.cgEnvelope;
+    const util = d.utilityEnvelope;
+    const fwdLine = env.map((e: any) => ({ x: e.fwd, y: e.weight }));
+    const aftLine = env.map((e: any) => ({ x: e.aft, y: e.weight }));
+    const datasets: any[] = [
+      { label: 'Fwd Limit', data: fwdLine, borderColor: '#059669', backgroundColor: 'rgba(34,197,94,0.1)', fill: false, showLine: true, pointRadius: 0, borderWidth: 2 },
+      { label: 'Aft Limit', data: aftLine, borderColor: '#059669', fill: '-1', showLine: true, pointRadius: 0, borderWidth: 2 },
+    ];
+    if (util && util.length >= 2) {
+      datasets.push(
+        { label: 'Util Fwd', data: util.map((e: any) => ({ x: e.fwd, y: e.weight })), borderColor: '#d97706', borderDash: [6, 3], fill: false, showLine: true, pointRadius: 0, borderWidth: 1.5 },
+        { label: 'Util Aft', data: [...util].reverse().map((e: any) => ({ x: e.aft, y: e.weight })), borderColor: '#d97706', borderDash: [6, 3], fill: false, showLine: true, pointRadius: 0, borderWidth: 1.5 },
+      );
+    }
+    const pts: any[] = [];
+    if (d.zfwWeight > 0) pts.push({ label: 'ZFW', data: [{ x: d.zfwCg, y: d.zfwWeight }], backgroundColor: '#7c3aed', borderColor: '#7c3aed', pointRadius: 6, pointStyle: 'circle', showLine: false });
+    if (d.takeoffWeight > 0) pts.push({ label: 'T/O', data: [{ x: d.takeoffCg, y: d.takeoffWeight }], backgroundColor: '#2563eb', borderColor: '#2563eb', pointRadius: 6, pointStyle: 'circle', showLine: false });
+    if (d.landingWeight > 0) pts.push({ label: 'Ldg', data: [{ x: d.landingCg, y: d.landingWeight }], backgroundColor: '#059669', borderColor: '#059669', pointRadius: 6, pointStyle: 'circle', showLine: false });
+    datasets.push(...pts);
+
+    const chartConfig = {
+      type: 'scatter',
+      data: { datasets },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'C.G. Location (inches)' } },
+          y: { title: { display: true, text: 'Weight (lbs)' } },
+        },
+        plugins: { legend: { display: true, position: 'top' } },
+      },
+    };
+    d._chartUrl = `https://quickchart.io/chart?w=500&h=300&bkg=white&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+  }
+
   const htmlBody = buildDispatchHTML(d);
 
   // Plain-text fallback
@@ -417,31 +452,13 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
         socketTimeout: 5000,
       });
 
-      const cgChartSvg = buildCgChartSVG(d);
-      const mailOptions: any = {
+      await transporter.sendMail({
         from: `"Darcy Aviation W&B" <${SMTP_USER}>`,
         to: DISPATCH_EMAIL,
         subject: `W&B Sheet — ${d.aircraft} — ${d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`,
         text: textBody,
         html: htmlBody,
-      };
-      if (cgChartSvg) {
-        try {
-          const pngBuffer = await sharp(Buffer.from(cgChartSvg))
-            .resize(920)
-            .png()
-            .toBuffer();
-          mailOptions.attachments = [{
-            filename: 'cg-envelope.png',
-            content: pngBuffer,
-            contentType: 'image/png',
-            cid: 'cgchart',
-          }];
-        } catch (svgErr: any) {
-          console.error('SVG→PNG conversion failed:', svgErr.message);
-        }
-      }
-      await transporter.sendMail(mailOptions);
+      });
 
       console.log(`✈️ W&B dispatch email sent for ${d.aircraft} (${d.pilotName})`);
       res.json({ success: true, message: 'Weight & Balance sheet sent to dispatch' });
