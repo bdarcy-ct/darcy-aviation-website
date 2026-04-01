@@ -340,7 +340,7 @@ function buildDispatchHTML(d: any): string {
     <!-- CG Envelope Chart -->
     ${cgChart ? `<div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center">
       <div style="font-weight:700;font-size:12px;color:#334155;margin-bottom:8px">Center of Gravity Envelope</div>
-      <img src="data:image/svg+xml;base64,${Buffer.from(cgChart).toString('base64')}" alt="CG Envelope" style="max-width:100%;height:auto" width="460" />
+      <img src="cid:cgchart" alt="CG Envelope" style="max-width:100%;height:auto" width="460" />
     </div>` : ''}
 
     <!-- METAR raw -->
@@ -416,13 +416,23 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
         socketTimeout: 5000,
       });
 
-      await transporter.sendMail({
+      const cgChartSvg = buildCgChartSVG(d);
+      const mailOptions: any = {
         from: `"Darcy Aviation W&B" <${SMTP_USER}>`,
         to: DISPATCH_EMAIL,
         subject: `W&B Sheet — ${d.aircraft} — ${d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`,
         text: textBody,
         html: htmlBody,
-      });
+      };
+      if (cgChartSvg) {
+        mailOptions.attachments = [{
+          filename: 'cg-envelope.svg',
+          content: cgChartSvg,
+          contentType: 'image/svg+xml',
+          cid: 'cgchart',
+        }];
+      }
+      await transporter.sendMail(mailOptions);
 
       console.log(`✈️ W&B dispatch email sent for ${d.aircraft} (${d.pilotName})`);
       res.json({ success: true, message: 'Weight & Balance sheet sent to dispatch' });
