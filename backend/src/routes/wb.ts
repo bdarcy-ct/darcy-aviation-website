@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import nodemailer from 'nodemailer';
+import sharp from 'sharp';
 
 const router = Router();
 
@@ -425,12 +426,20 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
         html: htmlBody,
       };
       if (cgChartSvg) {
-        mailOptions.attachments = [{
-          filename: 'cg-envelope.svg',
-          content: cgChartSvg,
-          contentType: 'image/svg+xml',
-          cid: 'cgchart',
-        }];
+        try {
+          const pngBuffer = await sharp(Buffer.from(cgChartSvg))
+            .resize(920)
+            .png()
+            .toBuffer();
+          mailOptions.attachments = [{
+            filename: 'cg-envelope.png',
+            content: pngBuffer,
+            contentType: 'image/png',
+            cid: 'cgchart',
+          }];
+        } catch (svgErr: any) {
+          console.error('SVG→PNG conversion failed:', svgErr.message);
+        }
       }
       await transporter.sendMail(mailOptions);
 
