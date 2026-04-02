@@ -479,20 +479,45 @@ export default function WeightBalance() {
       let chartUrl = '';
       try {
         const env = ac.cgEnvelope;
+        // Build closed polygon: fwd edge bottom→top, then aft edge top→bottom, close
+        const normalPoly = [
+          ...env.map((e: any) => ({x:e.fwd,y:e.weight})),
+          ...[...env].reverse().map((e: any) => ({x:e.aft,y:e.weight})),
+          {x:env[0].fwd,y:env[0].weight}
+        ];
         const datasets: any[] = [
-          { label: 'Normal', data: [...env.map((e: any) => ({x:e.fwd,y:e.weight})), ...[...env].reverse().map((e: any) => ({x:e.aft,y:e.weight})), {x:env[0].fwd,y:env[0].weight}], borderColor:'#059669', backgroundColor:'rgba(34,197,94,0.12)', fill:true, showLine:true, pointRadius:0, borderWidth:2 },
+          { label:'Normal', data:normalPoly, borderColor:'#059669', backgroundColor:'rgba(34,197,94,0.15)', fill:true, showLine:true, pointRadius:0, borderWidth:2, tension:0 },
         ];
         if (ac.utilityEnvelope) {
           const u = ac.utilityEnvelope;
-          datasets.push({ label: 'Utility', data: [...u.map((e: any) => ({x:e.fwd,y:e.weight})), ...[...u].reverse().map((e: any) => ({x:e.aft,y:e.weight})), {x:u[0].fwd,y:u[0].weight}], borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.06)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5 });
+          const utilPoly = [
+            ...u.map((e: any) => ({x:e.fwd,y:e.weight})),
+            ...[...u].reverse().map((e: any) => ({x:e.aft,y:e.weight})),
+            {x:u[0].fwd,y:u[0].weight}
+          ];
+          datasets.push({ label:'Utility', data:utilPoly, borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.08)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5, tension:0 });
         }
-        if (c.zfw > 0) datasets.push({ label:'ZFW', data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#fff', pointRadius:7, pointBorderWidth:2, showLine:false });
-        if (c.toW > 0) datasets.push({ label:'T/O', data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#fff', pointRadius:7, pointBorderWidth:2, showLine:false });
-        if (c.lW > 0) datasets.push({ label:'Ldg', data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#fff', pointRadius:7, pointBorderWidth:2, showLine:false });
-        const cfg = { type:'scatter', data:{datasets}, options:{scales:{x:{title:{display:true,text:'CG (inches)'}},y:{title:{display:true,text:'Weight (lbs)'}}},plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}}} };
+        // Data points with labels via datalabels plugin
+        if (c.zfw > 0) datasets.push({ label:'ZFW', data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointStyle:'circle', pointBorderWidth:2, showLine:false });
+        if (c.toW > 0) datasets.push({ label:'T/O', data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointStyle:'circle', pointBorderWidth:2, showLine:false });
+        if (c.lW > 0) datasets.push({ label:'Ldg', data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointStyle:'circle', pointBorderWidth:2, showLine:false });
+        const cfg = {
+          type:'scatter',
+          data:{datasets},
+          options:{
+            scales:{
+              x:{title:{display:true,text:'CG Station (inches)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}},
+              y:{title:{display:true,text:'Weight (lbs)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}}
+            },
+            plugins:{
+              legend:{position:'bottom',labels:{usePointStyle:true,padding:12}},
+              datalabels:{display:true,color:'#333',font:{weight:'bold',size:11},anchor:'end',align:'top',formatter:(_v:any,ctx:any)=>ctx.dataset.label}
+            }
+          }
+        };
         const qcRes = await fetch('https://quickchart.io/chart/create', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ width:500, height:300, backgroundColor:'white', chart: cfg }),
+          body: JSON.stringify({ width:520, height:320, backgroundColor:'white', chart: cfg }),
         });
         const qcData = await qcRes.json();
         if (qcData.success && qcData.url) chartUrl = qcData.url;
