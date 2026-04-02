@@ -85,22 +85,22 @@ router.post('/', (req, res) => {
     const result = stmt.run(
       slug,
       title,
-      price,
+      String(price),
       description,
-      icon_svg,
+      icon_svg || null,
       JSON.stringify(highlights || []),
-      featured || 0,
-      sort_order || 0,
-      is_active !== undefined ? is_active : 1
+      featured ? 1 : 0,
+      parseInt(String(sort_order)) || 0,
+      is_active !== undefined ? (is_active ? 1 : 0) : 1
     );
 
     res.status(201).json({ 
       id: result.lastInsertRowid, 
       message: 'Experience created successfully' 
     });
-  } catch (error) {
-    console.error('Error creating experience:', error);
-    res.status(500).json({ error: 'Failed to create experience' });
+  } catch (error: any) {
+    console.error('Error creating experience:', error?.message || error);
+    res.status(500).json({ error: error?.message || 'Failed to create experience' });
   }
 });
 
@@ -141,13 +141,13 @@ router.put('/:id', (req, res) => {
     const result = stmt.run(
       slug,
       title,
-      price,
+      String(price),
       description,
-      icon_svg,
+      icon_svg || null,
       JSON.stringify(highlights || []),
-      featured || 0,
-      sort_order || 0,
-      is_active !== undefined ? is_active : 1,
+      featured ? 1 : 0,
+      parseInt(String(sort_order)) || 0,
+      is_active !== undefined ? (is_active ? 1 : 0) : 1,
       experienceId
     );
 
@@ -156,9 +156,9 @@ router.put('/:id', (req, res) => {
     }
 
     res.json({ message: 'Experience updated successfully' });
-  } catch (error) {
-    console.error('Error updating experience:', error);
-    res.status(500).json({ error: 'Failed to update experience' });
+  } catch (error: any) {
+    console.error('Error updating experience:', error?.message || error);
+    res.status(500).json({ error: error?.message || 'Failed to update experience' });
   }
 });
 
