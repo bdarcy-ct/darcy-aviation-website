@@ -8,6 +8,7 @@ export interface Experience {
   description: string;
   icon_svg?: string;
   highlights: string[];
+  booking_url?: string;
   featured: number;
   sort_order: number;
   is_active: number;

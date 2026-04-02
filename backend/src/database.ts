@@ -169,6 +169,7 @@ export function initializeDatabase(): void {
       description TEXT NOT NULL,
       icon_svg TEXT,
       highlights TEXT, -- JSON array of highlights
+      booking_url TEXT, -- FlightCircle or external booking link
       featured BOOLEAN DEFAULT 0,
       sort_order INTEGER DEFAULT 0,
       is_active BOOLEAN DEFAULT 1,
@@ -207,6 +208,9 @@ export function initializeDatabase(): void {
   // Migrations: add columns to existing tables
   try { db.prepare("SELECT images FROM fleet LIMIT 1").get(); }
   catch { db.exec("ALTER TABLE fleet ADD COLUMN images TEXT DEFAULT '[]'"); }
+
+  try { db.prepare("SELECT booking_url FROM experiences LIMIT 1").get(); }
+  catch { db.exec("ALTER TABLE experiences ADD COLUMN booking_url TEXT"); }
 
   // Seed data if tables are empty
   const fleetCount = db.prepare('SELECT COUNT(*) as count FROM fleet').get() as { count: number };

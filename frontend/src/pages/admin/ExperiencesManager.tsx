@@ -10,6 +10,7 @@ interface Experience {
   description: string;
   icon_svg?: string;
   highlights: string[];
+  booking_url?: string;
   featured: boolean;
   sort_order: number;
   is_active: boolean;
@@ -26,7 +27,7 @@ const ExperiencesManager: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<Partial<Experience>>({
     slug: '', title: '', price: '', description: '', icon_svg: '',
-    highlights: [''], featured: false, sort_order: 0, is_active: true,
+    highlights: [''], booking_url: '', featured: false, sort_order: 0, is_active: true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -56,7 +57,7 @@ const ExperiencesManager: React.FC = () => {
     setEditingId(null);
     setFormData({
       slug: '', title: '', price: '', description: '', icon_svg: '',
-      highlights: [''], featured: false, sort_order: experiences.length + 1, is_active: true,
+      highlights: [''], booking_url: '', featured: false, sort_order: experiences.length + 1, is_active: true,
     });
     setShowForm(true);
   };
@@ -216,6 +217,11 @@ const ExperiencesManager: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">Description *</label>
               <textarea className={inputCls} rows={3} value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Booking URL (FlightCircle link)</label>
+              <input className={inputCls} value={formData.booking_url || ''} onChange={e => setFormData({ ...formData, booking_url: e.target.value })} placeholder="https://www.flightcircle.com/shop/..." />
             </div>
 
             <div>

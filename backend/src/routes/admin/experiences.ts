@@ -60,6 +60,7 @@ router.post('/', (req, res) => {
       description,
       icon_svg,
       highlights,
+      booking_url,
       featured,
       sort_order,
       is_active
@@ -78,8 +79,8 @@ router.post('/', (req, res) => {
 
     const stmt = db.prepare(`
       INSERT INTO experiences (
-        slug, title, price, description, icon_svg, highlights, featured, sort_order, is_active, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        slug, title, price, description, icon_svg, highlights, booking_url, featured, sort_order, is_active, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
     const result = stmt.run(
@@ -89,6 +90,7 @@ router.post('/', (req, res) => {
       description,
       icon_svg || null,
       JSON.stringify(highlights || []),
+      booking_url || null,
       featured ? 1 : 0,
       parseInt(String(sort_order)) || 0,
       is_active !== undefined ? (is_active ? 1 : 0) : 1
@@ -115,6 +117,7 @@ router.put('/:id', (req, res) => {
       description,
       icon_svg,
       highlights,
+      booking_url,
       featured,
       sort_order,
       is_active
@@ -134,7 +137,7 @@ router.put('/:id', (req, res) => {
     const stmt = db.prepare(`
       UPDATE experiences SET
         slug = ?, title = ?, price = ?, description = ?, icon_svg = ?, highlights = ?, 
-        featured = ?, sort_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
+        booking_url = ?, featured = ?, sort_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
@@ -145,6 +148,7 @@ router.put('/:id', (req, res) => {
       description,
       icon_svg || null,
       JSON.stringify(highlights || []),
+      booking_url || null,
       featured ? 1 : 0,
       parseInt(String(sort_order)) || 0,
       is_active !== undefined ? (is_active ? 1 : 0) : 1,

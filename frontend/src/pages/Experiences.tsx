@@ -4,13 +4,14 @@ import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
 import { useExperiences } from '../hooks/useExperiences';
 
-// FlightCircle booking links for each experience
+// FlightCircle booking links for each experience (fallback if no booking_url in CMS)
 const flightCircleLinks: Record<string, string> = {
   'discovery-flight': 'https://www.flightcircle.com/shop/97822f668fb9/4000001759',
   'candlewood-lake-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001846',
   'west-point-hudson-river-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001848',
   'nyc-skyline-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001849',
   'city-lights-night-tour': 'https://www.flightcircle.com/shop/97822f668fb9/4000001850',
+  'simulator-intro': 'https://www.flightcircle.com/shop/97822f668fb9/4000001845',
 };
 
 // Glow colors for each tile (always-on, intensify on hover)
@@ -118,6 +119,7 @@ function ExperiencesPage() {
           ? <div className="w-8 h-8 text-gold [&_svg]:w-full [&_svg]:h-full [&_svg]:stroke-current" dangerouslySetInnerHTML={{ __html: exp.icon_svg }} />
           : (defaultIcons[exp.slug] || defaultIcon),
         highlights: exp.highlights,
+        booking_url: exp.booking_url,
         featured: !!exp.featured,
       }))
     : fallbackExperiences.map((exp) => ({
@@ -152,7 +154,7 @@ function ExperiencesPage() {
           {experiences.map((exp, i) => {
             const glow = tileGlowColors[i % tileGlowColors.length];
             return (
-              <a key={i} href={flightCircleLinks[exp.slug] || '#'} target="_blank" rel="noopener noreferrer" className="block group relative">
+              <a key={i} href={(exp as any).booking_url || flightCircleLinks[exp.slug] || '#'} target="_blank" rel="noopener noreferrer" className="block group relative">
                 {/* Always-on glow */}
                 <div
                   className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
