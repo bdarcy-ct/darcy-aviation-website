@@ -485,9 +485,8 @@ export default function WeightBalance() {
           ...[...env].reverse().map((e: any) => ({x:e.aft,y:e.weight})),
           {x:env[0].fwd,y:env[0].weight}
         ];
-        const dlOff = {datalabels:{display:false}};
         const datasets: any[] = [
-          { label:'Normal', data:normalPoly, borderColor:'#059669', backgroundColor:'rgba(34,197,94,0.15)', fill:true, showLine:true, pointRadius:0, borderWidth:2, tension:0, ...dlOff },
+          { label:'Normal', data:normalPoly, borderColor:'#059669', backgroundColor:'rgba(34,197,94,0.15)', fill:true, showLine:true, pointRadius:0, borderWidth:2, tension:0, datalabels:{display:false} },
         ];
         if (ac.utilityEnvelope) {
           const u = ac.utilityEnvelope;
@@ -496,12 +495,11 @@ export default function WeightBalance() {
             ...[...u].reverse().map((e: any) => ({x:e.aft,y:e.weight})),
             {x:u[0].fwd,y:u[0].weight}
           ];
-          datasets.push({ label:'Utility', data:utilPoly, borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.08)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5, tension:0, ...dlOff });
+          datasets.push({ label:'Utility', data:utilPoly, borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.08)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5, tension:0, datalabels:{display:false} });
         }
-        const dlOn = (lbl:string,clr:string) => ({datalabels:{display:true,color:clr,font:{weight:'bold',size:11},anchor:'end',align:'top',offset:4,formatter:()=>lbl}});
-        if (c.zfw > 0) datasets.push({ label:'ZFW', data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, ...dlOn('ZFW','#7c3aed') });
-        if (c.toW > 0) datasets.push({ label:'T/O', data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, ...dlOn('T/O','#2563eb') });
-        if (c.lW > 0) datasets.push({ label:'Ldg', data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, ...dlOn('Ldg','#059669') });
+        if (c.zfw > 0) datasets.push({ label:'ZFW', data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
+        if (c.toW > 0) datasets.push({ label:'T/O', data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
+        if (c.lW > 0) datasets.push({ label:'Ldg', data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
         const cfg = {
           type:'scatter',
           data:{datasets},
