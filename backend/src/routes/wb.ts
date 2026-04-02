@@ -441,10 +441,20 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
       const RELAY_URL = process.env.EMAIL_RELAY_URL;
       if (RELAY_URL) {
         try {
+          // Inject chart image into depMetar field for old relay code compatibility
+          // Old relay renders ${d.depMetar} unescaped, so we can append an <img> tag
+          const relayBody = { ...d };
+          if (d._chartUrl || d.chartUrl) {
+            const cUrl = d._chartUrl || d.chartUrl;
+            const chartHtml = `<br/><div style="text-align:center;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:10px"><div style="font-weight:700;font-size:12px;color:#334155;margin-bottom:8px">Center of Gravity Envelope</div><img src="${cUrl}" alt="CG Envelope" width="460" style="max-width:100%;height:auto"/></div>`;
+            relayBody.depMetar = (relayBody.depMetar || 'N/A') + chartHtml;
+            delete relayBody.cgEnvelope;  // prevent old code from generating inline SVG
+            delete relayBody.utilityEnvelope;
+          }
           const relayRes = await fetch(RELAY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...d, _prebuiltHtml: htmlBody, _prebuiltText: textBody }),
+            body: JSON.stringify(relayBody),
             signal: AbortSignal.timeout(15000),
           });
           const relayData = await relayRes.json() as any;
