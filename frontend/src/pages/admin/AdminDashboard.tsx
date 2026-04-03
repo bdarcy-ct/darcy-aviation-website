@@ -68,6 +68,25 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="text-slate-400 text-sm mt-1">Darcy Aviation CMS Overview</p>
         </div>
+        <button
+          onClick={() => {
+            const token = localStorage.getItem('admin_token');
+            fetch('/api/admin/backup/download', { headers: { Authorization: `Bearer ${token}` } })
+              .then(res => res.blob())
+              .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `darcy-backup-${new Date().toISOString().slice(0,10)}.db`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+              })
+              .catch(() => alert('Backup failed'));
+          }}
+          className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+        >
+          💾 Download Backup
+        </button>
       </div>
 
       {/* Stats Grid */}
