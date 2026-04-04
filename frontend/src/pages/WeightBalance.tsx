@@ -554,7 +554,7 @@ export default function WeightBalance() {
           data:{datasets},
           options:{
             scales:{
-              x:{title:{display:true,text:'CG Station (inches)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}},
+              x:{title:{display:true,text:'CG Station (inches)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}, ticks:{precision:2}},
               y:{title:{display:true,text:'Weight (lbs)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}}
             },
             plugins:{
