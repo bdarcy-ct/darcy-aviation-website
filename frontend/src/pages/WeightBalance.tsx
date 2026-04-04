@@ -546,9 +546,9 @@ export default function WeightBalance() {
           ];
           datasets.push({ label:'Utility', data:utilPoly, borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.08)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5, tension:0, datalabels:{display:false} });
         }
-        if (c.zfw > 0) datasets.push({ label:`ZFW ${Math.round(c.zfw)}`, data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
-        if (c.toW > 0) datasets.push({ label:`T/O ${Math.round(c.toW)}`, data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
-        if (c.lW > 0) datasets.push({ label:`Ldg ${Math.round(c.lW)}`, data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
+        if (c.zfw > 0) datasets.push({ label:`ZFW ${Math.round(c.zfw)} lbs`, data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:true, align:'top', anchor:'end', offset:4, font:{weight:'bold',size:10}, color:'#5b21b6'} });
+        if (c.toW > 0) datasets.push({ label:`T/O ${Math.round(c.toW)} lbs`, data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:true, align:'top', anchor:'end', offset:4, font:{weight:'bold',size:10}, color:'#1d4ed8'} });
+        if (c.lW > 0) datasets.push({ label:`Ldg ${Math.round(c.lW)} lbs`, data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:true, align:'top', anchor:'end', offset:4, font:{weight:'bold',size:10}, color:'#047857'} });
         const cfg = {
           type:'scatter',
           data:{datasets},
