@@ -40,15 +40,40 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .wb-root .max-w-\\[900px\\] { max-width: 100% !important; }
   .wb-root .flex-col { flex-direction: row !important; }
   .wb-root .lg\\:flex-row { flex-direction: row !important; }
-  .wb-root .lg\\:w-\\[210px\\] { width: 200px !important; flex-shrink: 0 !important; }
-  .wb-root .space-y-4 > * + * { margin-top: 8px !important; }
-  .wb-root .gap-4 { gap: 8px !important; }
-  .wb-root .p-4 { padding: 8px !important; }
-  .wb-root .p-3 { padding: 6px !important; }
+  .wb-root .lg\\:w-\\[220px\\] { width: 180px !important; flex-shrink: 0 !important; }
+  .wb-root .space-y-4 > * + * { margin-top: 4px !important; }
+  .wb-root .space-y-1 > * + * { margin-top: 2px !important; }
+  .wb-root .gap-4 { gap: 4px !important; }
+  .wb-root .p-4 { padding: 4px 6px !important; }
+  .wb-root .p-3 { padding: 3px 4px !important; }
+  .wb-root .p-2 { padding: 2px 3px !important; }
+  .wb-root .py-1 { padding-top: 1px !important; padding-bottom: 1px !important; }
+  .wb-root .py-1\\.5 { padding-top: 1px !important; padding-bottom: 1px !important; }
+  .wb-root .py-2 { padding-top: 2px !important; padding-bottom: 2px !important; }
+  .wb-root .mb-3 { margin-bottom: 2px !important; }
+  .wb-root .mb-4 { margin-bottom: 3px !important; }
+  .wb-root .mt-3 { margin-top: 3px !important; }
+  .wb-root .pt-2 { padding-top: 2px !important; }
+  .wb-root .rounded-2xl { border-radius: 4px !important; }
+  .wb-root .rounded-lg { border-radius: 3px !important; }
+  .wb-root .text-2xl, .wb-root .text-3xl { font-size: 16px !important; }
+  .wb-root .text-sm { font-size: 9px !important; }
+  .wb-root .text-xs { font-size: 8px !important; }
+  .wb-root .text-\\[11px\\] { font-size: 8px !important; }
+  .wb-root .text-\\[10px\\] { font-size: 7px !important; }
+  .wb-root .text-\\[9px\\] { font-size: 7px !important; }
+  .wb-root h1 { font-size: 16px !important; margin: 0 !important; }
+  .wb-root img { height: 50px !important; }
+  .wb-root svg { max-height: 180px !important; }
+  .wb-root select { padding: 2px 4px !important; font-size: 9px !important; }
+
+  /* Flight details bar compact */
+  .wb-root .grid-cols-2 { gap: 3px !important; }
+  .wb-root .lg\\:grid-cols-4 { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
 
   /* Bold boxed inputs for print */
   .wb-root .wb-bold-input { border: 2px solid #333 !important; font-weight: 700 !important; background: #f5f5f5 !important; }
-  .wb-root .perf-box { border: 2px solid #333 !important; background: #f5f5f5 !important; }
+  .wb-root .perf-box { border: 2px solid #333 !important; background: #f5f5f5 !important; padding: 3px !important; }
 }
 `;
 
