@@ -59,6 +59,7 @@ export default function App() {
           
           {/* Weight & Balance Calculator - standalone */}
           <Route path="/wb" element={<WeightBalance />} />
+          <Route path="/weight-balance" element={<WeightBalance />} />
           
           {/* Main App Routes */}
           <Route path="/*" element={
