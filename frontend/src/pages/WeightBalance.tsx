@@ -828,15 +828,15 @@ export default function WeightBalance() {
                   {ac.hasRear && <TRowE l={ac.rearLabel} o="+" w={rw} a={ac.rearArm} m={c.rm} oM="+" set={setRw} />}
                   <TRowE l={`${ac.bag1Label} (Max ${ac.bag1Max})`} o="+" w={b1} a={ac.bag1Arm} m={c.b1m} oM="+" set={v => setB1(Math.min(v, ac.bag1Max))} />
                   {ac.hasBag2 && <TRowE l={`${ac.bag2Label} (Max ${ac.bag2Max})`} o="+" w={b2} a={ac.bag2Arm} m={c.b2m} oM="+" set={v => setB2(Math.min(v, ac.bag2Max))} />}
-                  <TRow l="Zero Fuel Weight" o="=" w={c.zfw} a={c.zA} m={c.zM} oM="=" line color="text-purple-400" />
+                  <TRow l="Zero Fuel Weight" o="=" w={c.zfw} a={c.zA} m={c.zM} oM="=" line color="text-purple-400" boxed />
                   <TRowE l={ac.fuelLabel} o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" set={v => setFuel(Math.min(v, ac.maxFuelLbs))}
                     hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} max`} required />
-                  <TRow l="Ramp Weight" o="=" w={c.rW} a={c.rA} m={c.rM} oM="=" green line />
+                  <TRow l="Ramp Weight" o="=" w={c.rW} a={c.rA} m={c.rM} oM="=" green line boxed />
                   <TRowE l="Taxi Fuel" o="-" w={taxi} a={ac.fuelArm} m={c.tM} oM="-" set={v => setTaxi(Math.min(v, fuel))} />
-                  <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" line ok={c.toOk} color="text-blue-400" />
+                  <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" line ok={c.toOk} color="text-blue-400" boxed />
                   <TRowE l="Fuel Burn" o="-" w={burn} a={ac.fuelArm} m={c.bM} oM="-" set={v => setBurn(Math.min(v, fuel))}
                     hint={`${Math.round(burn / 6)} gal`} />
-                  <TRow l="Landing Weight" o="=" w={c.lW} a={c.lA} m={c.lM} oM="=" line ok={c.lOk} color="text-emerald-400" />
+                  <TRow l="Landing Weight" o="=" w={c.lW} a={c.lA} m={c.lM} oM="=" line ok={c.lOk} color="text-emerald-400" boxed />
                 </tbody>
               </table>
 
@@ -919,12 +919,36 @@ export default function WeightBalance() {
 
 // ─── Table Rows ──────────────────────────────────────────────────────────────
 
-function TRow({ l, o, w, a, m, oM, green, line, ok, color }: {
+function TRow({ l, o, w, a, m, oM, green, line, ok, color, boxed }: {
   l: string; o: string; w: number; a: number; m: number; oM: string;
-  green?: boolean; line?: boolean; ok?: boolean; color?: string;
+  green?: boolean; line?: boolean; ok?: boolean; color?: string; boxed?: boolean;
 }) {
   const gc = color ? `font-bold ${color}` : green ? 'font-bold text-emerald-400' : 'text-white/80';
   const bg = ok === false ? 'bg-red-500/10' : '';
+  if (boxed) {
+    // Render as a standalone boxed div instead of a table row
+    const borderColor = color === 'text-purple-400' ? 'border-purple-400/30 bg-purple-400/[0.04]'
+      : color === 'text-blue-400' ? 'border-blue-400/30 bg-blue-400/[0.04]'
+      : color === 'text-emerald-400' ? 'border-emerald-400/30 bg-emerald-400/[0.04]'
+      : 'border-white/20 bg-white/[0.04]';
+    return (
+      <tr>
+        <td colSpan={7} className="py-1">
+          <div className={`border-2 ${borderColor} rounded-lg px-2 py-1.5 ${bg}`}>
+            <div className="flex items-center text-[11px] sm:text-xs">
+              <div className={`flex-1 text-right pr-1 ${gc}`}>{l}</div>
+              <div className={`w-4 text-center ${gc}`}>{o}</div>
+              <div className={`w-16 text-right pr-1 font-mono ${gc}`}>{f(w)}</div>
+              <div className="w-4 text-center text-white/20">×</div>
+              <div className={`w-14 text-right pr-1 font-mono ${gc}`}>{f(a)}</div>
+              <div className={`w-4 text-center ${gc}`}>{oM}</div>
+              <div className={`w-24 text-right font-mono ${gc}`}>{f(m)}</div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    );
+  }
   return (
     <tr className={`${line ? 'border-t border-white/10' : ''} ${bg}`}>
       <td className={`text-right pr-1 py-1.5 ${gc}`}>{l}</td>
