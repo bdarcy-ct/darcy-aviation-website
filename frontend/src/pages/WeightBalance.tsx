@@ -45,6 +45,10 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .wb-root .gap-4 { gap: 8px !important; }
   .wb-root .p-4 { padding: 8px !important; }
   .wb-root .p-3 { padding: 6px !important; }
+
+  /* Bold boxed inputs for print */
+  .wb-root .wb-bold-input { border: 2px solid #333 !important; font-weight: 700 !important; background: #f5f5f5 !important; }
+  .wb-root .perf-box { border: 2px solid #333 !important; background: #f5f5f5 !important; }
 }
 `;
 
@@ -64,13 +68,7 @@ interface Aircraft {
   frontLabel: string; rearLabel: string; bag1Label: string; bag2Label: string; fuelLabel: string;
 }
 
-// CG envelopes verified against POH data for each type
-
 const AIRCRAFT: Aircraft[] = [
-  // ── Cessna 172 — N121MS (C172N, max 2300) ──
-  // TCDS 3A12 + WVFC verified:
-  // Normal: fwd 35.0 at ≤1950, linear to 40.5 at 2300, aft 47.3 constant
-  // Utility: fwd 35.0 at ≤1950, fwd 35.8 at 2000 (clamped to normal interp 35.79), aft 40.5, max 2000
   {
     tailNumber: 'N121MS', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1493.44, basicEmptyArm: 39.39, basicEmptyMoment: 58819.45,
@@ -91,7 +89,6 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 2000, fwd: 35.8, aft: 40.5 },
     ],
   },
-  // ── Cessna 172 — N6475D (C172N, max 2300) ──
   {
     tailNumber: 'N6475D', type: 'Cessna 172', model: 'C172',
     basicEmptyWeight: 1478.95, basicEmptyArm: 39.13, basicEmptyMoment: 57865.08,
@@ -112,10 +109,6 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 2000, fwd: 35.8, aft: 40.5 },
     ],
   },
-  // ── Cessna 172N 180HP — N9426E (replaces N34LC, sold) ──
-  // FAA: Cessna 172N, 1979, S/N 17272261, Lycoming O-320 w/ 180HP STC
-  // Normal: fwd 35.0 at ≤1950, linear to 41.0 at 2537, aft 47.3 constant
-  // Utility: fwd 35.0 at ≤1950, linear to 37.5 at 2200, aft 40.5, max 2200
   {
     tailNumber: 'N9426E', type: 'Cessna 172 (180 HP)', model: 'C172-180',
     basicEmptyWeight: 1525.55, basicEmptyArm: 39.56, basicEmptyMoment: 60344.46,
@@ -136,9 +129,6 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 2200, fwd: 37.5, aft: 40.5 },
     ],
   },
-  // ── Cessna 152 — N65563 ──
-  // Normal fwd: vertical 29.0 to 1350, diagonal to 33.0 at 1670
-  // Utility max 1500. At 1500: interpFwd = 29+(150/320)*4 = 30.875
   {
     tailNumber: 'N65563', type: 'Cessna 152', model: 'C152',
     basicEmptyWeight: 1161.1, basicEmptyArm: 30.27, basicEmptyMoment: 35146.50,
@@ -159,11 +149,6 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 1500, fwd: 30.9, aft: 33.5 },
     ],
   },
-  // ── Piper Warrior — N8715C (PA-28-151 w/ high-compression STC) ──
-  // FAA registry: PA-28-151, S/N 28-7615124, 1976, engine O&VO-360 (180HP via STC)
-  // Airframe is -151 so max gross = 2325 lbs, same CG envelope as N84001
-  // Normal: fwd 82.0 vertical to 1950, diagonal to 87.0 at 2325, aft 93.0
-  // Utility: fwd 82.0, aft 86.5, max 1950 (from N84001 POH)
   {
     tailNumber: 'N8715C', type: 'Piper Warrior', model: 'PA-28-151',
     basicEmptyWeight: 1498.84, basicEmptyArm: 85.32, basicEmptyMoment: 127881.03,
@@ -183,11 +168,6 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 1950, fwd: 82.0, aft: 86.5 },
     ],
   },
-  // ── Piper Warrior — N84001 (PA-28-151) ──
-  // FROM ACTUAL POH (1974 Piper Warrior PA28-151) + Ludwig's video walkthrough:
-  // Normal: fwd 82.0 vertical to 1950, diagonal to 87.0 at 2325, aft 93.0 constant
-  // Utility: rectangle — fwd 82.0, aft 86.5, max 1950 lbs
-  // At 1950 lbs the normal fwd limit starts its 45° diagonal
   {
     tailNumber: 'N84001', type: 'Piper Warrior', model: 'PA-28-151',
     basicEmptyWeight: 1467.70, basicEmptyArm: 84.10, basicEmptyMoment: 123389.00,
@@ -246,6 +226,13 @@ function cgOk(env: CgLimit[], w: number, cg: number): boolean {
 }
 function f(n: number, d = 2) { return n.toFixed(d); }
 
+// ─── Format wind component for display ───────────────────────────────────────
+function fmtHw(hw: number): string {
+  if (hw > 0) return `HW ${hw}`;
+  if (hw < 0) return `TW ${Math.abs(hw)}`;
+  return '0';
+}
+
 // ─── Glass Card ──────────────────────────────────────────────────────────────
 
 const glass = 'bg-white/[0.04] backdrop-blur-xl border rounded-2xl transition-all duration-300';
@@ -262,17 +249,17 @@ function GlassCard({ children, className }: { children: React.ReactNode; classNa
   );
 }
 
-// ─── Editable Input ──────────────────────────────────────────────────────────
+// ─── Bold Boxed Input (for W&B fields) ───────────────────────────────────────
 
 function NumIn({ value, onChange, cls }: { value: number; onChange: (v: number) => void; cls?: string }) {
   return (
     <input type="text" inputMode="decimal" value={value || ''} onChange={e => onChange(Number(e.target.value) || 0)}
       placeholder="0"
-      className={`w-full bg-white/5 text-right font-mono rounded px-1.5 py-0.5 border border-white/10 focus:border-blue-400/50 focus:bg-white/10 focus:outline-none transition ${cls || 'text-white'}`} />
+      className={`wb-bold-input w-full bg-white/[0.08] text-right font-mono font-bold rounded-lg px-2 py-1 border-2 border-white/20 focus:border-blue-400/60 focus:bg-white/[0.12] focus:outline-none focus:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${cls || 'text-white'}`} />
   );
 }
 
-// ─── CG Chart with Utility Category ─────────────────────────────────────────
+// ─── CG Chart with Utility Category + Weight Labels ─────────────────────────
 
 function CgChart({ aircraft, points }: {
   aircraft: Aircraft; points: { label: string; weight: number; cg: number; color: string }[];
@@ -280,7 +267,6 @@ function CgChart({ aircraft, points }: {
   const env = aircraft.cgEnvelope;
   const util = aircraft.utilityEnvelope;
 
-  // Compute axis bounds from both envelopes
   const allEnvs = util ? [...env, ...util] : env;
   const allW = allEnvs.map(e => e.weight);
   const allC = allEnvs.flatMap(e => [e.fwd, e.aft]);
@@ -292,11 +278,9 @@ function CgChart({ aircraft, points }: {
   const sx = (c: number) => p.l + ((c - minC) / (maxC - minC)) * pW;
   const sy = (w: number) => p.t + pH - ((w - minW) / (maxW - minW)) * pH;
 
-  // Build normal envelope polygon
   const fwdN = env.map(e => `${sx(e.fwd)},${sy(e.weight)}`);
   const aftN = [...env].reverse().map(e => `${sx(e.aft)},${sy(e.weight)}`);
 
-  // Build utility envelope polygon (if exists)
   let utilPoly = '';
   if (util && util.length >= 2) {
     const fwdU = util.map(e => `${sx(e.fwd)},${sy(e.weight)}`);
@@ -304,7 +288,6 @@ function CgChart({ aircraft, points }: {
     utilPoly = [...fwdU, ...aftU].join(' ');
   }
 
-  // Grid
   const wS = maxW - minW > 800 ? 200 : 100, cS = maxC - minC > 20 ? 5 : 2;
   const wT: number[] = [], cT: number[] = [];
   for (let w = Math.ceil(minW / wS) * wS; w <= maxW; w += wS) wT.push(w);
@@ -343,14 +326,15 @@ function CgChart({ aircraft, points }: {
         </g>
       )}
 
-      {/* Data points with glow */}
+      {/* Data points with glow + weight labels */}
       {points.filter(pt => pt.weight > 0).map((pt, i) => {
         const x = sx(pt.cg), y = sy(pt.weight);
         if (x < p.l || x > p.l + pW || y < p.t || y > p.t + pH) return null;
         return <g key={i}>
           <circle cx={x} cy={y} r="7" fill={pt.color} opacity="0.3" filter="url(#glow-dot)" />
           <circle cx={x} cy={y} r="5" fill={pt.color} stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" />
-          <text x={x + 9} y={y + 3} fill="rgba(255,255,255,0.8)" fontSize="9" fontWeight="bold">{pt.label}</text>
+          <text x={x + 9} y={y - 2} fill="rgba(255,255,255,0.8)" fontSize="9" fontWeight="bold">{pt.label}</text>
+          <text x={x + 9} y={y + 9} fill="rgba(255,255,255,0.5)" fontSize="7.5">{Math.round(pt.weight)} lbs</text>
         </g>;
       })}
 
@@ -375,6 +359,15 @@ function DualVal({ l, r, accent }: { l: string; r: string; accent?: boolean }) {
   );
 }
 
+// ─── Performance Box (bold + boxed input) ────────────────────────────────────
+
+function PerfInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || '—'}
+      className="perf-box w-full text-center text-[11px] font-bold bg-white/[0.08] border-2 border-blue-400/30 rounded-lg py-1 focus:border-blue-400/60 focus:outline-none focus:shadow-[0_0_8px_rgba(59,130,246,0.2)] transition-all duration-300 text-white" />
+  );
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 export default function WeightBalance() {
@@ -385,10 +378,6 @@ export default function WeightBalance() {
   const [destM, setDestM] = useState<MetarData | null>(null);
   const [rwyDep, setRwyDep] = useState('');
   const [rwyDest, setRwyDest] = useState('');
-  const [hwDep, setHwDep] = useState('');
-  const [xwDep, setXwDep] = useState('');
-  const [hwDest, setHwDest] = useState('');
-  const [xwDest, setXwDest] = useState('');
   const [toGr, setToGr] = useState('');
   const [toObs, setToObs] = useState('');
   const [ldGrDep, setLdGrDep] = useState('');
@@ -405,13 +394,19 @@ export default function WeightBalance() {
   const [burn, setBurn] = useState(0);
   const [taxi, setTaxi] = useState(0);
 
-  const [pilot, setPilot] = useState('');
+  // Student & Instructor names (#3)
+  const [studentName, setStudentName] = useState('');
+  const [instructorName, setInstructorName] = useState('');
+
+  // Flight details (#6)
+  const [directionOfFlight, setDirectionOfFlight] = useState('');
+  const [typeOfFlight, setTypeOfFlight] = useState('');
+
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState('');
 
   const ac = useMemo(() => AIRCRAFT.find(a => a.tailNumber === sel)!, [sel]);
   useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); setTaxi(ac.taxiFuelLbs); }, [sel, ac]);
-  // Auto-clamp burn if fuel is reduced below it
   useEffect(() => { if (burn > fuel) setBurn(fuel); }, [fuel]);
 
   // Weather
@@ -439,6 +434,21 @@ export default function WeightBalance() {
     return { alt, t, dp: destM.dewpoint_c, pa: p, da: d, wDir: destM.wind_dir, wSpd: destM.wind_speed_kt };
   }, [destM]);
 
+  // ─── Auto-calculate headwind/crosswind (#1) ──────────────────────────────
+  const depWind = useMemo(() => {
+    if (!wxD || !rwyDep) return null;
+    const rwyHdg = parseInt(rwyDep) * 10;
+    if (isNaN(rwyHdg) || rwyHdg < 10 || rwyHdg > 360) return null;
+    return wComp(wxD.wDir, wxD.wSpd, rwyHdg);
+  }, [wxD, rwyDep]);
+
+  const destWind = useMemo(() => {
+    if (!wxA || !rwyDest) return null;
+    const rwyHdg = parseInt(rwyDest) * 10;
+    if (isNaN(rwyHdg) || rwyHdg < 10 || rwyHdg > 360) return null;
+    return wComp(wxA.wDir, wxA.wSpd, rwyHdg);
+  }, [wxA, rwyDest]);
+
   // W&B
   const c = useMemo(() => {
     const fm = fw * ac.frontArm, rm = rw * ac.rearArm, b1m = b1 * ac.bag1Arm, b2m = b2 * ac.bag2Arm;
@@ -455,11 +465,27 @@ export default function WeightBalance() {
   const vaTo = c.toW > 0 ? vaBase * Math.sqrt(c.toW / ac.maxGrossWeight) : 0;
   const vaLd = c.lW > 0 ? vaBase * Math.sqrt(c.lW / ac.maxGrossWeight) : 0;
 
+  // ─── Validation: mandatory fields for emailing (#2, #3, #4, #6) ──────────
+  const canSubmit = useMemo(() => {
+    return (
+      studentName.trim() !== '' &&
+      instructorName.trim() !== '' &&
+      directionOfFlight.trim() !== '' &&
+      typeOfFlight.trim() !== '' &&
+      toGr.trim() !== '' &&
+      toObs.trim() !== '' &&
+      ldGrDest.trim() !== '' &&
+      ldObsDest.trim() !== '' &&
+      fw > 0 &&
+      fuel > 0 &&
+      c.ok
+    );
+  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok]);
+
   const submit = async () => {
-    if (!pilot.trim() || !c.ok) return;
+    if (!canSubmit) return;
     setSending(true); setMsg('');
     try {
-      // Build W&B rows for the email template
       const rows = [
         { label: 'Basic Empty Weight', op: '', weight: ac.basicEmptyWeight, arm: ac.basicEmptyArm, moment: ac.basicEmptyMoment, opM: '' },
         { label: ac.frontLabel, op: '+', weight: fw, arm: ac.frontArm, moment: c.fm, opM: '+' },
@@ -475,11 +501,9 @@ export default function WeightBalance() {
         { label: 'Landing Weight', op: '=', weight: c.lW, arm: c.lA, moment: c.lM, opM: '=', bold: true, subtotal: true, color: 'green', overweight: !c.lOk },
       ];
 
-      // Build CG chart URL via QuickChart
       let chartUrl = '';
       try {
         const env = ac.cgEnvelope;
-        // Build closed polygon: fwd edge bottom→top, then aft edge top→bottom, close
         const normalPoly = [
           ...env.map((e: any) => ({x:e.fwd,y:e.weight})),
           ...[...env].reverse().map((e: any) => ({x:e.aft,y:e.weight})),
@@ -497,9 +521,9 @@ export default function WeightBalance() {
           ];
           datasets.push({ label:'Utility', data:utilPoly, borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.08)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5, tension:0, datalabels:{display:false} });
         }
-        if (c.zfw > 0) datasets.push({ label:'ZFW', data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
-        if (c.toW > 0) datasets.push({ label:'T/O', data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
-        if (c.lW > 0) datasets.push({ label:'Ldg', data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
+        if (c.zfw > 0) datasets.push({ label:`ZFW ${Math.round(c.zfw)}`, data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
+        if (c.toW > 0) datasets.push({ label:`T/O ${Math.round(c.toW)}`, data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
+        if (c.lW > 0) datasets.push({ label:`Ldg ${Math.round(c.lW)}`, data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:false} });
         const cfg = {
           type:'scatter',
           data:{datasets},
@@ -525,7 +549,12 @@ export default function WeightBalance() {
       const r = await fetch('/api/wb/dispatch', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          pilotName: pilot, aircraft: ac.tailNumber, aircraftType: ac.type, model: ac.model,
+          pilotName: studentName, // backward compat
+          studentName,
+          instructorName,
+          directionOfFlight,
+          typeOfFlight,
+          aircraft: ac.tailNumber, aircraftType: ac.type, model: ac.model,
           departure: dep, destination: dest, depMetar: depM?.raw, destMetar: destM?.raw,
           takeoffWeight: c.toW, takeoffCg: c.toA, landingWeight: c.lW, landingCg: c.lA,
           zfwWeight: c.zfw, zfwCg: c.zA,
@@ -539,11 +568,13 @@ export default function WeightBalance() {
           chartUrl,
           // Conditions
           depWinds: wxD ? `${wxD.wDir}° @ ${wxD.wSpd}` : '', destWinds: wxA ? `${wxA.wDir}° @ ${wxA.wSpd}` : '',
-          depHwCw: `${hwDep || '—'} / ${xwDep || '—'}`, destHwCw: `${hwDest || '—'} / ${xwDest || '—'}`,
+          depHwCw: depWind ? `${fmtHw(depWind.hw)} / XW ${depWind.xw}` : '— / —',
+          destHwCw: destWind ? `${fmtHw(destWind.hw)} / XW ${destWind.xw}` : '— / —',
           depTemp: wxD ? `${wxD.t}°C / ${wxD.dp ?? '—'}°C` : '', destTemp: wxA ? `${wxA.t}°C / ${wxA.dp ?? '—'}°C` : '',
           depAlt: wxD ? wxD.alt.toFixed(2) : '', destAlt: wxA ? wxA.alt.toFixed(2) : '',
           depPA: wxD ? wxD.pa.toFixed(0) : '', destPA: wxA ? wxA.pa.toFixed(0) : '',
           depDA: wxD ? wxD.da.toFixed(0) : '', destDA: wxA ? wxA.da.toFixed(0) : '',
+          depRwy: rwyDep, destRwy: rwyDest,
           // Performance
           vaTo: vaTo.toFixed(1), vaLd: vaLd.toFixed(1),
           toGr, toObs, ldGrDep, ldObsDep, ldGrDest, ldObsDest,
@@ -558,6 +589,23 @@ export default function WeightBalance() {
   };
 
   const now = new Date();
+
+  // ─── Missing field hints ──────────────────────────────────────────────────
+  const missingFields = useMemo(() => {
+    const m: string[] = [];
+    if (!studentName.trim()) m.push('Student name');
+    if (!instructorName.trim()) m.push('Instructor name');
+    if (!directionOfFlight.trim()) m.push('Direction of flight');
+    if (!typeOfFlight.trim()) m.push('Type of flight');
+    if (!toGr.trim()) m.push('TO ground roll');
+    if (!toObs.trim()) m.push('TO over 50\'');
+    if (!ldGrDest.trim()) m.push('Dest landing roll');
+    if (!ldObsDest.trim()) m.push('Dest landing 50\'');
+    if (fw <= 0) m.push('Front seat weight');
+    if (fuel <= 0) m.push('Fuel');
+    if (!c.ok) m.push('W&B within limits');
+    return m;
+  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok]);
 
   return (
     <>
@@ -585,18 +633,60 @@ export default function WeightBalance() {
           </div>
         </div>
 
-        <div className="text-center mb-4">
+        {/* Aircraft Selector */}
+        <div className="text-center mb-3">
           <select value={sel} onChange={e => setSel(e.target.value)}
             className="bg-white/[0.06] backdrop-blur-lg border border-white/10 text-white text-sm font-semibold rounded-xl px-5 py-2.5 focus:outline-none focus:border-blue-400/40 focus:shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20">
             {AIRCRAFT.map(a => <option key={a.tailNumber} value={a.tailNumber} className="bg-[#1a1f2e] text-white">{a.tailNumber} {a.type} ({a.model})</option>)}
           </select>
         </div>
 
+        {/* ═══ FLIGHT DETAILS BAR (#3 + #6) ═══ */}
+        <GlassCard className="p-3 mb-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div>
+              <label className="block text-[10px] font-semibold text-white/40 mb-1">Student Name <span className="text-red-400">*</span></label>
+              <input type="text" value={studentName} onChange={e => setStudentName(e.target.value)}
+                placeholder="Student name"
+                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold text-white/40 mb-1">Instructor Name <span className="text-red-400">*</span></label>
+              <input type="text" value={instructorName} onChange={e => setInstructorName(e.target.value)}
+                placeholder="Instructor name"
+                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold text-white/40 mb-1">Direction of Flight <span className="text-red-400">*</span></label>
+              <input type="text" value={directionOfFlight} onChange={e => setDirectionOfFlight(e.target.value)}
+                placeholder="e.g. KDXR → KBDR"
+                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold text-white/40 mb-1">Type of Flight <span className="text-red-400">*</span></label>
+              <select value={typeOfFlight} onChange={e => setTypeOfFlight(e.target.value)}
+                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-400/40 transition-all duration-300">
+                <option value="" className="bg-[#1a1f2e]">Select type...</option>
+                <option value="Dual Training" className="bg-[#1a1f2e]">Dual Training</option>
+                <option value="Solo" className="bg-[#1a1f2e]">Solo</option>
+                <option value="Cross-Country (Dual)" className="bg-[#1a1f2e]">Cross-Country (Dual)</option>
+                <option value="Cross-Country (Solo)" className="bg-[#1a1f2e]">Cross-Country (Solo)</option>
+                <option value="Check Ride" className="bg-[#1a1f2e]">Check Ride</option>
+                <option value="Stage Check" className="bg-[#1a1f2e]">Stage Check</option>
+                <option value="Discovery Flight" className="bg-[#1a1f2e]">Discovery Flight</option>
+                <option value="BFR / Flight Review" className="bg-[#1a1f2e]">BFR / Flight Review</option>
+                <option value="IPC" className="bg-[#1a1f2e]">IPC</option>
+                <option value="Other" className="bg-[#1a1f2e]">Other</option>
+              </select>
+            </div>
+          </div>
+        </GlassCard>
+
         {/* ═══ MAIN LAYOUT ═══ */}
         <div className="flex flex-col lg:flex-row gap-4">
 
           {/* ─── LEFT: Conditions + Performance ─── */}
-          <GlassCard className="w-full lg:w-[210px] lg:flex-shrink-0 p-3 space-y-1">
+          <GlassCard className="w-full lg:w-[220px] lg:flex-shrink-0 p-3 space-y-1">
             <SecBar dark>Conditions</SecBar>
             <div className="flex text-[10px] font-semibold text-white/40">
               <div className="flex-1 text-center">Departure</div>
@@ -610,28 +700,32 @@ export default function WeightBalance() {
             </div>
             {ldWx && <div className="text-center text-[10px] text-white/30 py-0.5">Loading...</div>}
 
+            {/* Runway Headings (#1) */}
+            <SecBar>Runway</SecBar>
+            <div className="grid grid-cols-2 gap-1">
+              <input type="text" value={rwyDep} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 2); setRwyDep(v); }}
+                maxLength={2} placeholder="RWY"
+                className="w-full text-center text-xs font-bold text-amber-400 bg-white/5 border border-white/10 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
+              <input type="text" value={rwyDest} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 2); setRwyDest(v); }}
+                maxLength={2} placeholder="RWY"
+                className="w-full text-center text-xs font-bold text-amber-400 bg-white/5 border border-white/10 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
+            </div>
+
             <SecBar>Winds</SecBar>
             <DualVal l={wxD ? `${wxD.wDir}° @ ${wxD.wSpd}` : '—'} r={wxA ? `${wxA.wDir}° @ ${wxA.wSpd}` : '—'} />
 
+            {/* Auto-calculated Headwind / Crosswind (#1) */}
             <SecBar>Headwind / Crosswind</SecBar>
-            <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
+            <div className="flex text-[10px] font-semibold text-white/40">
               <div className="flex-1 text-center">Departure</div>
               <div className="flex-1 text-center">Destination</div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center justify-center gap-0.5">
-                <input type="text" value={hwDep} onChange={e => setHwDep(e.target.value)} placeholder="HW"
-                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                <span className="text-white/40 text-[11px]">/</span>
-                <input type="text" value={xwDep} onChange={e => setXwDep(e.target.value)} placeholder="CW"
-                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+            <div className="flex text-[11px] py-0.5">
+              <div className={`flex-1 text-center ${depWind ? (depWind.hw >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-white/40'} font-semibold`}>
+                {depWind ? `${fmtHw(depWind.hw)} / XW ${depWind.xw}` : (rwyDep ? 'No wind data' : 'Enter RWY')}
               </div>
-              <div className="flex items-center justify-center gap-0.5">
-                <input type="text" value={hwDest} onChange={e => setHwDest(e.target.value)} placeholder="HW"
-                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-                <span className="text-white/40 text-[11px]">/</span>
-                <input type="text" value={xwDest} onChange={e => setXwDest(e.target.value)} placeholder="CW"
-                  className="w-10 text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+              <div className={`flex-1 text-center ${destWind ? (destWind.hw >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-white/40'} font-semibold`}>
+                {destWind ? `${fmtHw(destWind.hw)} / XW ${destWind.xw}` : (rwyDest ? 'No wind data' : 'Enter RWY')}
               </div>
             </div>
 
@@ -647,6 +741,7 @@ export default function WeightBalance() {
             <SecBar><u>Density Altitude</u></SecBar>
             <DualVal l={wxD ? f(wxD.da) : '—'} r={wxA ? f(wxA.da) : '—'} />
 
+            {/* ─── Performance (#2) — Bold + Boxed ─── */}
             <SecBar dark>Performance</SecBar>
             <SecBar><u>Maneuvering speed (V<sub>A</sub>)</u></SecBar>
             <div className="flex text-[10px] font-semibold text-white/40">
@@ -655,31 +750,50 @@ export default function WeightBalance() {
             </div>
             <DualVal l={f(vaTo)} r={f(vaLd)} />
 
-            <SecBar>Takeoff</SecBar>
-            <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
-              <div className="flex-1 text-center">Ground Roll</div>
-              <div className="flex-1 text-center">50' OBS</div>
-            </div>
-            <div className="grid grid-cols-2 gap-1">
-              <input type="text" value={toGr} onChange={e => setToGr(e.target.value)} placeholder="—"
-                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-              <input type="text" value={toObs} onChange={e => setToObs(e.target.value)} placeholder="—"
-                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+            {/* Takeoff Performance — Departure (BOXED) */}
+            <div className="perf-box border-2 border-blue-400/25 rounded-lg p-2 bg-blue-400/[0.04]">
+              <div className="text-center text-[10px] font-bold text-blue-400 mb-1">Takeoff — Departure <span className="text-red-400">*</span></div>
+              <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
+                <div className="flex-1 text-center">Ground Roll</div>
+                <div className="flex-1 text-center">Over 50'</div>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                <PerfInput value={toGr} onChange={setToGr} />
+                <PerfInput value={toObs} onChange={setToObs} />
+              </div>
             </div>
 
-            <SecBar>Landing Performance</SecBar>
-            <div className="grid grid-cols-2 gap-1">
-              <input type="text" value={ldGrDep} onChange={e => setLdGrDep(e.target.value)}
-                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
-              <input type="text" value={ldGrDest} onChange={e => setLdGrDest(e.target.value)}
-                className="w-full text-center text-[11px] bg-white/5 border border-white/10 rounded py-0.5 focus:border-blue-400/50 focus:outline-none" />
+            {/* Landing Performance — Departure (BOXED) */}
+            <div className="perf-box border-2 border-emerald-400/25 rounded-lg p-2 bg-emerald-400/[0.04]">
+              <div className="text-center text-[10px] font-bold text-emerald-400 mb-1">Landing — Departure</div>
+              <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
+                <div className="flex-1 text-center">Ground Roll</div>
+                <div className="flex-1 text-center">Over 50'</div>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                <PerfInput value={ldGrDep} onChange={setLdGrDep} />
+                <PerfInput value={ldObsDep} onChange={setLdObsDep} />
+              </div>
+            </div>
+
+            {/* Landing Performance — Destination (BOXED) */}
+            <div className="perf-box border-2 border-emerald-400/25 rounded-lg p-2 bg-emerald-400/[0.04]">
+              <div className="text-center text-[10px] font-bold text-emerald-400 mb-1">Landing — Destination <span className="text-red-400">*</span></div>
+              <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
+                <div className="flex-1 text-center">Ground Roll</div>
+                <div className="flex-1 text-center">Over 50'</div>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                <PerfInput value={ldGrDest} onChange={setLdGrDest} />
+                <PerfInput value={ldObsDest} onChange={setLdObsDest} />
+              </div>
             </div>
           </GlassCard>
 
           {/* ─── RIGHT COLUMN ─── */}
           <div className="flex-1 min-w-0 space-y-4 overflow-x-hidden">
 
-            {/* W&B TABLE */}
+            {/* W&B TABLE (#4 — Bold + Boxed inputs) */}
             <GlassCard className="p-4">
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 border-b border-white/10 pb-2 mb-3 text-[11px]">
                 {[
@@ -710,13 +824,13 @@ export default function WeightBalance() {
                 </thead>
                 <tbody>
                   <TRow l="Basic Empty Weight" o="" w={ac.basicEmptyWeight} a={ac.basicEmptyArm} m={ac.basicEmptyMoment} oM="" />
-                  <TRowE l={ac.frontLabel} o="+" w={fw} a={ac.frontArm} m={c.fm} oM="+" set={setFw} />
+                  <TRowE l={ac.frontLabel} o="+" w={fw} a={ac.frontArm} m={c.fm} oM="+" set={setFw} required />
                   {ac.hasRear && <TRowE l={ac.rearLabel} o="+" w={rw} a={ac.rearArm} m={c.rm} oM="+" set={setRw} />}
                   <TRowE l={`${ac.bag1Label} (Max ${ac.bag1Max})`} o="+" w={b1} a={ac.bag1Arm} m={c.b1m} oM="+" set={v => setB1(Math.min(v, ac.bag1Max))} />
                   {ac.hasBag2 && <TRowE l={`${ac.bag2Label} (Max ${ac.bag2Max})`} o="+" w={b2} a={ac.bag2Arm} m={c.b2m} oM="+" set={v => setB2(Math.min(v, ac.bag2Max))} />}
                   <TRow l="Zero Fuel Weight" o="=" w={c.zfw} a={c.zA} m={c.zM} oM="=" line color="text-purple-400" />
                   <TRowE l={ac.fuelLabel} o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" set={v => setFuel(Math.min(v, ac.maxFuelLbs))}
-                    hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} max`} />
+                    hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} max`} required />
                   <TRow l="Ramp Weight" o="=" w={c.rW} a={c.rA} m={c.rM} oM="=" green line />
                   <TRowE l="Taxi Fuel" o="-" w={taxi} a={ac.fuelArm} m={c.tM} oM="-" set={v => setTaxi(Math.min(v, fuel))} />
                   <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" line ok={c.toOk} color="text-blue-400" />
@@ -734,7 +848,7 @@ export default function WeightBalance() {
               </div>
             </GlassCard>
 
-            {/* CG CHART */}
+            {/* CG CHART (#5 — weight labels on graph) */}
             <GlassCard className="p-4">
               <div className="text-sm font-bold text-center mb-2 text-white/80">Center of Gravity Envelope</div>
               <CgChart aircraft={ac} points={[
@@ -746,22 +860,25 @@ export default function WeightBalance() {
 
             {/* SUBMIT + PRINT */}
             <GlassCard className="p-4 print:hidden">
+              {/* Missing fields hint */}
+              {missingFields.length > 0 && (
+                <div className="mb-3 text-[10px] text-amber-400/70 bg-amber-400/[0.06] border border-amber-400/15 rounded-lg px-3 py-2">
+                  <span className="font-semibold">Required:</span> {missingFields.join(' · ')}
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <input type="text" value={pilot} onChange={e => setPilot(e.target.value)}
-                  placeholder="Pilot / Student Name"
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-400/30 focus:shadow-[0_0_10px_rgba(59,130,246,0.1)] transition-all duration-300" />
-                <div className="flex items-center gap-3">
-                  <button onClick={() => window.print()} disabled={!c.ok || !pilot.trim()}
+                <div className="flex items-center gap-3 flex-1">
+                  <button onClick={() => window.print()} disabled={!canSubmit}
                     className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
-                      c.ok && pilot.trim()
+                      canSubmit
                         ? 'bg-white/[0.08] hover:bg-white/[0.15] text-white/80 hover:text-white border border-white/10 hover:border-white/20 active:scale-95'
                         : 'bg-white/5 text-white/20 cursor-not-allowed'
                     }`}>
                     🖨️ Print
                   </button>
-                  <button onClick={submit} disabled={sending || !c.ok || !pilot.trim()}
+                  <button onClick={submit} disabled={sending || !canSubmit}
                     className={`flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
-                      c.ok && pilot.trim()
+                      canSubmit
                         ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-400/40 hover:shadow-xl active:scale-95'
                         : 'bg-white/5 text-white/20 cursor-not-allowed'
                     }`}>
@@ -772,15 +889,22 @@ export default function WeightBalance() {
               {msg && <p className={`text-xs mt-2 text-center ${msg.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{msg}</p>}
             </GlassCard>
 
-            {/* Print-only: Pilot name + signature line */}
+            {/* Print-only: Names + signature lines */}
             <div className="hidden print:block" style={{ marginTop: 8, padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                <div><strong>Direction:</strong> {directionOfFlight || '________________________'}</div>
+                <div><strong>Type:</strong> {typeOfFlight || '________________________'}</div>
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                <div><strong>Pilot/Student:</strong> {pilot || '________________________'}</div>
+                <div><strong>Student:</strong> {studentName || '________________________'}</div>
                 <div><strong>Date:</strong> {now.toLocaleDateString('en-US', { timeZone: 'America/New_York' })} {now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false })}</div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 12 }}>
-                <div>Signature: ________________________</div>
-                <div>Instructor: ________________________</div>
+                <div>Student Signature: ________________________</div>
+                <div><strong>Instructor:</strong> {instructorName || '________________________'}</div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 12 }}>
+                <div>Instructor Signature: ________________________</div>
               </div>
             </div>
           </div>
@@ -814,13 +938,16 @@ function TRow({ l, o, w, a, m, oM, green, line, ok, color }: {
   );
 }
 
-function TRowE({ l, o, w, a, m, oM, set, hint }: {
+function TRowE({ l, o, w, a, m, oM, set, hint, required }: {
   l: string; o: string; w: number; a: number; m: number; oM: string;
-  set: (v: number) => void; hint?: string;
+  set: (v: number) => void; hint?: string; required?: boolean;
 }) {
   return (
     <tr>
-      <td className="text-right pr-1 py-1.5 text-white/80">{l}</td>
+      <td className="text-right pr-1 py-1.5 text-white/80">
+        {l}
+        {required && <span className="text-red-400 ml-0.5 text-[9px]">*</span>}
+      </td>
       <td className="text-center text-white/80">{o}</td>
       <td className="text-right pr-1 w-16">
         <NumIn value={w} onChange={set} cls="text-xs text-white" />

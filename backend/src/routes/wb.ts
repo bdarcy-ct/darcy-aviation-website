@@ -184,7 +184,8 @@ function buildCgChartSVG(d: any): string {
     const x = sx(pt.cg), y = sy(pt.weight);
     if (x < p.l || x > p.l + pW || y < p.t || y > p.t + pH) continue;
     dotsHTML += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${pt.color}" stroke="white" stroke-width="1.5"/>`;
-    dotsHTML += `<text x="${(x + 8).toFixed(1)}" y="${(y + 3).toFixed(1)}" fill="${pt.color}" font-size="9" font-weight="bold">${pt.label}</text>`;
+    dotsHTML += `<text x="${(x + 8).toFixed(1)}" y="${(y - 1).toFixed(1)}" fill="${pt.color}" font-size="9" font-weight="bold">${pt.label}</text>`;
+    dotsHTML += `<text x="${(x + 8).toFixed(1)}" y="${(y + 9).toFixed(1)}" fill="#888" font-size="7.5">${Math.round(pt.weight)} lbs</text>`;
   }
 
   // Legend
@@ -241,6 +242,12 @@ function buildDispatchHTML(d: any): string {
 
   const cgChart = buildCgChartSVG(d);
 
+  // Use new fields with backward compat
+  const studentName = d.studentName || d.pilotName || '—';
+  const instructorName = d.instructorName || '—';
+  const directionOfFlight = d.directionOfFlight || '';
+  const typeOfFlight = d.typeOfFlight || '';
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:20px;background:#f0f2f5;font-family:'Segoe UI',Inter,Helvetica,Arial,sans-serif;color:#1a1a1a;font-size:12px">
 <div style="max-width:750px;margin:0 auto;background:white;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
 
@@ -261,10 +268,21 @@ function buildDispatchHTML(d: any): string {
 
   <div style="padding:20px 24px">
 
-    <!-- Route & Pilot Info -->
+    <!-- Flight Details + Names -->
+    <table style="width:100%;margin-bottom:12px;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden">
+      <tr style="background:#f8fafc">
+        <td style="padding:8px 12px;border-right:1px solid #e5e7eb"><strong>Student:</strong> ${studentName}</td>
+        <td style="padding:8px 12px"><strong>Instructor:</strong> ${instructorName}</td>
+      </tr>
+      ${directionOfFlight || typeOfFlight ? `<tr style="background:#f8fafc;border-top:1px solid #e5e7eb">
+        <td style="padding:8px 12px;border-right:1px solid #e5e7eb"><strong>Direction:</strong> ${directionOfFlight || '—'}</td>
+        <td style="padding:8px 12px"><strong>Type:</strong> ${typeOfFlight || '—'}</td>
+      </tr>` : ''}
+    </table>
+
+    <!-- Route & Aircraft Info -->
     <table style="width:100%;margin-bottom:16px;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden">
       <tr style="background:#f8fafc">
-        <td style="padding:8px 12px;border-right:1px solid #e5e7eb"><strong>Pilot:</strong> ${d.pilotName}</td>
         <td style="padding:8px 12px;border-right:1px solid #e5e7eb;text-align:center"><strong>Route:</strong> ${d.departure || '—'} → ${d.destination || '—'}</td>
         <td style="padding:8px 12px;text-align:right"><strong>Max Gross:</strong> ${d.maxGross} lbs</td>
       </tr>
@@ -291,10 +309,28 @@ function buildDispatchHTML(d: any): string {
           <div style="text-align:center;font-weight:700;font-size:11px;background:#f1f5f9;border-radius:4px;padding:4px;margin:10px 0 8px;color:#334155">PERFORMANCE</div>
           <table style="width:100%;font-size:10px;border-collapse:collapse">
             <tr><td style="padding:2px 6px;color:#555">V<sub>A</sub> (T/O / Ldg)</td><td style="text-align:center;font-weight:600">${d.vaTo || '—'} / ${d.vaLd || '—'}</td></tr>
-            <tr><td style="padding:2px 6px;color:#555">T/O Roll / 50'</td><td style="text-align:center">${d.toGr || '—'} / ${d.toObs || '—'}</td></tr>
-            <tr><td style="padding:2px 6px;color:#555">Ldg (dep)</td><td style="text-align:center">${d.ldGrDep || '—'} / ${d.ldObsDep || '—'}</td></tr>
-            <tr><td style="padding:2px 6px;color:#555">Ldg (dest)</td><td style="text-align:center">${d.ldGrDest || '—'} / ${d.ldObsDest || '—'}</td></tr>
           </table>
+          <div style="border:2px solid #2563eb;border-radius:6px;padding:6px;margin:6px 0;background:#eff6ff">
+            <div style="text-align:center;font-weight:700;font-size:10px;color:#2563eb;margin-bottom:4px">Takeoff — Departure</div>
+            <table style="width:100%;font-size:10px;border-collapse:collapse">
+              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Ground Roll</td><td style="text-align:center;font-weight:700">${d.toGr || '—'}</td></tr>
+              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Over 50'</td><td style="text-align:center;font-weight:700">${d.toObs || '—'}</td></tr>
+            </table>
+          </div>
+          <div style="border:2px solid #059669;border-radius:6px;padding:6px;margin:6px 0;background:#f0fdf4">
+            <div style="text-align:center;font-weight:700;font-size:10px;color:#059669;margin-bottom:4px">Landing — Departure</div>
+            <table style="width:100%;font-size:10px;border-collapse:collapse">
+              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Ground Roll</td><td style="text-align:center;font-weight:700">${d.ldGrDep || '—'}</td></tr>
+              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Over 50'</td><td style="text-align:center;font-weight:700">${d.ldObsDep || '—'}</td></tr>
+            </table>
+          </div>
+          <div style="border:2px solid #059669;border-radius:6px;padding:6px;margin:6px 0;background:#f0fdf4">
+            <div style="text-align:center;font-weight:700;font-size:10px;color:#059669;margin-bottom:4px">Landing — Destination</div>
+            <table style="width:100%;font-size:10px;border-collapse:collapse">
+              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Ground Roll</td><td style="text-align:center;font-weight:700">${d.ldGrDest || '—'}</td></tr>
+              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Over 50'</td><td style="text-align:center;font-weight:700">${d.ldObsDest || '—'}</td></tr>
+            </table>
+          </div>
         </div>
       </td>
 
@@ -352,14 +388,18 @@ function buildDispatchHTML(d: any): string {
     <!-- Signature Block -->
     <table style="width:100%;margin-top:20px;font-size:11px">
       <tr>
-        <td><strong>Pilot/Student:</strong> ${d.pilotName}</td>
+        <td><strong>Student:</strong> ${studentName}</td>
         <td style="text-align:right"><strong>Date:</strong> ${d.dateStr}</td>
+      </tr>
+      <tr>
+        <td><strong>Instructor:</strong> ${instructorName}</td>
+        <td></td>
       </tr>
     </table>
     <table style="width:100%;margin-top:16px;font-size:11px;color:#94a3b8">
       <tr>
-        <td>Signature: ________________________</td>
-        <td style="text-align:right">Instructor: ________________________</td>
+        <td>Student Signature: ________________________</td>
+        <td style="text-align:right">Instructor Signature: ________________________</td>
       </tr>
     </table>
   </div>
@@ -376,8 +416,8 @@ function buildDispatchHTML(d: any): string {
 router.post('/dispatch', async (req: Request, res: Response) => {
   const d = req.body;
 
-  if (!d.pilotName || !d.aircraft) {
-    res.status(400).json({ error: 'Pilot name and aircraft required' });
+  if ((!d.pilotName && !d.studentName) || !d.aircraft) {
+    res.status(400).json({ error: 'Student name and aircraft required' });
     return;
   }
 
@@ -395,11 +435,17 @@ router.post('/dispatch', async (req: Request, res: Response) => {
   // Plain-text fallback
   const textBody = d._prebuiltText || `WEIGHT & BALANCE — DARCY AVIATION
 Date: ${d.dateStr}
-Pilot: ${d.pilotName}
+Student: ${d.studentName || d.pilotName}
+Instructor: ${d.instructorName || '—'}
+Direction: ${d.directionOfFlight || '—'}
+Type: ${d.typeOfFlight || '—'}
 Aircraft: ${d.aircraft} (${d.aircraftType})
 Route: ${d.departure || '—'} → ${d.destination || '—'}
 Takeoff: ${d.takeoffWeight?.toFixed(1)} lbs / CG ${d.takeoffCg?.toFixed(2)}"
 Landing: ${d.landingWeight?.toFixed(1)} lbs / CG ${d.landingCg?.toFixed(2)}"
+T/O Roll: ${d.toGr || '—'} / Over 50': ${d.toObs || '—'}
+Ldg (dep) Roll: ${d.ldGrDep || '—'} / Over 50': ${d.ldObsDep || '—'}
+Ldg (dest) Roll: ${d.ldGrDest || '—'} / Over 50': ${d.ldObsDest || '—'}
 DEP METAR: ${d.depMetar || 'N/A'}
 DEST METAR: ${d.destMetar || 'N/A'}`;
 
@@ -425,7 +471,7 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
       await transporter.sendMail({
         from: `"Darcy Aviation W&B" <${SMTP_USER}>`,
         to: DISPATCH_EMAIL,
-        subject: `W&B Sheet — ${d.aircraft} — ${d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`,
+        subject: `W&B Sheet — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`,
         text: textBody,
         html: htmlBody,
       });
