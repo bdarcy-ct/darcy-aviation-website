@@ -657,9 +657,9 @@ export default function WeightBalance() {
                 className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-white/40 mb-1">Direction of Flight <span className="text-red-400">*</span></label>
+              <label className="block text-[10px] font-semibold text-white/40 mb-1">Route <span className="text-red-400">*</span></label>
               <input type="text" value={directionOfFlight} onChange={e => setDirectionOfFlight(e.target.value)}
-                placeholder="e.g. KDXR → KBDR"
+                placeholder="e.g. KDXR KBDR"
                 className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
             </div>
             <div>
@@ -889,10 +889,15 @@ export default function WeightBalance() {
               {msg && <p className={`text-xs mt-2 text-center ${msg.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{msg}</p>}
             </GlassCard>
 
-            {/* Print-only: Names + signature lines */}
+            {/* Print-only: Weight summary + Names + signature lines */}
             <div className="hidden print:block" style={{ marginTop: 8, padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 6, padding: '4px 0', borderBottom: '1px solid #ccc' }}>
+                <div><strong>ZFW:</strong> {f(c.zfw, 1)} lbs</div>
+                <div><strong>T/O Weight:</strong> {f(c.toW, 1)} lbs</div>
+                <div><strong>LDG Weight:</strong> {f(c.lW, 1)} lbs</div>
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-                <div><strong>Direction:</strong> {directionOfFlight || '________________________'}</div>
+                <div><strong>Route:</strong> {directionOfFlight || '________________________'}</div>
                 <div><strong>Type:</strong> {typeOfFlight || '________________________'}</div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>

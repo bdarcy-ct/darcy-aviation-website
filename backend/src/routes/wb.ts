@@ -275,9 +275,18 @@ function buildDispatchHTML(d: any): string {
         <td style="padding:8px 12px"><strong>Instructor:</strong> ${instructorName}</td>
       </tr>
       ${directionOfFlight || typeOfFlight ? `<tr style="background:#f8fafc;border-top:1px solid #e5e7eb">
-        <td style="padding:8px 12px;border-right:1px solid #e5e7eb"><strong>Direction:</strong> ${directionOfFlight || '—'}</td>
+        <td style="padding:8px 12px;border-right:1px solid #e5e7eb"><strong>Route:</strong> ${directionOfFlight || '—'}</td>
         <td style="padding:8px 12px"><strong>Type:</strong> ${typeOfFlight || '—'}</td>
       </tr>` : ''}
+    </table>
+
+    <!-- Weight Summary -->
+    <table style="width:100%;margin-bottom:16px;font-size:12px;border:2px solid #2563eb;border-radius:6px;overflow:hidden">
+      <tr style="background:#eff6ff">
+        <td style="padding:8px 12px;text-align:center;border-right:1px solid #bfdbfe"><strong style="color:#7c3aed">ZFW:</strong> <span style="font-weight:700">${(d.zfwWeight || 0).toFixed(1)} lbs</span></td>
+        <td style="padding:8px 12px;text-align:center;border-right:1px solid #bfdbfe"><strong style="color:#2563eb">T/O:</strong> <span style="font-weight:700">${(d.takeoffWeight || 0).toFixed(1)} lbs</span></td>
+        <td style="padding:8px 12px;text-align:center"><strong style="color:#059669">LDG:</strong> <span style="font-weight:700">${(d.landingWeight || 0).toFixed(1)} lbs</span></td>
+      </tr>
     </table>
 
     <!-- Route & Aircraft Info -->
@@ -437,7 +446,7 @@ router.post('/dispatch', async (req: Request, res: Response) => {
 Date: ${d.dateStr}
 Student: ${d.studentName || d.pilotName}
 Instructor: ${d.instructorName || '—'}
-Direction: ${d.directionOfFlight || '—'}
+Route: ${d.directionOfFlight || '—'}
 Type: ${d.typeOfFlight || '—'}
 Aircraft: ${d.aircraft} (${d.aircraftType})
 Route: ${d.departure || '—'} → ${d.destination || '—'}
