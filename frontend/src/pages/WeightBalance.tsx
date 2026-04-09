@@ -280,7 +280,7 @@ function NumIn({ value, onChange, cls }: { value: number; onChange: (v: number) 
   return (
     <input type="text" inputMode="decimal" value={value || ''} onChange={e => onChange(Number(e.target.value) || 0)}
       placeholder="0"
-      className={`wb-bold-input w-full bg-white/[0.08] text-right font-mono font-bold rounded-lg px-2 py-1 border-2 border-white/20 focus:border-blue-400/60 focus:bg-white/[0.12] focus:outline-none focus:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${cls || 'text-white'}`} />
+      className={`wb-bold-input w-full bg-white/[0.15] text-right font-mono font-bold rounded-lg px-2 py-1 border-2 border-white/30 focus:border-blue-400/60 focus:bg-white/[0.20] focus:outline-none focus:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${cls || 'text-white'}`} />
   );
 }
 
@@ -377,8 +377,9 @@ function SecBar({ children, dark }: { children: React.ReactNode; dark?: boolean 
 
 function DualVal({ l, r, accent }: { l: string; r: string; accent?: boolean }) {
   return (
-    <div className="flex text-[11px] py-0.5">
+    <div className="flex text-[11px] py-0.5 items-center">
       <div className={`flex-1 text-center ${accent ? 'text-emerald-400 font-semibold' : 'text-white/80'}`}>{l}</div>
+      <div className="w-px h-3 bg-white/15 flex-shrink-0 mx-0.5" />
       <div className={`flex-1 text-center ${accent ? 'text-emerald-400 font-semibold' : 'text-white/80'}`}>{r}</div>
     </div>
   );
@@ -389,7 +390,7 @@ function DualVal({ l, r, accent }: { l: string; r: string; accent?: boolean }) {
 function PerfInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || '—'}
-      className="perf-box w-full text-center text-[11px] font-bold bg-white/[0.08] border-2 border-blue-400/30 rounded-lg py-1 focus:border-blue-400/60 focus:outline-none focus:shadow-[0_0_8px_rgba(59,130,246,0.2)] transition-all duration-300 text-white" />
+      className="perf-box w-full text-center text-[11px] font-bold bg-white/[0.15] border-2 border-blue-400/30 rounded-lg py-1 focus:border-blue-400/60 focus:bg-white/[0.20] focus:outline-none focus:shadow-[0_0_8px_rgba(59,130,246,0.2)] transition-all duration-300 text-white" />
   );
 }
 
@@ -546,19 +547,19 @@ export default function WeightBalance() {
           ];
           datasets.push({ label:'Utility', data:utilPoly, borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.08)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5, tension:0, datalabels:{display:false} });
         }
-        if (c.zfw > 0) datasets.push({ label:`ZFW ${Math.round(c.zfw)} lbs`, data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:true, align:'top', anchor:'end', offset:4, font:{weight:'bold',size:10}, color:'#5b21b6'} });
-        if (c.toW > 0) datasets.push({ label:`T/O ${Math.round(c.toW)} lbs`, data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:true, align:'top', anchor:'end', offset:4, font:{weight:'bold',size:10}, color:'#1d4ed8'} });
-        if (c.lW > 0) datasets.push({ label:`Ldg ${Math.round(c.lW)} lbs`, data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, datalabels:{display:true, align:'top', anchor:'end', offset:4, font:{weight:'bold',size:10}, color:'#047857'} });
+        if (c.zfw > 0) datasets.push({ label:`ZFW ${Math.round(c.zfw)} lbs`, data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, legendHidden:true, datalabels:{display:true, align:'right', anchor:'end', offset:6, font:{weight:'bold',size:11}, color:'#5b21b6'} });
+        if (c.toW > 0) datasets.push({ label:`T/O ${Math.round(c.toW)} lbs`, data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, legendHidden:true, datalabels:{display:true, align:'right', anchor:'end', offset:6, font:{weight:'bold',size:11}, color:'#1d4ed8'} });
+        if (c.lW > 0) datasets.push({ label:`Ldg ${Math.round(c.lW)} lbs`, data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, legendHidden:true, datalabels:{display:true, align:'right', anchor:'end', offset:6, font:{weight:'bold',size:11}, color:'#047857'} });
         const cfg = {
           type:'scatter',
           data:{datasets},
           options:{
             scales:{
-              x:{title:{display:true,text:'CG Station (inches)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}, ticks:{precision:2}},
+              x:{title:{display:true,text:'CG Station (inches)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}},
               y:{title:{display:true,text:'Weight (lbs)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}}
             },
             plugins:{
-              legend:{position:'bottom',labels:{usePointStyle:true,padding:12}},
+              legend:{display:false},
               datalabels:{display:false}
             }
           }
@@ -673,24 +674,24 @@ export default function WeightBalance() {
               <label className="block text-[10px] font-semibold text-white/40 mb-1">Student Name <span className="text-red-400">*</span></label>
               <input type="text" value={studentName} onChange={e => setStudentName(e.target.value)}
                 placeholder="Student name"
-                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
+                className="w-full bg-white/[0.15] border-2 border-white/30 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/30 focus:outline-none focus:border-blue-400/40 focus:bg-white/[0.20] transition-all duration-300" />
             </div>
             <div>
               <label className="block text-[10px] font-semibold text-white/40 mb-1">Instructor Name <span className="text-red-400">*</span></label>
               <input type="text" value={instructorName} onChange={e => setInstructorName(e.target.value)}
                 placeholder="Instructor name"
-                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
+                className="w-full bg-white/[0.15] border-2 border-white/30 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/30 focus:outline-none focus:border-blue-400/40 focus:bg-white/[0.20] transition-all duration-300" />
             </div>
             <div>
               <label className="block text-[10px] font-semibold text-white/40 mb-1">Route <span className="text-red-400">*</span></label>
               <input type="text" value={directionOfFlight} onChange={e => setDirectionOfFlight(e.target.value)}
                 placeholder="e.g. KDXR KBDR"
-                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/25 focus:outline-none focus:border-blue-400/40 transition-all duration-300" />
+                className="w-full bg-white/[0.15] border-2 border-white/30 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold placeholder-white/30 focus:outline-none focus:border-blue-400/40 focus:bg-white/[0.20] transition-all duration-300" />
             </div>
             <div>
               <label className="block text-[10px] font-semibold text-white/40 mb-1">Type of Flight <span className="text-red-400">*</span></label>
               <select value={typeOfFlight} onChange={e => setTypeOfFlight(e.target.value)}
-                className="w-full bg-white/[0.06] border-2 border-white/15 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-400/40 transition-all duration-300">
+                className="w-full bg-white/[0.15] border-2 border-white/30 rounded-lg px-2.5 py-1.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-400/40 focus:bg-white/[0.20] transition-all duration-300">
                 <option value="" className="bg-[#1a1f2e]">Select type...</option>
                 <option value="Dual Training" className="bg-[#1a1f2e]">Dual Training</option>
                 <option value="Solo" className="bg-[#1a1f2e]">Solo</option>
@@ -715,25 +716,28 @@ export default function WeightBalance() {
             <SecBar dark>Conditions</SecBar>
             <div className="flex text-[10px] font-semibold text-white/40">
               <div className="flex-1 text-center">Departure</div>
+              <div className="w-px bg-white/20 mx-0.5" />
               <div className="flex-1 text-center">Destination</div>
             </div>
-            <div className="grid grid-cols-2 gap-1">
+            <div className="flex gap-1 items-center">
               <input type="text" value={dep} onChange={e => setDep(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
+                className="flex-1 text-center text-xs font-bold text-emerald-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
+              <div className="w-px h-6 bg-white/20 flex-shrink-0" />
               <input type="text" value={dest} onChange={e => setDest(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="w-full text-center text-xs font-bold text-emerald-400 bg-white/5 border border-white/10 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
+                className="flex-1 text-center text-xs font-bold text-emerald-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
             </div>
             {ldWx && <div className="text-center text-[10px] text-white/30 py-0.5">Loading...</div>}
 
             {/* Runway Headings (#1) */}
             <SecBar>Runway</SecBar>
-            <div className="grid grid-cols-2 gap-1">
+            <div className="flex gap-1 items-center">
               <input type="text" value={rwyDep} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 2); setRwyDep(v); }}
                 maxLength={2} placeholder="RWY"
-                className="w-full text-center text-xs font-bold text-amber-400 bg-white/5 border border-white/10 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
+                className="flex-1 text-center text-xs font-bold text-amber-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
+              <div className="w-px h-5 bg-white/20 flex-shrink-0" />
               <input type="text" value={rwyDest} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 2); setRwyDest(v); }}
                 maxLength={2} placeholder="RWY"
-                className="w-full text-center text-xs font-bold text-amber-400 bg-white/5 border border-white/10 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
+                className="flex-1 text-center text-xs font-bold text-amber-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
             </div>
 
             <SecBar>Winds</SecBar>
@@ -745,10 +749,11 @@ export default function WeightBalance() {
               <div className="flex-1 text-center">Departure</div>
               <div className="flex-1 text-center">Destination</div>
             </div>
-            <div className="flex text-[11px] py-0.5">
+            <div className="flex text-[11px] py-0.5 items-center">
               <div className={`flex-1 text-center ${depWind ? (depWind.hw >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-white/40'} font-semibold`}>
                 {depWind ? `${fmtHw(depWind.hw)} / XW ${depWind.xw}` : (rwyDep ? 'No wind data' : 'Enter RWY')}
               </div>
+              <div className="w-px h-3 bg-white/15 flex-shrink-0 mx-0.5" />
               <div className={`flex-1 text-center ${destWind ? (destWind.hw >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-white/40'} font-semibold`}>
                 {destWind ? `${fmtHw(destWind.hw)} / XW ${destWind.xw}` : (rwyDest ? 'No wind data' : 'Enter RWY')}
               </div>
