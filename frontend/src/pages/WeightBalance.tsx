@@ -530,43 +530,48 @@ export default function WeightBalance() {
       let chartUrl = '';
       try {
         const env = ac.cgEnvelope;
-        const normalPoly = [
-          ...env.map((e: any) => ({x:e.fwd,y:e.weight})),
-          ...[...env].reverse().map((e: any) => ({x:e.aft,y:e.weight})),
-          {x:env[0].fwd,y:env[0].weight}
-        ];
-        const datasets: any[] = [
-          { label:'Normal', data:normalPoly, borderColor:'#059669', backgroundColor:'rgba(34,197,94,0.15)', fill:true, showLine:true, pointRadius:0, borderWidth:2, tension:0, datalabels:{display:false} },
-        ];
+        const normalPoly = env.map((e: any) => `{x:${e.fwd},y:${e.weight}}`).join(',')
+          + ',' + [...env].reverse().map((e: any) => `{x:${e.aft},y:${e.weight}}`).join(',')
+          + `,{x:${env[0].fwd},y:${env[0].weight}}`;
+
+        let utilDataset = '';
         if (ac.utilityEnvelope) {
           const u = ac.utilityEnvelope;
-          const utilPoly = [
-            ...u.map((e: any) => ({x:e.fwd,y:e.weight})),
-            ...[...u].reverse().map((e: any) => ({x:e.aft,y:e.weight})),
-            {x:u[0].fwd,y:u[0].weight}
-          ];
-          datasets.push({ label:'Utility', data:utilPoly, borderColor:'#d97706', borderDash:[6,3], backgroundColor:'rgba(217,119,6,0.08)', fill:true, showLine:true, pointRadius:0, borderWidth:1.5, tension:0, datalabels:{display:false} });
+          const utilPoly = u.map((e: any) => `{x:${e.fwd},y:${e.weight}}`).join(',')
+            + ',' + [...u].reverse().map((e: any) => `{x:${e.aft},y:${e.weight}}`).join(',')
+            + `,{x:${u[0].fwd},y:${u[0].weight}}`;
+          utilDataset = `,{label:'Utility',data:[${utilPoly}],borderColor:'#d97706',borderDash:[6,3],backgroundColor:'rgba(217,119,6,0.08)',fill:true,showLine:true,pointRadius:0,borderWidth:1.5,tension:0,datalabels:{display:false}}`;
         }
-        if (c.zfw > 0) datasets.push({ label:`ZFW ${Math.round(c.zfw)} lbs`, data:[{x:c.zA,y:c.zfw}], backgroundColor:'#7c3aed', borderColor:'#5b21b6', pointRadius:8, pointBorderWidth:2, showLine:false, legendHidden:true, datalabels:{display:true, align:'right', anchor:'end', offset:6, font:{weight:'bold',size:11}, color:'#5b21b6'} });
-        if (c.toW > 0) datasets.push({ label:`T/O ${Math.round(c.toW)} lbs`, data:[{x:c.toA,y:c.toW}], backgroundColor:'#2563eb', borderColor:'#1d4ed8', pointRadius:8, pointBorderWidth:2, showLine:false, legendHidden:true, datalabels:{display:true, align:'right', anchor:'end', offset:6, font:{weight:'bold',size:11}, color:'#1d4ed8'} });
-        if (c.lW > 0) datasets.push({ label:`Ldg ${Math.round(c.lW)} lbs`, data:[{x:c.lA,y:c.lW}], backgroundColor:'#059669', borderColor:'#047857', pointRadius:8, pointBorderWidth:2, showLine:false, legendHidden:true, datalabels:{display:true, align:'right', anchor:'end', offset:6, font:{weight:'bold',size:11}, color:'#047857'} });
-        const cfg = {
+
+        // Build dot datasets with formatter as JS function (QuickChart parses JS strings)
+        const dots: string[] = [];
+        if (c.zfw > 0) dots.push(`{label:'ZFW ${Math.round(c.zfw)} lbs',data:[{x:${c.zA},y:${c.zfw}}],backgroundColor:'#7c3aed',borderColor:'#5b21b6',pointRadius:8,pointBorderWidth:2,showLine:false,datalabels:{display:true,align:'right',anchor:'end',offset:6,font:{weight:'bold',size:11},color:'#5b21b6',formatter:function(v,ctx){return ctx.dataset.label;}}}`);
+        if (c.toW > 0) dots.push(`{label:'T/O ${Math.round(c.toW)} lbs',data:[{x:${c.toA},y:${c.toW}}],backgroundColor:'#2563eb',borderColor:'#1d4ed8',pointRadius:8,pointBorderWidth:2,showLine:false,datalabels:{display:true,align:'right',anchor:'end',offset:6,font:{weight:'bold',size:11},color:'#1d4ed8',formatter:function(v,ctx){return ctx.dataset.label;}}}`);
+        if (c.lW > 0) dots.push(`{label:'Ldg ${Math.round(c.lW)} lbs',data:[{x:${c.lA},y:${c.lW}}],backgroundColor:'#059669',borderColor:'#047857',pointRadius:8,pointBorderWidth:2,showLine:false,datalabels:{display:true,align:'right',anchor:'end',offset:6,font:{weight:'bold',size:11},color:'#047857',formatter:function(v,ctx){return ctx.dataset.label;}}}`);
+
+        // Send as JS string so QuickChart can parse formatter functions
+        const chartJs = `{
           type:'scatter',
-          data:{datasets},
+          data:{datasets:[
+            {label:'Normal',data:[${normalPoly}],borderColor:'#059669',backgroundColor:'rgba(34,197,94,0.15)',fill:true,showLine:true,pointRadius:0,borderWidth:2,tension:0,datalabels:{display:false}}
+            ${utilDataset}
+            ${dots.length ? ',' + dots.join(',') : ''}
+          ]},
           options:{
             scales:{
-              x:{title:{display:true,text:'CG Station (inches)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}},
-              y:{title:{display:true,text:'Weight (lbs)',font:{weight:'bold'}}, grid:{color:'#e5e7eb'}}
+              x:{title:{display:true,text:'CG Station (inches)',font:{weight:'bold'}},grid:{color:'#e5e7eb'}},
+              y:{title:{display:true,text:'Weight (lbs)',font:{weight:'bold'}},grid:{color:'#e5e7eb'}}
             },
             plugins:{
               legend:{display:false},
               datalabels:{display:false}
             }
           }
-        };
+        }`;
+
         const qcRes = await fetch('https://quickchart.io/chart/create', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ width:520, height:320, backgroundColor:'white', chart: cfg }),
+          body: JSON.stringify({ width:520, height:320, backgroundColor:'white', chart: chartJs }),
         });
         const qcData = await qcRes.json();
         if (qcData.success && qcData.url) chartUrl = qcData.url;
