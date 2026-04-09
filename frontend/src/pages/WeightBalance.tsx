@@ -719,25 +719,25 @@ export default function WeightBalance() {
               <div className="w-px bg-white/20 mx-0.5" />
               <div className="flex-1 text-center">Destination</div>
             </div>
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-1 items-center overflow-hidden">
               <input type="text" value={dep} onChange={e => setDep(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="flex-1 text-center text-xs font-bold text-emerald-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
+                className="min-w-0 flex-1 text-center text-xs font-bold text-emerald-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
               <div className="w-px h-6 bg-white/20 flex-shrink-0" />
               <input type="text" value={dest} onChange={e => setDest(e.target.value.toUpperCase())} maxLength={4} placeholder="ICAO"
-                className="flex-1 text-center text-xs font-bold text-emerald-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
+                className="min-w-0 flex-1 text-center text-xs font-bold text-emerald-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1.5 uppercase focus:border-emerald-400/50 focus:shadow-[0_0_8px_rgba(52,211,153,0.15)] focus:outline-none transition-all duration-300" />
             </div>
             {ldWx && <div className="text-center text-[10px] text-white/30 py-0.5">Loading...</div>}
 
             {/* Runway Headings (#1) */}
             <SecBar>Runway</SecBar>
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-1 items-center overflow-hidden">
               <input type="text" value={rwyDep} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 2); setRwyDep(v); }}
                 maxLength={2} placeholder="RWY"
-                className="flex-1 text-center text-xs font-bold text-amber-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
+                className="min-w-0 flex-1 text-center text-xs font-bold text-amber-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
               <div className="w-px h-5 bg-white/20 flex-shrink-0" />
               <input type="text" value={rwyDest} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 2); setRwyDest(v); }}
                 maxLength={2} placeholder="RWY"
-                className="flex-1 text-center text-xs font-bold text-amber-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
+                className="min-w-0 flex-1 text-center text-xs font-bold text-amber-400 bg-white/[0.15] border-2 border-white/30 rounded-lg py-1 uppercase focus:border-amber-400/50 focus:outline-none transition-all duration-300" />
             </div>
 
             <SecBar>Winds</SecBar>
