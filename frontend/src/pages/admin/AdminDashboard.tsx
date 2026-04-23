@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface DashboardData {
   counts: {
@@ -19,6 +19,10 @@ function formatStorage(mb: number): string {
 export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [restoring, setRestoring] = useState(false);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -68,25 +72,48 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="text-slate-400 text-sm mt-1">Darcy Aviation CMS Overview</p>
         </div>
-        <button
-          onClick={() => {
-            const token = localStorage.getItem('admin_token');
-            fetch('/api/admin/backup/download', { headers: { Authorization: `Bearer ${token}` } })
-              .then(res => res.blob())
-              .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `darcy-backup-${new Date().toISOString().slice(0,10)}.db`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-              })
-              .catch(() => alert('Backup failed'));
-          }}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
-        >
-          💾 Download Backup
-        </button>
+        <div className="flex items-center gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".db,.sqlite,.sqlite3"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setSelectedFile(file);
+                setShowRestoreConfirm(true);
+              }
+              e.target.value = '';
+            }}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={restoring}
+            className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+          >
+            📤 Upload Backup
+          </button>
+          <button
+            onClick={() => {
+              const token = localStorage.getItem('admin_token');
+              fetch('/api/admin/backup/download', { headers: { Authorization: `Bearer ${token}` } })
+                .then(res => res.blob())
+                .then(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `darcy-backup-${new Date().toISOString().slice(0,10)}.db`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                })
+                .catch(() => alert('Backup failed'));
+            }}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+          >
+            💾 Download Backup
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -128,10 +155,79 @@ export default function AdminDashboard() {
       <div className="mt-6 bg-aviation-blue/10 border border-aviation-blue/20 rounded-xl p-5">
         <h3 className="text-white font-medium mb-2">📧 Bookings & Messages</h3>
         <p className="text-slate-400 text-sm">
-          All bookings are handled through <a href="https://www.flightcircle.com" target="_blank" rel="noopener noreferrer" className="text-aviation-blue hover:text-gold transition-colors">FlightCircle</a>. 
+          All bookings are handled through <a href="https://www.flightcircle.com" target="_blank" rel="noopener noreferrer" className="text-aviation-blue hover:text-gold transition-colors">FlightCircle</a>.
           Customer messages go directly to your <strong className="text-white">brent@darcyaviation.com</strong> inbox via Google Workspace.
         </p>
       </div>
+
+      {/* Restore Confirmation Modal */}
+      {showRestoreConfirm && selectedFile && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-600 rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-3">⚠️ Restore from Backup</h3>
+            <p className="text-slate-300 text-sm mb-2">
+              This will <strong className="text-red-400">replace all current data</strong> with the contents of:
+            </p>
+            <p className="text-white font-mono text-sm bg-slate-700 rounded px-3 py-2 mb-4 break-all">
+              {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+            </p>
+            <p className="text-slate-400 text-xs mb-5">
+              A safety backup of the current database will be created automatically before restoring. The server will restart after restore.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setShowRestoreConfirm(false); setSelectedFile(null); }}
+                disabled={restoring}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setRestoring(true);
+                  const token = localStorage.getItem('admin_token');
+                  const formData = new FormData();
+                  formData.append('backup', selectedFile);
+                  fetch('/api/admin/backup/restore', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                  })
+                    .then(r => r.json())
+                    .then(result => {
+                      if (result.success) {
+                        alert('Backup restored! The page will reload when the server restarts.');
+                        setTimeout(() => window.location.reload(), 3000);
+                      } else {
+                        alert(`Restore failed: ${result.error}`);
+                        setRestoring(false);
+                      }
+                    })
+                    .catch(() => {
+                      alert('Restore failed — check your connection and try again.');
+                      setRestoring(false);
+                    })
+                    .finally(() => {
+                      setShowRestoreConfirm(false);
+                      setSelectedFile(null);
+                    });
+                }}
+                disabled={restoring}
+                className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                {restoring ? (
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Restoring...
+                  </>
+                ) : (
+                  'Restore Now'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
