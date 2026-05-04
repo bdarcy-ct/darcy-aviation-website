@@ -51,6 +51,7 @@ const AdminLayoutInner: React.FC<AdminLayoutProps> = ({ children }) => {
       items: [
         { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
         { path: '/admin/content', label: 'Content Editor', icon: '📝' },
+        { path: '/admin/sop', label: 'SOP Manual', icon: '📘' },
         { path: '/admin/service-tiles', label: 'Service Tiles', icon: '🔧' },
       ]
     },

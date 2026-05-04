@@ -93,11 +93,6 @@ app.use('/assets', express.static(path.join(frontendDist, 'assets'), {
 }));
 app.use(express.static(frontendDist, { maxAge: '1d' }));
 
-// Standalone SOP page (no .html extension)
-app.get('/sop', (_req, res) => {
-  res.sendFile(path.join(frontendDist, 'sop.html'));
-});
-
 // SPA fallback - serve index.html for all non-API routes
 app.get('*', (_req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));

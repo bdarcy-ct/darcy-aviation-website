@@ -63,6 +63,30 @@ router.get('/faqs', (_req, res) => {
   }
 });
 
+// Get public SOP sections
+router.get('/sop', (_req, res) => {
+  try {
+    const sections = db.prepare(`
+      SELECT id, anchor, section_number, category, title, content_html, sort_order, updated_at
+      FROM sop_sections
+      WHERE is_active = 1
+      ORDER BY sort_order ASC, id ASC
+    `).all();
+
+    res.json({
+      title: 'Standard Operating Procedures',
+      revision: 'Rev. 1.3',
+      effective: 'January 1, 2026',
+      approvedBy: 'Brent Darcy, Chief Flight Instructor',
+      homeField: 'KDXR · Danbury, CT',
+      sections,
+    });
+  } catch (error) {
+    console.error('Error fetching public SOP:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get SEO meta for a specific page
 router.get('/seo/:slug', (req, res) => {
   try {

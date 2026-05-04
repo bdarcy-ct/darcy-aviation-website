@@ -15,6 +15,7 @@ import TrainingProgramsManager from './TrainingProgramsManager';
 import ExperiencesManager from './ExperiencesManager';
 import MaintenanceServicesManager from './MaintenanceServicesManager';
 import TeamManager from './TeamManager';
+import SOPManager from './SOPManager';
 
 const AdminPage: React.FC = () => {
   const { user, isLoading } = useAdmin();
@@ -50,6 +51,7 @@ const AdminPage: React.FC = () => {
         <Route path="/experiences" element={<ExperiencesManager />} />
         <Route path="/maintenance-services" element={<MaintenanceServicesManager />} />
         <Route path="/team" element={<TeamManager />} />
+        <Route path="/sop" element={<SOPManager />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Routes>
     </AdminLayout>

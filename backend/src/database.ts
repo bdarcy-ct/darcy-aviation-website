@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { SOP_SEED_SECTIONS } from './sopSeed';
 
 // Use Railway volume (/data) if available, otherwise local ./data
 const dataDir = fs.existsSync('/data') ? '/data' : path.join(__dirname, '../../data');
@@ -85,6 +86,30 @@ export function initializeDatabase(): void {
       content TEXT NOT NULL,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(section, key)
+    );
+
+    CREATE TABLE IF NOT EXISTS sop_sections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      anchor TEXT UNIQUE NOT NULL,
+      section_number TEXT NOT NULL,
+      category TEXT,
+      title TEXT NOT NULL,
+      content_html TEXT NOT NULL,
+      sort_order INTEGER DEFAULT 0,
+      is_active BOOLEAN DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS sop_revision_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      section_id INTEGER,
+      anchor TEXT,
+      title TEXT,
+      content_html TEXT,
+      changed_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(section_id) REFERENCES sop_sections(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS media_files (
@@ -1290,6 +1315,7 @@ export function initializeDatabase(): void {
       ['faq', 'FAQ — Darcy Aviation', 'Frequently asked questions about flight training, costs, scheduling, and aircraft maintenance at Darcy Aviation in Danbury, CT.'],
       ['experiences', 'Scenic Tours & Flying Experiences — Darcy Aviation', 'Discovery flights, Candlewood Lake, West Point, NYC Skyline, and City Lights night tours from Danbury CT.'],
       ['book', 'Book Now — Darcy Aviation', 'Book a discovery flight, scenic tour, or start your flight training at Darcy Aviation, KDXR Danbury CT.'],
+      ['sop', 'Standard Operating Procedures — Darcy Aviation', 'Darcy Aviation standard operating procedures, safety policies, weather minimums, dispatch procedures, and student pilot requirements.'],
     ];
 
     const insertMany = db.transaction(() => {
@@ -1298,6 +1324,32 @@ export function initializeDatabase(): void {
       }
     });
     insertMany();
+  }
+
+  // Seed SOP sections into the CMS once. Existing live edits are preserved.
+  {
+    const count = db.prepare('SELECT COUNT(*) as count FROM sop_sections').get() as { count: number };
+    if (count.count === 0) {
+      const insertSop = db.prepare(`
+        INSERT INTO sop_sections (anchor, section_number, category, title, content_html, sort_order, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
+      const insertMany = db.transaction(() => {
+        for (const section of SOP_SEED_SECTIONS) {
+          insertSop.run(
+            section.anchor,
+            section.sectionNumber,
+            section.category,
+            section.title,
+            section.contentHtml,
+            section.sortOrder,
+            section.isActive
+          );
+        }
+      });
+      insertMany();
+      console.log('✅ SOP sections seeded into CMS');
+    }
   }
 
   // One-time migration: update old placeholder content with real values

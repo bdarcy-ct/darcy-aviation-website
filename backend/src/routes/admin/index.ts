@@ -12,6 +12,7 @@ import trainingProgramsRoutes from './training-programs';
 import experiencesRoutes from './experiences';
 import maintenanceServicesRoutes from './maintenance-services';
 import teamRoutes from './team';
+import sopRoutes from './sop';
 import backupRoutes from './backup';
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.use('/training-programs', trainingProgramsRoutes);
 router.use('/experiences', experiencesRoutes);
 router.use('/maintenance-services', maintenanceServicesRoutes);
 router.use('/team', teamRoutes);
+router.use('/sop', sopRoutes);
 router.use('/backup', backupRoutes);
 
 export default router;

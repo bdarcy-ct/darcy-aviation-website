@@ -137,6 +137,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { label: 'Edit Content', href: '/admin/content', icon: '📝' },
+            { label: 'SOP Manual', href: '/admin/sop', icon: '📘' },
             { label: 'Manage Fleet', href: '/admin/fleet', icon: '✈️' },
             { label: 'Reviews', href: '/admin/testimonials', icon: '⭐' },
             { label: 'Experiences', href: '/admin/experiences', icon: '🎯' },

@@ -19,6 +19,7 @@ const DiscoveryFlight = lazy(() => import('./pages/training/DiscoveryFlight'));
 const SimulatorPage = lazy(() => import('./pages/training/Simulator'));
 const Fleet = lazy(() => import('./pages/Fleet'));
 const Maintenance = lazy(() => import('./pages/Maintenance'));
+const SOP = lazy(() => import('./pages/SOP'));
 // Book page removed — experiences link directly to FlightCircle
 const About = lazy(() => import('./pages/About'));
 const FAQ = lazy(() => import('./pages/FAQ'));
@@ -79,6 +80,7 @@ export default function App() {
                   <Route path="/training/simulator" element={<SimulatorPage />} />
                   <Route path="/fleet" element={<Fleet />} />
                   <Route path="/maintenance" element={<Maintenance />} />
+                  <Route path="/sop" element={<SOP />} />
                   <Route path="/experiences" element={<Experiences />} />
                   {/* /book removed — experiences link directly to FlightCircle */}
                   <Route path="/about" element={<About />} />

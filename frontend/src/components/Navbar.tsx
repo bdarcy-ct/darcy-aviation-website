@@ -8,6 +8,7 @@ const navLinks = [
   { path: '/training', label: 'Training' },
   { path: '/fleet', label: 'Fleet' },
   { path: '/maintenance', label: 'Maintenance' },
+  { path: '/sop', label: 'SOP' },
   { path: '/about', label: 'About' },
   { path: '/faq', label: 'FAQ' },
   { path: '/contact', label: 'Contact' },
