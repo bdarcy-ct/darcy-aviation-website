@@ -136,9 +136,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     // preserve ordering (React before ReactDOM before Babel before text/babel).
     const doc = new DOMParser().parseFromString(template, 'text/html');
     const logoHeader = doc.createElement('div');
-    logoHeader.style.cssText = 'width:100%;display:flex;justify-content:center;align-items:center;padding:32px 16px 16px;background:#fafaf6';
-    logoHeader.innerHTML = '<img src="/darcy-logo.png" alt="Darcy Aviation" style="max-width:320px;width:100%;height:auto">';
+    logoHeader.className = 'sop-logo-header';
+    logoHeader.innerHTML = '<img src="/darcy-logo.png" alt="Darcy Aviation">';
     doc.body.insertBefore(logoHeader, doc.body.firstChild);
+    const mobileStyles = doc.createElement('style');
+    mobileStyles.textContent = `
+      .sop-logo-header{width:100%;display:flex;justify-content:center;align-items:center;padding:32px 16px 16px;background:#fafaf6}
+      .sop-logo-header img{max-width:320px;width:100%;height:auto}
+      @media (max-width: 640px){
+        .sop-logo-header{padding:20px 12px 8px}
+        .sop-logo-header img{max-width:220px}
+        .hero h1, h1{font-size:clamp(28px, 8vw, 40px) !important; margin:12px 0 14px !important}
+        .hero-inner{padding:28px 16px 24px !important; gap:24px !important}
+        .hero-lede{font-size:16px !important; line-height:1.5 !important}
+        .hero-meta{gap:14px !important}
+        .hero-card{padding:20px !important}
+        .layout{padding:0 16px !important; gap:0 !important}
+        main.doc{padding:20px 0 80px !important}
+        .section-intro{margin-top:40px !important; padding-top:32px !important}
+        .twocol{gap:18px !important}
+        h2{font-size:24px !important; line-height:1.15 !important}
+        h3{font-size:18px !important}
+        body{font-size:15px !important}
+        .topbar-inner{padding:10px 16px !important}
+        .foot-inner{padding:32px 16px !important; grid-template-columns:1fr !important; gap:24px !important}
+        table{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; font-size:13px !important}
+        pre, code{max-width:100%; overflow-x:auto; word-wrap:break-word}
+        img, svg{max-width:100%; height:auto}
+        .mobile-toc-toggle{padding:10px 16px !important; font-size:14px !important}
+      }
+    `;
+    doc.head.appendChild(mobileStyles);
     document.documentElement.replaceWith(doc.documentElement);
     const dead = Array.from(document.scripts);
     for (const old of dead) {
