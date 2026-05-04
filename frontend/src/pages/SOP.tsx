@@ -105,6 +105,10 @@ export default function SOP() {
         .sop-page .roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.5rem 0}
         .sop-page .role{background:white;border:1px solid rgba(15,23,42,.09);border-radius:18px;padding:1rem;box-shadow:0 14px 35px rgba(15,23,42,.07)}
         .sop-page .role.lead{background:#16213a;color:white}.sop-page .role.lead .role-title{color:#f9c74f}.sop-page .role-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#9a5b24;font-weight:800;margin-bottom:.5rem}.sop-page .role-people{font-weight:700;color:inherit}.sop-page .role ul{margin:.2rem 0 0 1rem!important}
+        .sop-page .sop-toc-scroll{scrollbar-width:thin;scrollbar-color:#d9a441 transparent}
+        .sop-page .sop-toc-scroll::-webkit-scrollbar{width:8px}
+        .sop-page .sop-toc-scroll::-webkit-scrollbar-thumb{background:#d9a441;border-radius:999px}
+        .sop-page .sop-toc-scroll::-webkit-scrollbar-track{background:transparent}
       `}</style>
 
       <button
@@ -159,7 +163,7 @@ export default function SOP() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:grid lg:grid-cols-[300px_1fr] gap-10">
-        <aside className={`${tocOpen ? 'fixed inset-x-4 top-32 z-40 max-h-[70vh] overflow-auto' : 'hidden'} lg:block lg:sticky lg:top-28 lg:self-start bg-white/90 backdrop-blur border border-slate-200 rounded-3xl p-5 shadow-xl`}>
+        <aside className={`${tocOpen ? 'fixed inset-x-4 top-32 z-40 max-h-[70vh] overflow-auto' : 'hidden'} lg:block lg:sticky lg:top-28 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:overscroll-contain bg-white/90 backdrop-blur border border-slate-200 rounded-3xl p-5 shadow-xl sop-toc-scroll`}>
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs uppercase tracking-[.2em] text-slate-500 font-black">{settings.toc_title}</p>
             <button className="lg:hidden text-slate-500" onClick={() => setTocOpen(false)}>✕</button>
