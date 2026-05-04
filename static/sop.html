@@ -135,6 +135,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // createElement so they execute, awaiting onload for src scripts to
     // preserve ordering (React before ReactDOM before Babel before text/babel).
     const doc = new DOMParser().parseFromString(template, 'text/html');
+    const logoHeader = doc.createElement('div');
+    logoHeader.style.cssText = 'width:100%;display:flex;justify-content:center;align-items:center;padding:32px 16px 16px;background:#fafaf6';
+    logoHeader.innerHTML = '<img src="/darcy-logo.png" alt="Darcy Aviation" style="max-width:320px;width:100%;height:auto">';
+    doc.body.insertBefore(logoHeader, doc.body.firstChild);
     document.documentElement.replaceWith(doc.documentElement);
     const dead = Array.from(document.scripts);
     for (const old of dead) {
