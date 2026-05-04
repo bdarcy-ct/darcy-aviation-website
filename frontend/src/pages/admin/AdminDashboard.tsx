@@ -156,7 +156,7 @@ export default function AdminDashboard() {
         <h3 className="text-white font-medium mb-2">📧 Bookings & Messages</h3>
         <p className="text-slate-400 text-sm">
           All bookings are handled through <a href="https://www.flightcircle.com" target="_blank" rel="noopener noreferrer" className="text-aviation-blue hover:text-gold transition-colors">FlightCircle</a>.
-          Customer messages go directly to your <strong className="text-white">brent@darcyaviation.com</strong> inbox via Google Workspace.
+          Customer messages go directly to your <strong className="text-white">admin@darcyaviation.com</strong> inbox via Google Workspace.
         </p>
       </div>
 

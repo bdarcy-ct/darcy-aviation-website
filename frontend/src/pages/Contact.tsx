@@ -7,7 +7,7 @@ export default function Contact() {
   const { get: cms } = useCmsSection('contact');
 
   const phone = cms('phone', '(203) 617-0645');
-  const email = cms('email', 'brent@darcyaviation.com');
+  const email = cms('email', 'admin@darcyaviation.com');
   const address = cms('address', '1 Wallingford Rd, Danbury, CT 06810');
   const hours = cms('hours', '7 Days/Week, 9AM\u20135PM');
 
@@ -49,7 +49,7 @@ export default function Contact() {
     <div className="pt-24">
       <SEOHead
         title="Contact Us"
-        description="Contact Darcy Aviation — call (203) 617-0645, email brent@darcyaviation.com, or visit us at Danbury Municipal Airport, 1 Wallingford Rd, Danbury, CT 06810. Flight school near me in Connecticut."
+        description="Contact Darcy Aviation — call (203) 617-0645, email admin@darcyaviation.com, or visit us at Danbury Municipal Airport, 1 Wallingford Rd, Danbury, CT 06810. Flight school near me in Connecticut."
         path="/contact"
       />
       <SectionWrapper>

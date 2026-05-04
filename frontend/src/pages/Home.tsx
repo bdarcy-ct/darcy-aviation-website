@@ -170,7 +170,7 @@ export default function Home() {
           "description": "Premier flight training, scenic airplane tours, and FAA-certified aircraft maintenance at Danbury Municipal Airport (KDXR), Connecticut.",
           "url": "https://darcyaviation.com",
           "telephone": "+1-203-617-0645",
-          "email": "brent@darcyaviation.com",
+          "email": "admin@darcyaviation.com",
           "address": {
             "@type": "PostalAddress",
             "streetAddress": "1 Wallingford Rd",

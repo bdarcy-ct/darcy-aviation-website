@@ -1,4 +1,4 @@
-import{r as i,j as e}from"./index-D5YkIIhb.js";const Qe=`
+import{r as i,j as e}from"./index-ByzkT9hh.js";const Qe=`
 /* Kill all number input spinners */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
