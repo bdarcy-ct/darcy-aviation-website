@@ -73,14 +73,14 @@ router.get('/sop', (_req, res) => {
       ORDER BY sort_order ASC, id ASC
     `).all();
 
-    res.json({
-      title: 'Standard Operating Procedures',
-      revision: 'Rev. 1.3',
-      effective: 'January 1, 2026',
-      approvedBy: 'Brent Darcy, Chief Flight Instructor',
-      homeField: 'KDXR · Danbury, CT',
-      sections,
-    });
+    const settingsRows = db.prepare('SELECT key, content FROM site_content WHERE section = ? ORDER BY key').all('sop') as {
+      key: string;
+      content: string;
+    }[];
+    const settings: Record<string, string> = {};
+    for (const row of settingsRows) settings[row.key] = row.content;
+
+    res.json({ settings, sections });
   } catch (error) {
     console.error('Error fetching public SOP:', error);
     res.status(500).json({ error: 'Internal server error' });

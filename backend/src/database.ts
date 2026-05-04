@@ -342,6 +342,27 @@ export function initializeDatabase(): void {
       ['contact', 'instagram', 'https://www.instagram.com/darcyaviation/'],
       ['contact', 'google_maps', 'https://www.google.com/maps?q=Darcy+Aviation+Danbury+CT'],
 
+      // SOP Page Settings
+      ['sop', 'meta_title', 'Standard Operating Procedures'],
+      ['sop', 'meta_description', 'Darcy Aviation standard operating procedures, safety policies, weather minimums, dispatch procedures, and student pilot requirements.'],
+      ['sop', 'eyebrow', 'Operations Manual · Rev. 1.3'],
+      ['sop', 'hero_title_html', 'Standard <em>Operating</em><br />Procedures.'],
+      ['sop', 'hero_lede', 'The minimum standards every Darcy Aviation student, renter, and instructor builds upon — to fly safely, efficiently, and to the highest standard out of Danbury Municipal Airport.'],
+      ['sop', 'effective_label', 'Effective'],
+      ['sop', 'effective_value', 'January 1, 2026'],
+      ['sop', 'approved_by_label', 'Approved by'],
+      ['sop', 'approved_by_value', 'Brent Darcy, Chief Flight Instructor'],
+      ['sop', 'home_field_label', 'Home Field'],
+      ['sop', 'home_field_value', 'KDXR · Danbury, CT'],
+      ['sop', 'sections_label', 'Sections'],
+      ['sop', 'sections_suffix', 'CMS managed'],
+      ['sop', 'quick_jump_title', 'Quick Jump'],
+      ['sop', 'toc_title', 'In this manual'],
+      ['sop', 'toc_search_placeholder', 'Search sections...'],
+      ['sop', 'mobile_toc_label', 'Contents'],
+      ['sop', 'loading_text', 'Loading SOP...'],
+      ['sop', 'error_text', 'Unable to load SOP.'],
+
       // Training Overview
       ['training', 'headline', 'Flight Training Programs'],
       ['training', 'subheadline', 'From your first flight to advanced ratings — structured programs with experienced CFIs who care about your success.'],

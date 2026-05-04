@@ -13,13 +13,31 @@ interface SopSection {
 }
 
 interface SopResponse {
-  title: string;
-  revision: string;
-  effective: string;
-  approvedBy: string;
-  homeField: string;
+  settings: Record<string, string>;
   sections: SopSection[];
 }
+
+const defaults: Record<string, string> = {
+  meta_title: 'Standard Operating Procedures',
+  meta_description: 'Darcy Aviation standard operating procedures, safety policies, weather minimums, dispatch procedures, and student pilot requirements.',
+  eyebrow: 'Operations Manual · Rev. 1.3',
+  hero_title_html: 'Standard <em>Operating</em><br />Procedures.',
+  hero_lede: 'The minimum standards every Darcy Aviation student, renter, and instructor builds upon — to fly safely, efficiently, and to the highest standard out of Danbury Municipal Airport.',
+  effective_label: 'Effective',
+  effective_value: 'January 1, 2026',
+  approved_by_label: 'Approved by',
+  approved_by_value: 'Brent Darcy, Chief Flight Instructor',
+  home_field_label: 'Home Field',
+  home_field_value: 'KDXR · Danbury, CT',
+  sections_label: 'Sections',
+  sections_suffix: 'CMS managed',
+  quick_jump_title: 'Quick Jump',
+  toc_title: 'In this manual',
+  toc_search_placeholder: 'Search sections...',
+  mobile_toc_label: 'Contents',
+  loading_text: 'Loading SOP...',
+  error_text: 'Unable to load SOP.',
+};
 
 export default function SOP() {
   const [data, setData] = useState<SopResponse | null>(null);
@@ -35,6 +53,7 @@ export default function SOP() {
       .finally(() => setLoading(false));
   }, []);
 
+  const settings = { ...defaults, ...(data?.settings || {}) };
   const sections = data?.sections || [];
   const filteredToc = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -54,21 +73,21 @@ export default function SOP() {
       <div className="pt-28 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 rounded-full border-2 border-aviation-blue/30 border-t-gold animate-spin mx-auto mb-4" />
-          <p className="text-slate-300">Loading SOP...</p>
+          <p className="text-slate-300">{defaults.loading_text}</p>
         </div>
       </div>
     );
   }
 
   if (!data) {
-    return <div className="pt-28 min-h-screen text-center text-white">Unable to load SOP.</div>;
+    return <div className="pt-28 min-h-screen text-center text-white">{defaults.error_text}</div>;
   }
 
   return (
     <div className="sop-page bg-[#f7f2e8] text-slate-900 min-h-screen">
       <SEOHead
-        title="Standard Operating Procedures"
-        description="Darcy Aviation standard operating procedures, safety policies, weather minimums, dispatch procedures, and student pilot requirements."
+        title={settings.meta_title}
+        description={settings.meta_description}
         path="/sop"
       />
 
@@ -92,7 +111,7 @@ export default function SOP() {
         onClick={() => setTocOpen(!tocOpen)}
         className="lg:hidden fixed top-20 left-4 z-40 bg-navy-900 text-white rounded-full px-4 py-2 shadow-xl border border-white/10 flex items-center gap-2"
       >
-        ☰ Contents
+        ☰ {settings.mobile_toc_label}
       </button>
 
       <section className="pt-28 pb-16 bg-[radial-gradient(circle_at_top_left,_rgba(217,119,53,.22),_transparent_32%),linear-gradient(135deg,#101a31_0%,#182745_58%,#0b1220_100%)] text-white relative overflow-hidden">
@@ -100,16 +119,22 @@ export default function SOP() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1fr_360px] gap-10 items-end">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-2 text-gold text-xs uppercase tracking-[.22em] font-bold mb-6">
-              <span className="w-2 h-2 rounded-full bg-gold" /> Operations Manual · {data.revision}
+              <span className="w-2 h-2 rounded-full bg-gold" /> {settings.eyebrow}
             </div>
-            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[.95] mb-6">
-              Standard <em className="text-gold font-normal">Operating</em><br />Procedures.
-            </h1>
+            <h1
+              className="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[.95] mb-6 [&_em]:text-gold [&_em]:font-normal"
+              dangerouslySetInnerHTML={{ __html: settings.hero_title_html }}
+            />
             <p className="text-lg sm:text-xl text-slate-300 max-w-3xl leading-relaxed">
-              The minimum standards every Darcy Aviation student, renter, and instructor builds upon — to fly safely, efficiently, and to the highest standard out of Danbury Municipal Airport.
+              {settings.hero_lede}
             </p>
             <dl className="grid sm:grid-cols-4 gap-4 mt-8">
-              {[['Effective', data.effective], ['Approved by', data.approvedBy], ['Home Field', data.homeField], ['Sections', `${sections.length} CMS managed`]].map(([k, v]) => (
+              {[
+                [settings.effective_label, settings.effective_value],
+                [settings.approved_by_label, settings.approved_by_value],
+                [settings.home_field_label, settings.home_field_value],
+                [settings.sections_label, `${sections.length} ${settings.sections_suffix}`],
+              ].map(([k, v]) => (
                 <div key={k} className="border-l border-gold/40 pl-4">
                   <dt className="text-[10px] uppercase tracking-[.18em] text-slate-400 font-bold">{k}</dt>
                   <dd className="text-sm text-white mt-1">{v}</dd>
@@ -119,7 +144,7 @@ export default function SOP() {
           </div>
 
           <aside className="bg-white/10 backdrop-blur-xl border border-white/15 rounded-3xl p-6 shadow-2xl">
-            <h2 className="text-gold font-serif text-2xl mb-4">Quick Jump</h2>
+            <h2 className="text-gold font-serif text-2xl mb-4">{settings.quick_jump_title}</h2>
             <div className="space-y-2">
               {quickLinks.map((section) => (
                 <a key={section.id} href={`#${section.anchor}`} className="group flex items-center gap-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-3 transition-colors">
@@ -136,13 +161,13 @@ export default function SOP() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:grid lg:grid-cols-[300px_1fr] gap-10">
         <aside className={`${tocOpen ? 'fixed inset-x-4 top-32 z-40 max-h-[70vh] overflow-auto' : 'hidden'} lg:block lg:sticky lg:top-28 lg:self-start bg-white/90 backdrop-blur border border-slate-200 rounded-3xl p-5 shadow-xl`}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs uppercase tracking-[.2em] text-slate-500 font-black">In this manual</p>
+            <p className="text-xs uppercase tracking-[.2em] text-slate-500 font-black">{settings.toc_title}</p>
             <button className="lg:hidden text-slate-500" onClick={() => setTocOpen(false)}>✕</button>
           </div>
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search sections..."
+            placeholder={settings.toc_search_placeholder}
             className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/50 mb-4"
           />
           <nav className="space-y-2">

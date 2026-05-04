@@ -14,6 +14,28 @@ interface SopSection {
   updated_at: string;
 }
 
+const settingFields = [
+  ['meta_title', 'SEO Title'],
+  ['meta_description', 'SEO Description'],
+  ['eyebrow', 'Hero Eyebrow'],
+  ['hero_title_html', 'Hero Title (HTML allowed)'],
+  ['hero_lede', 'Hero Intro Text'],
+  ['effective_label', 'Effective Label'],
+  ['effective_value', 'Effective Value'],
+  ['approved_by_label', 'Approved By Label'],
+  ['approved_by_value', 'Approved By Value'],
+  ['home_field_label', 'Home Field Label'],
+  ['home_field_value', 'Home Field Value'],
+  ['sections_label', 'Sections Label'],
+  ['sections_suffix', 'Sections Suffix'],
+  ['quick_jump_title', 'Quick Jump Title'],
+  ['toc_title', 'Table of Contents Title'],
+  ['toc_search_placeholder', 'Search Placeholder'],
+  ['mobile_toc_label', 'Mobile Contents Button'],
+  ['loading_text', 'Loading Text'],
+  ['error_text', 'Error Text'],
+] as const;
+
 const newSectionTemplate = (): Partial<SopSection> => ({
   anchor: 'new-section',
   section_number: '',
@@ -35,6 +57,9 @@ export default function SOPManager() {
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState('');
   const [showHtml, setShowHtml] = useState(false);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const selected = useMemo(() => sections.find(s => s.id === selectedId), [sections, selectedId]);
 
@@ -62,9 +87,14 @@ export default function SOPManager() {
   const loadSections = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/sop', { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const [sectionsRes, settingsRes] = await Promise.all([
+        fetch('/api/admin/sop', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/admin/content/section/sop', { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      const data = await sectionsRes.json();
+      const settingsRows = await settingsRes.json();
       setSections(data);
+      setSettings(Object.fromEntries((settingsRows || []).map((row: any) => [row.key, row.content])));
       if (!selectedId && data.length) setSelectedId(data[0].id);
     } catch (error) {
       console.error('Failed to load SOP sections:', error);
@@ -96,6 +126,27 @@ export default function SOPManager() {
       .replace(/<!--.*?-->/gs, '');
     document.execCommand('insertHTML', false, cleaned);
     syncEditorToForm();
+  };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      for (const [key] of settingFields) {
+        const res = await fetch(`/api/admin/content/sop/${key}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: settings[key] || ' ' }),
+        });
+        if (!res.ok) throw new Error(`Failed to save ${key}`);
+      }
+      toast('success', 'SOP page settings saved');
+      await loadSections();
+    } catch (error: any) {
+      console.error('Failed to save SOP settings:', error);
+      toast('error', error?.message || 'Failed to save SOP settings');
+    } finally {
+      setSavingSettings(false);
+    }
   };
 
   const save = async () => {
@@ -170,6 +221,49 @@ export default function SOPManager() {
           <button onClick={() => setSelectedId('new')} className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg text-sm font-bold">+ Add Section</button>
         </div>
       </div>
+
+      <section className="bg-white/10 border border-white/15 rounded-2xl overflow-hidden">
+        <button
+          onClick={() => setSettingsOpen(!settingsOpen)}
+          className="w-full p-5 flex items-center justify-between text-left bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <div>
+            <h2 className="text-white font-bold text-lg">SOP Page Settings</h2>
+            <p className="text-slate-400 text-sm">Edit every wrapper label, headline, intro, SEO title, and status line on the SOP page.</p>
+          </div>
+          <span className="text-gold text-xl">{settingsOpen ? '−' : '+'}</span>
+        </button>
+        {settingsOpen && (
+          <div className="p-5 border-t border-white/10">
+            <div className="grid md:grid-cols-2 gap-4">
+              {settingFields.map(([key, label]) => (
+                <label key={key} className={['hero_lede', 'meta_description', 'hero_title_html'].includes(key) ? 'block md:col-span-2' : 'block'}>
+                  <span className="text-xs text-slate-400 uppercase tracking-wider">{label}</span>
+                  {['hero_lede', 'meta_description', 'hero_title_html'].includes(key) ? (
+                    <textarea
+                      value={settings[key] || ''}
+                      onChange={e => setSettings({ ...settings, [key]: e.target.value })}
+                      rows={key === 'hero_title_html' ? 2 : 3}
+                      className="mt-1 w-full bg-slate-900/70 border border-white/15 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    />
+                  ) : (
+                    <input
+                      value={settings[key] || ''}
+                      onChange={e => setSettings({ ...settings, [key]: e.target.value })}
+                      className="mt-1 w-full bg-slate-900/70 border border-white/15 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    />
+                  )}
+                </label>
+              ))}
+            </div>
+            <div className="mt-5 flex justify-end">
+              <button onClick={saveSettings} disabled={savingSettings} className="bg-gold hover:bg-yellow-500 disabled:opacity-60 text-navy-900 px-6 py-2 rounded-lg text-sm font-black">
+                {savingSettings ? 'Saving Settings...' : 'Save SOP Settings'}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="grid lg:grid-cols-[320px_1fr] gap-6">
         <aside className="bg-white/10 border border-white/15 rounded-2xl p-4 h-fit lg:sticky lg:top-24">
