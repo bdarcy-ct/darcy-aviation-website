@@ -110,6 +110,71 @@ export default function SOPManager() {
     syncEditorToForm();
   };
 
+  const insertHtml = (html: string) => {
+    editorRef.current?.focus();
+    document.execCommand('insertHTML', false, html);
+    syncEditorToForm();
+  };
+
+  const insertRevisionTable = () => {
+    insertHtml(`
+      <h3>Revisions Log</h3>
+      <p><em>Darcy Aviation Flight School, Policy and Procedures Manual — Revision History</em></p>
+      <table class="data-table revision-table">
+        <thead>
+          <tr>
+            <th>Revision Number</th>
+            <th>Date</th>
+            <th>Section Affected</th>
+            <th>Description of Change</th>
+            <th>Approved By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="id">New</td><td>MM/DD/YYYY</td><td>Section</td><td>Description of change</td><td>Initials</td></tr>
+        </tbody>
+      </table>
+    `);
+  };
+
+  const findActiveTable = () => {
+    const editor = editorRef.current;
+    if (!editor) return null;
+
+    const selection = window.getSelection();
+    let node = selection?.anchorNode || null;
+    if (node?.nodeType === Node.TEXT_NODE) node = node.parentElement;
+
+    if (node instanceof HTMLElement && editor.contains(node)) {
+      const closest = node.closest('table');
+      if (closest instanceof HTMLTableElement) return closest;
+    }
+
+    const revisionTable = editor.querySelector('table.revision-table, table.data-table, table');
+    return revisionTable instanceof HTMLTableElement ? revisionTable : null;
+  };
+
+  const addRevisionRow = () => {
+    const table = findActiveTable();
+    if (!table) {
+      insertRevisionTable();
+      return;
+    }
+
+    const body = table.tBodies[0] || table.createTBody();
+    const columnCount = table.tHead?.rows[0]?.cells.length || body.rows[0]?.cells.length || 5;
+    const defaults = ['New', 'MM/DD/YYYY', 'Section', 'Description of change', 'Initials'];
+    const row = body.insertRow(-1);
+
+    for (let index = 0; index < columnCount; index += 1) {
+      const cell = row.insertCell(-1);
+      cell.textContent = defaults[index] || '';
+      if (index === 0) cell.className = 'id';
+    }
+
+    syncEditorToForm();
+  };
+
   const syncEditorToForm = () => {
     if (editorRef.current) setForm(prev => ({ ...prev, content_html: editorRef.current!.innerHTML }));
   };
@@ -332,6 +397,9 @@ export default function SOPManager() {
                   <button key={`${label}-${cmd}`} onClick={() => exec(cmd!, value)} className="bg-white/10 hover:bg-white/20 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10">{label}</button>
                 ))}
                 <button onClick={() => { const url = prompt('Link URL'); if (url) exec('createLink', url); }} className="bg-white/10 hover:bg-white/20 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10">Link</button>
+                <span className="hidden sm:inline-block h-6 w-px bg-white/15 mx-1" />
+                <button onClick={insertRevisionTable} disabled={showHtml} className="bg-gold/15 hover:bg-gold/25 disabled:opacity-40 text-gold px-3 py-1.5 rounded-lg text-xs font-semibold border border-gold/20">+ Revision Table</button>
+                <button onClick={addRevisionRow} disabled={showHtml} className="bg-gold/15 hover:bg-gold/25 disabled:opacity-40 text-gold px-3 py-1.5 rounded-lg text-xs font-semibold border border-gold/20">+ Revision Row</button>
                 <button onClick={() => setShowHtml(!showHtml)} className="ml-auto bg-aviation-blue/20 hover:bg-aviation-blue/30 text-blue-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-blue-400/20">{showHtml ? 'Visual Editor' : 'HTML'}</button>
               </div>
 
@@ -367,7 +435,7 @@ export default function SOPManager() {
       </div>
 
       <style>{`
-        .sop-admin-editor p{margin:0 0 1rem;line-height:1.65}.sop-admin-editor h2{font-size:1.8rem;font-family:Georgia,serif;margin:1.6rem 0 .8rem;color:#16213a}.sop-admin-editor h3{font-size:1.35rem;font-weight:800;margin:1.4rem 0 .7rem;color:#16213a}.sop-admin-editor h4{font-size:.95rem;text-transform:uppercase;letter-spacing:.08em;color:#9a5b24;font-weight:900;margin:1rem 0 .5rem}.sop-admin-editor ul,.sop-admin-editor ol{margin:0 0 1rem 1.5rem}.sop-admin-editor li{margin:.3rem 0}.sop-admin-editor table{width:100%;border-collapse:collapse;margin:1rem 0}.sop-admin-editor th,.sop-admin-editor td{border:1px solid #cbd5e1;padding:.5rem}.sop-admin-editor blockquote{border-left:4px solid #d97735;background:#fff7ed;padding:1rem;margin:1rem 0;color:#7c2d12}
+        .sop-admin-editor p{margin:0 0 1rem;line-height:1.65}.sop-admin-editor h2{font-size:1.8rem;font-family:Georgia,serif;margin:1.6rem 0 .8rem;color:#16213a}.sop-admin-editor h3{font-size:1.35rem;font-weight:800;margin:1.4rem 0 .7rem;color:#16213a}.sop-admin-editor h4{font-size:.95rem;text-transform:uppercase;letter-spacing:.08em;color:#9a5b24;font-weight:900;margin:1rem 0 .5rem}.sop-admin-editor ul,.sop-admin-editor ol{margin:0 0 1rem 1.5rem}.sop-admin-editor li{margin:.3rem 0}.sop-admin-editor table{width:100%;border-collapse:collapse;margin:1rem 0}.sop-admin-editor th,.sop-admin-editor td{border:1px solid #cbd5e1;padding:.5rem;min-width:110px}.sop-admin-editor th{background:#16213a;color:white}.sop-admin-editor td.id{font-family:monospace;color:#b45309;font-weight:700}.sop-admin-editor blockquote{border-left:4px solid #d97735;background:#fff7ed;padding:1rem;margin:1rem 0;color:#7c2d12}
       `}</style>
     </div>
   );
