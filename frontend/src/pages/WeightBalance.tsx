@@ -136,8 +136,8 @@ const AIRCRAFT: Aircraft[] = [
   },
   {
     tailNumber: 'N9426E', type: 'Cessna 172 (180 HP)', model: 'C172-180',
-    basicEmptyWeight: 1525.55, basicEmptyArm: 39.56, basicEmptyMoment: 60344.46,
-    maxGrossWeight: 2550, usefulLoad: 1024.45,
+    basicEmptyWeight: 1516.9, basicEmptyArm: 39.98, basicEmptyMoment: 60649,
+    maxGrossWeight: 2550, usefulLoad: 1033.2,
     fuelArm: 47.9, maxFuelLbs: 336, taxiFuelLbs: 8,
     frontArm: 37, rearArm: 73, bag1Arm: 95, bag2Arm: 123,
     bag1Max: 120, bag2Max: 120, hasRear: true, hasBag2: true,
