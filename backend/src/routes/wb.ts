@@ -327,13 +327,6 @@ function buildDispatchHTML(d: any): string {
             </table>
           </div>
           <div style="border:2px solid #059669;border-radius:6px;padding:6px;margin:6px 0;background:#f0fdf4">
-            <div style="text-align:center;font-weight:700;font-size:10px;color:#059669;margin-bottom:4px">Landing — Departure</div>
-            <table style="width:100%;font-size:10px;border-collapse:collapse">
-              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Ground Roll</td><td style="text-align:center;font-weight:700">${d.ldGrDep || '—'}</td></tr>
-              <tr><td style="padding:1px 4px;color:#555;font-weight:700">Over 50'</td><td style="text-align:center;font-weight:700">${d.ldObsDep || '—'}</td></tr>
-            </table>
-          </div>
-          <div style="border:2px solid #059669;border-radius:6px;padding:6px;margin:6px 0;background:#f0fdf4">
             <div style="text-align:center;font-weight:700;font-size:10px;color:#059669;margin-bottom:4px">Landing — Destination</div>
             <table style="width:100%;font-size:10px;border-collapse:collapse">
               <tr><td style="padding:1px 4px;color:#555;font-weight:700">Ground Roll</td><td style="text-align:center;font-weight:700">${d.ldGrDest || '—'}</td></tr>
@@ -453,7 +446,6 @@ Route: ${d.departure || '—'} → ${d.destination || '—'}
 Takeoff: ${d.takeoffWeight?.toFixed(1)} lbs / CG ${d.takeoffCg?.toFixed(2)}"
 Landing: ${d.landingWeight?.toFixed(1)} lbs / CG ${d.landingCg?.toFixed(2)}"
 T/O Roll: ${d.toGr || '—'} / Over 50': ${d.toObs || '—'}
-Ldg (dep) Roll: ${d.ldGrDep || '—'} / Over 50': ${d.ldObsDep || '—'}
 Ldg (dest) Roll: ${d.ldGrDest || '—'} / Over 50': ${d.ldObsDest || '—'}
 DEP METAR: ${d.depMetar || 'N/A'}
 DEST METAR: ${d.destMetar || 'N/A'}`;

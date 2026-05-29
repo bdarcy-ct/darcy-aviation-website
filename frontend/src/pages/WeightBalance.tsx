@@ -250,6 +250,15 @@ function cgOk(env: CgLimit[], w: number, cg: number): boolean {
   return cg >= interpCg(env, w, 'fwd') && cg <= interpCg(env, w, 'aft');
 }
 function f(n: number, d = 2) { return n.toFixed(d); }
+type FuelUnit = 'gal' | 'lbs';
+const FUEL_LBS_PER_GAL = 6;
+const fuelDisplay = (lbs: number, unit: FuelUnit) => unit === 'gal' ? lbs / FUEL_LBS_PER_GAL : lbs;
+const fuelToLbs = (value: number, unit: FuelUnit) => unit === 'gal' ? value * FUEL_LBS_PER_GAL : value;
+const formatFuelInput = (lbs: number, unit: FuelUnit) => {
+  const value = fuelDisplay(lbs, unit);
+  if (!value) return '';
+  return unit === 'gal' ? String(Number(value.toFixed(1))) : String(Math.round(value));
+};
 
 // ─── Format wind component for display ───────────────────────────────────────
 function fmtHw(hw: number): string {
@@ -279,6 +288,32 @@ function GlassCard({ children, className }: { children: React.ReactNode; classNa
 function NumIn({ value, onChange, cls }: { value: number; onChange: (v: number) => void; cls?: string }) {
   return (
     <input type="text" inputMode="decimal" value={value || ''} onChange={e => onChange(Number(e.target.value) || 0)}
+      placeholder="0"
+      className={`wb-bold-input w-full bg-white/[0.15] text-right font-mono font-bold rounded-lg px-2 py-1 border-2 border-white/30 focus:border-blue-400/60 focus:bg-white/[0.20] focus:outline-none focus:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${cls || 'text-white'}`} />
+  );
+}
+
+function FuelNumIn({ lbs, unit, onChange, cls }: { lbs: number; unit: FuelUnit; onChange: (v: number) => void; cls?: string }) {
+  const [text, setText] = useState(formatFuelInput(lbs, unit));
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!editing) setText(formatFuelInput(lbs, unit));
+  }, [lbs, unit, editing]);
+
+  return (
+    <input type="text" inputMode="decimal" value={text}
+      onFocus={() => setEditing(true)}
+      onBlur={() => {
+        setEditing(false);
+        setText(formatFuelInput(lbs, unit));
+      }}
+      onChange={e => {
+        const next = e.target.value;
+        if (!/^\d*\.?\d*$/.test(next)) return;
+        setText(next);
+        onChange(fuelToLbs(Number(next) || 0, unit));
+      }}
       placeholder="0"
       className={`wb-bold-input w-full bg-white/[0.15] text-right font-mono font-bold rounded-lg px-2 py-1 border-2 border-white/30 focus:border-blue-400/60 focus:bg-white/[0.20] focus:outline-none focus:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${cls || 'text-white'}`} />
   );
@@ -406,8 +441,6 @@ export default function WeightBalance() {
   const [rwyDest, setRwyDest] = useState('');
   const [toGr, setToGr] = useState('');
   const [toObs, setToObs] = useState('');
-  const [ldGrDep, setLdGrDep] = useState('');
-  const [ldObsDep, setLdObsDep] = useState('');
   const [ldGrDest, setLdGrDest] = useState('');
   const [ldObsDest, setLdObsDest] = useState('');
   const [ldWx, setLdWx] = useState(false);
@@ -419,6 +452,9 @@ export default function WeightBalance() {
   const [fuel, setFuel] = useState(0);
   const [burn, setBurn] = useState(0);
   const [taxi, setTaxi] = useState(0);
+  const [fuelUnit, setFuelUnit] = useState<FuelUnit>('gal');
+  const [taxiUnit, setTaxiUnit] = useState<FuelUnit>('gal');
+  const [burnUnit, setBurnUnit] = useState<FuelUnit>('gal');
 
   // Student & Instructor names (#3)
   const [studentName, setStudentName] = useState('');
@@ -519,7 +555,7 @@ export default function WeightBalance() {
         { label: ac.bag1Label, op: '+', weight: b1, arm: ac.bag1Arm, moment: c.b1m, opM: '+' },
         ...(ac.hasBag2 ? [{ label: ac.bag2Label, op: '+', weight: b2, arm: ac.bag2Arm, moment: c.b2m, opM: '+' }] : []),
         { label: 'Zero Fuel Weight', op: '=', weight: c.zfw, arm: c.zA, moment: c.zM, opM: '=', bold: true, subtotal: true, color: 'purple' },
-        { label: ac.fuelLabel, op: '+', weight: fuel, arm: ac.fuelArm, moment: c.fM, opM: '+' },
+        { label: 'Usable Fuel', op: '+', weight: fuel, arm: ac.fuelArm, moment: c.fM, opM: '+' },
         { label: 'Ramp Weight', op: '=', weight: c.rW, arm: c.rA, moment: c.rM, opM: '=', bold: true, subtotal: true, color: 'green' },
         { label: 'Taxi Fuel', op: '-', weight: taxi, arm: ac.fuelArm, moment: c.tM, opM: '-' },
         { label: 'Takeoff Weight', op: '=', weight: c.toW, arm: c.toA, moment: c.toM, opM: '=', bold: true, subtotal: true, color: 'blue', overweight: !c.toOk },
@@ -608,7 +644,7 @@ export default function WeightBalance() {
           depRwy: rwyDep, destRwy: rwyDest,
           // Performance
           vaTo: vaTo.toFixed(1), vaLd: vaLd.toFixed(1),
-          toGr, toObs, ldGrDep, ldObsDep, ldGrDest, ldObsDest,
+          toGr, toObs, ldGrDest, ldObsDest,
           // W&B rows
           rows,
           timestamp: new Date().toISOString(),
@@ -798,19 +834,6 @@ export default function WeightBalance() {
               </div>
             </div>
 
-            {/* Landing Performance — Departure (BOXED) */}
-            <div className="perf-box border-2 border-emerald-400/25 rounded-lg p-2 bg-emerald-400/[0.04]">
-              <div className="text-center text-[10px] font-bold text-emerald-400 mb-1">Landing — Departure</div>
-              <div className="flex text-[10px] font-semibold text-white/40 mb-0.5">
-                <div className="flex-1 text-center">Ground Roll</div>
-                <div className="flex-1 text-center">Over 50'</div>
-              </div>
-              <div className="grid grid-cols-2 gap-1">
-                <PerfInput value={ldGrDep} onChange={setLdGrDep} />
-                <PerfInput value={ldObsDep} onChange={setLdObsDep} />
-              </div>
-            </div>
-
             {/* Landing Performance — Destination (BOXED) */}
             <div className="perf-box border-2 border-emerald-400/25 rounded-lg p-2 bg-emerald-400/[0.04]">
               <div className="text-center text-[10px] font-bold text-emerald-400 mb-1">Landing — Destination <span className="text-red-400">*</span></div>
@@ -864,12 +887,15 @@ export default function WeightBalance() {
                   <TRowE l={`${ac.bag1Label} (Max ${ac.bag1Max})`} o="+" w={b1} a={ac.bag1Arm} m={c.b1m} oM="+" set={v => setB1(Math.min(v, ac.bag1Max))} />
                   {ac.hasBag2 && <TRowE l={`${ac.bag2Label} (Max ${ac.bag2Max})`} o="+" w={b2} a={ac.bag2Arm} m={c.b2m} oM="+" set={v => setB2(Math.min(v, ac.bag2Max))} />}
                   <TRow l="Zero Fuel Weight" o="=" w={c.zfw} a={c.zA} m={c.zM} oM="=" line color="text-purple-400" boxed />
-                  <TRowE l={ac.fuelLabel} o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" set={v => setFuel(Math.min(v, ac.maxFuelLbs))}
-                    hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} max`} required />
+                  <FuelRowE l="Usable Fuel" o="+" w={fuel} a={ac.fuelArm} m={c.fM} oM="+" unit={fuelUnit} setUnit={setFuelUnit}
+                    set={v => setFuel(Math.min(v, ac.maxFuelLbs))}
+                    hint={`${Math.round(fuel / 6)} gal / ${Math.round(ac.maxFuelLbs / 6)} gal max (${ac.maxFuelLbs} lbs)`} required />
                   <TRow l="Ramp Weight" o="=" w={c.rW} a={c.rA} m={c.rM} oM="=" green line boxed />
-                  <TRowE l="Taxi Fuel" o="-" w={taxi} a={ac.fuelArm} m={c.tM} oM="-" set={v => setTaxi(Math.min(v, fuel))} />
+                  <FuelRowE l="Taxi Fuel" o="-" w={taxi} a={ac.fuelArm} m={c.tM} oM="-" unit={taxiUnit} setUnit={setTaxiUnit}
+                    set={v => setTaxi(Math.min(v, fuel))} />
                   <TRow l="Takeoff Weight" o="=" w={c.toW} a={c.toA} m={c.toM} oM="=" line ok={c.toOk} color="text-blue-400" boxed />
-                  <TRowE l="Fuel Burn" o="-" w={burn} a={ac.fuelArm} m={c.bM} oM="-" set={v => setBurn(Math.min(v, fuel))}
+                  <FuelRowE l="Fuel Burn" o="-" w={burn} a={ac.fuelArm} m={c.bM} oM="-" unit={burnUnit} setUnit={setBurnUnit}
+                    set={v => setBurn(Math.min(v, fuel))}
                     hint={`${Math.round(burn / 6)} gal`} />
                   <TRow l="Landing Weight" o="=" w={c.lW} a={c.lA} m={c.lM} oM="=" line ok={c.lOk} color="text-emerald-400" boxed />
                 </tbody>
@@ -1013,8 +1039,39 @@ function TRowE({ l, o, w, a, m, oM, set, hint, required }: {
         {required && <span className="text-red-400 ml-0.5 text-[9px]">*</span>}
       </td>
       <td className="text-center text-white/80">{o}</td>
-      <td className="text-right pr-1 w-16">
+      <td className="text-right pr-1 w-28">
         <NumIn value={w} onChange={set} cls="text-xs text-white" />
+        {hint && <div className="text-[9px] text-white/25 text-right mt-0.5">{hint}</div>}
+      </td>
+      <td />
+      <td className="text-right pr-1 font-mono text-white/80">{f(a)}</td>
+      <td className="text-center text-white/80">{oM}</td>
+      <td className="text-right font-mono text-white/80">{f(m)}</td>
+    </tr>
+  );
+}
+
+function FuelRowE({ l, o, w, a, m, oM, set, hint, required, unit, setUnit }: {
+  l: string; o: string; w: number; a: number; m: number; oM: string;
+  set: (v: number) => void; hint?: string; required?: boolean;
+  unit: FuelUnit; setUnit: (v: FuelUnit) => void;
+}) {
+  return (
+    <tr>
+      <td className="text-right pr-1 py-1.5 text-white/80">
+        {l}
+        {required && <span className="text-red-400 ml-0.5 text-[9px]">*</span>}
+      </td>
+      <td className="text-center text-white/80">{o}</td>
+      <td className="text-right pr-1 w-16">
+        <div className="flex gap-1">
+          <FuelNumIn lbs={w} unit={unit} onChange={set} cls="text-xs text-white" />
+          <select value={unit} onChange={e => setUnit(e.target.value as FuelUnit)}
+            className="w-[3.4rem] bg-white/[0.15] border-2 border-white/30 rounded-lg px-1 py-1 text-[10px] font-bold text-white focus:border-blue-400/60 focus:bg-white/[0.20] focus:outline-none transition-all duration-300">
+            <option value="gal" className="bg-[#1a1f2e]">gal</option>
+            <option value="lbs" className="bg-[#1a1f2e]">lbs</option>
+          </select>
+        </div>
         {hint && <div className="text-[9px] text-white/25 text-right mt-0.5">{hint}</div>}
       </td>
       <td />
