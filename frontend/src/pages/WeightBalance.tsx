@@ -513,13 +513,23 @@ export default function WeightBalance() {
     setImSafe(prev => ({ ...prev, [key]: value }));
   };
 
-  // ─── Departure weather safety gate ───────────────────────────────────────
-  const weatherOk = useMemo(() => {
-    if (!depM) return false;
-    const windSpeed = depM.wind_speed_kt ?? 0;
-    const windGust = depM.wind_gust_kt ?? 0;
-    return windSpeed <= 20 && windGust <= 20 && depM.flight_category === 'VFR';
-  }, [depM]);
+  // ─── Dynamic wind limit based on flight type ─────────────────────────────
+  const windLimit = useMemo(() => {
+    if (typeOfFlight === 'Solo' || typeOfFlight === 'Cross-Country (Solo)') return 14;
+    return 20;
+  }, [typeOfFlight]);
+
+  // ─── Departure + destination weather safety gate ─────────────────────────
+  const checkWeather = (m: MetarData | null): boolean => {
+    if (!m) return false;
+    const windSpeed = m.wind_speed_kt ?? 0;
+    const windGust = m.wind_gust_kt ?? 0;
+    return windSpeed <= windLimit && windGust <= windLimit && m.flight_category === 'VFR';
+  };
+
+  const depWeatherOk = useMemo(() => checkWeather(depM), [depM, windLimit]);
+  const destWeatherOk = useMemo(() => (dest.length >= 3 ? checkWeather(destM) : true), [destM, dest, windLimit]);
+  const weatherOk = useMemo(() => depWeatherOk && destWeatherOk, [depWeatherOk, destWeatherOk]);
   useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); setTaxi(ac.taxiFuelLbs); }, [sel, ac]);
   useEffect(() => { if (burn > fuel) setBurn(fuel); }, [fuel]);
 
@@ -705,6 +715,9 @@ export default function WeightBalance() {
           imSafe,
           imSafeComplete,
           weatherOk,
+          depWeatherOk,
+          destWeatherOk,
+          windLimit,
           timestamp: new Date().toISOString(),
         }),
       });
@@ -846,10 +859,23 @@ export default function WeightBalance() {
 
             {/* SOP weather gate */}
             <SecBar>SOP Weather Gate</SecBar>
-            <div className={`text-[10px] text-center py-0.5 font-semibold ${weatherOk ? 'text-emerald-400' : depM ? 'text-red-400' : 'text-white/40'}`}>
-              {depM
-                ? (weatherOk ? '✅ Within SOP (≤20 kt, VFR)' : `❌ Above SOP — ${depM.flight_category !== 'VFR' ? `Not VFR (${depM.flight_category})` : (depM.wind_gust_kt && depM.wind_gust_kt > 20 ? `Gusts ${depM.wind_gust_kt} kt` : `Winds ${depM.wind_speed_kt} kt`)}`)
-                : 'Enter departure airport'}
+            <div className="flex text-[10px] font-semibold text-white/40">
+              <div className="flex-1 text-center">Dep</div>
+              <div className="flex-1 text-center">Dest</div>
+            </div>
+            <div className="flex text-[10px] py-0.5 items-center">
+              <div className={`flex-1 text-center font-semibold ${depWeatherOk ? 'text-emerald-400' : depM ? 'text-red-400' : 'text-white/40'}`}>
+                {depM ? (depWeatherOk ? '✅' : '❌') : '—'}
+              </div>
+              <div className="w-px h-3 bg-white/15 flex-shrink-0 mx-0.5" />
+              <div className={`flex-1 text-center font-semibold ${destWeatherOk ? 'text-emerald-400' : destM ? 'text-red-400' : dest.length >= 3 ? 'text-white/40' : 'text-white/20'}`}>
+                {dest.length >= 3 ? (destM ? (destWeatherOk ? '✅' : '❌') : '…') : 'N/A'}
+              </div>
+            </div>
+            <div className={`text-[10px] text-center py-0.5 font-semibold ${weatherOk ? 'text-emerald-400' : (depM || destM) ? 'text-red-400' : 'text-white/40'}`}>
+              {depM || destM
+                ? (weatherOk ? `✅ Within SOP (≤${windLimit} kt, VFR)` : `❌ Above SOP — limit ≤${windLimit} kt / VFR`)
+                : 'Enter airport(s)'}
             </div>
 
             {/* Auto-calculated Headwind / Crosswind (#1) */}
@@ -1089,7 +1115,7 @@ export default function WeightBalance() {
               </div>
               <div style={{ marginTop: 10, fontSize: 11 }}>
                 <strong>IMSAFE:</strong> {imSafeComplete ? '✅ Confirmed safe' : 'Not completed'}
-                {depM && <span style={{ marginLeft: 12 }}><strong>Weather:</strong> {weatherOk ? '✅ Within SOP' : '❌ Above SOP'}</span>}
+                {(depM || destM) && <span style={{ marginLeft: 12 }}><strong>Weather:</strong> {weatherOk ? `✅ Within SOP (≤${windLimit} kt)` : '❌ Above SOP'}</span>}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 12 }}>
                 <div>Student Signature: ________________________</div>
