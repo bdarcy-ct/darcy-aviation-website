@@ -467,7 +467,59 @@ export default function WeightBalance() {
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState('');
 
+  // IMSAFE checklist state
+  type ImSafeValue = 'yes' | 'no' | null;
+  interface ImSafeState {
+    illness: ImSafeValue;
+    medication: ImSafeValue;
+    stress: ImSafeValue;
+    alcohol: ImSafeValue;
+    fatigue: ImSafeValue;
+    emotion: ImSafeValue;
+    current: ImSafeValue;
+    qualified: ImSafeValue;
+  }
+  const [imSafe, setImSafe] = useState<ImSafeState>({
+    illness: null,
+    medication: null,
+    stress: null,
+    alcohol: null,
+    fatigue: null,
+    emotion: null,
+    current: null,
+    qualified: null,
+  });
+  const [imSafeOpen, setImSafeOpen] = useState(false);
+
   const ac = useMemo(() => AIRCRAFT.find(a => a.tailNumber === sel)!, [sel]);
+
+  // ─── IMSAFE checklist definition ─────────────────────────────────────────
+  const IMSAFE_ITEMS: { key: keyof ImSafeState; label: string; safe: 'yes' | 'no' }[] = [
+    { key: 'illness', label: 'Any Illness?', safe: 'no' },
+    { key: 'medication', label: 'Taking Medication?', safe: 'no' },
+    { key: 'stress', label: 'Under Stress?', safe: 'no' },
+    { key: 'alcohol', label: 'Have You Been Drinking Alcohol?', safe: 'no' },
+    { key: 'fatigue', label: 'Are You Tired or Not Adequately Rested?', safe: 'no' },
+    { key: 'emotion', label: 'Are You Emotionally Upset?', safe: 'no' },
+    { key: 'current', label: 'Are You Current?', safe: 'yes' },
+    { key: 'qualified', label: 'Are You Experienced and Qualified to Fly Route?', safe: 'yes' },
+  ];
+
+  const imSafeComplete = useMemo(() => {
+    return IMSAFE_ITEMS.every(item => imSafe[item.key] === item.safe);
+  }, [imSafe]);
+
+  const setImSafeValue = (key: keyof ImSafeState, value: ImSafeValue) => {
+    setImSafe(prev => ({ ...prev, [key]: value }));
+  };
+
+  // ─── Departure weather safety gate ───────────────────────────────────────
+  const weatherOk = useMemo(() => {
+    if (!depM) return false;
+    const windSpeed = depM.wind_speed_kt ?? 0;
+    const windGust = depM.wind_gust_kt ?? 0;
+    return windSpeed <= 20 && windGust <= 20 && depM.flight_category === 'VFR';
+  }, [depM]);
   useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); setTaxi(ac.taxiFuelLbs); }, [sel, ac]);
   useEffect(() => { if (burn > fuel) setBurn(fuel); }, [fuel]);
 
@@ -540,9 +592,11 @@ export default function WeightBalance() {
       ldObsDest.trim() !== '' &&
       fw > 0 &&
       fuel > 0 &&
-      c.ok
+      c.ok &&
+      imSafeComplete &&
+      weatherOk
     );
-  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok]);
+  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok, imSafeComplete, weatherOk]);
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -647,6 +701,10 @@ export default function WeightBalance() {
           toGr, toObs, ldGrDest, ldObsDest,
           // W&B rows
           rows,
+          // IMSAFE + weather gate
+          imSafe,
+          imSafeComplete,
+          weatherOk,
           timestamp: new Date().toISOString(),
         }),
       });
@@ -671,8 +729,10 @@ export default function WeightBalance() {
     if (fw <= 0) m.push('Front seat weight');
     if (fuel <= 0) m.push('Fuel');
     if (!c.ok) m.push('W&B within limits');
+    if (!imSafeComplete) m.push('IMSAFE checklist');
+    if (!weatherOk) m.push('Weather within SOP');
     return m;
-  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok]);
+  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok, imSafeComplete, weatherOk]);
 
   return (
     <>
@@ -783,6 +843,14 @@ export default function WeightBalance() {
 
             <SecBar>Winds</SecBar>
             <DualVal l={wxD ? `${wxD.wDir}° @ ${wxD.wSpd}` : '—'} r={wxA ? `${wxA.wDir}° @ ${wxA.wSpd}` : '—'} />
+
+            {/* SOP weather gate */}
+            <SecBar>SOP Weather Gate</SecBar>
+            <div className={`text-[10px] text-center py-0.5 font-semibold ${weatherOk ? 'text-emerald-400' : depM ? 'text-red-400' : 'text-white/40'}`}>
+              {depM
+                ? (weatherOk ? '✅ Within SOP (≤20 kt, VFR)' : `❌ Above SOP — ${depM.flight_category !== 'VFR' ? `Not VFR (${depM.flight_category})` : (depM.wind_gust_kt && depM.wind_gust_kt > 20 ? `Gusts ${depM.wind_gust_kt} kt` : `Winds ${depM.wind_speed_kt} kt`)}`)
+                : 'Enter departure airport'}
+            </div>
 
             {/* Auto-calculated Headwind / Crosswind (#1) */}
             <SecBar>Headwind / Crosswind</SecBar>
@@ -928,7 +996,15 @@ export default function WeightBalance() {
                 </div>
               )}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-3 flex-1 flex-wrap">
+                  <button onClick={() => setImSafeOpen(true)}
+                    className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
+                      imSafeComplete
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/30 active:scale-95'
+                        : 'bg-white/[0.08] hover:bg-white/[0.15] text-white/80 hover:text-white border border-white/10 hover:border-white/20 active:scale-95'
+                    }`}>
+                    {imSafeComplete ? '✅ I\'m Safe' : '✈️ I\'m Safe'}
+                  </button>
                   <button onClick={() => window.print()} disabled={!canSubmit}
                     className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
                       canSubmit
@@ -950,6 +1026,52 @@ export default function WeightBalance() {
               {msg && <p className={`text-xs mt-2 text-center ${msg.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{msg}</p>}
             </GlassCard>
 
+            {/* IMSAFE Modal */}
+            {imSafeOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm print:hidden" onClick={() => setImSafeOpen(false)}>
+                <div className="w-full max-w-md bg-[#111827] border border-white/10 rounded-2xl shadow-2xl p-5" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-white">IMSAFE Checklist</h3>
+                    <button onClick={() => setImSafeOpen(false)} className="text-white/40 hover:text-white text-xl leading-none">×</button>
+                  </div>
+                  <p className="text-[11px] text-white/50 mb-4">Answer each item honestly. Dispatch is blocked until all items show the safe answer.</p>
+                  <div className="space-y-2 mb-5">
+                    {IMSAFE_ITEMS.map(item => {
+                      const val = imSafe[item.key];
+                      const isSafe = val === item.safe;
+                      return (
+                        <div key={item.key} className={`flex items-center justify-between p-3 rounded-xl border ${isSafe ? 'bg-emerald-500/[0.08] border-emerald-400/30' : val ? 'bg-red-500/[0.08] border-red-400/30' : 'bg-white/[0.03] border-white/10'}`}>
+                          <span className="text-sm text-white/90 pr-3">{item.label}</span>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => setImSafeValue(item.key, 'yes')}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${val === 'yes' ? (isSafe ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white') : 'bg-white/10 text-white/60 hover:bg-white/15'}`}>
+                              Yes
+                            </button>
+                            <button
+                              onClick={() => setImSafeValue(item.key, 'no')}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${val === 'no' ? (isSafe ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white') : 'bg-white/10 text-white/60 hover:bg-white/15'}`}>
+                              No
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className={`text-sm font-bold ${imSafeComplete ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {imSafeComplete ? '✅ Cleared for dispatch' : '⚠️ Checklist incomplete or unsafe'}
+                    </div>
+                    <button
+                      onClick={() => setImSafeOpen(false)}
+                      className="px-5 py-2 rounded-xl text-sm font-bold bg-blue-500 hover:bg-blue-400 text-white transition-all active:scale-95">
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Print-only: Weight summary + Names + signature lines */}
             <div className="hidden print:block" style={{ marginTop: 8, padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 6, padding: '4px 0', borderBottom: '1px solid #ccc' }}>
@@ -964,6 +1086,10 @@ export default function WeightBalance() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                 <div><strong>Student:</strong> {studentName || '________________________'}</div>
                 <div><strong>Date:</strong> {now.toLocaleDateString('en-US', { timeZone: 'America/New_York' })} {now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false })}</div>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 11 }}>
+                <strong>IMSAFE:</strong> {imSafeComplete ? '✅ Confirmed safe' : 'Not completed'}
+                {depM && <span style={{ marginLeft: 12 }}><strong>Weather:</strong> {weatherOk ? '✅ Within SOP' : '❌ Above SOP'}</span>}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 12 }}>
                 <div>Student Signature: ________________________</div>

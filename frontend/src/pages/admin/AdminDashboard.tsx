@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAdmin } from '../../contexts/AdminContext';
 
 interface DashboardData {
   counts: {
@@ -17,6 +18,7 @@ function formatStorage(mb: number): string {
 }
 
 export default function AdminDashboard() {
+  const { token } = useAdmin();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [restoring, setRestoring] = useState(false);
@@ -25,7 +27,8 @@ export default function AdminDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
     fetch('/api/admin/dashboard', {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -45,7 +48,75 @@ export default function AdminDashboard() {
         setData({ counts: { mediaFiles: 0, faqs: 0, fleetAircraft: 0, testimonials: 0, storageUsageMB: 0 } });
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [token]);
+
+  const downloadBackup = async () => {
+    if (!token) {
+      alert('Please log in again before downloading a backup.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/backup/download', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        let message = `Backup failed (${res.status})`;
+        try {
+          const data = await res.json();
+          if (data?.error) message = data.error;
+        } catch {}
+        throw new Error(message);
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `darcy-backup-${new Date().toISOString().slice(0, 10)}.db`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      alert(error?.message || 'Backup failed');
+    }
+  };
+
+  const restoreBackup = async () => {
+    if (!token || !selectedFile) {
+      alert('Please log in again before restoring a backup.');
+      return;
+    }
+
+    setRestoring(true);
+    const formData = new FormData();
+    formData.append('backup', selectedFile);
+
+    try {
+      const response = await fetch('/api/admin/backup/restore', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert('Backup restored! The page will reload when the server restarts.');
+        setTimeout(() => window.location.reload(), 3000);
+      } else {
+        alert(`Restore failed: ${result.error || `HTTP ${response.status}`}`);
+        setRestoring(false);
+      }
+    } catch {
+      alert('Restore failed — check your connection and try again.');
+      setRestoring(false);
+    } finally {
+      setShowRestoreConfirm(false);
+      setSelectedFile(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -95,20 +166,7 @@ export default function AdminDashboard() {
             📤 Upload Backup
           </button>
           <button
-            onClick={() => {
-              const token = localStorage.getItem('admin_token');
-              fetch('/api/admin/backup/download', { headers: { Authorization: `Bearer ${token}` } })
-                .then(res => res.blob())
-                .then(blob => {
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `darcy-backup-${new Date().toISOString().slice(0,10)}.db`;
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                })
-                .catch(() => alert('Backup failed'));
-            }}
+            onClick={downloadBackup}
             className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
           >
             💾 Download Backup
@@ -184,35 +242,7 @@ export default function AdminDashboard() {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  setRestoring(true);
-                  const token = localStorage.getItem('admin_token');
-                  const formData = new FormData();
-                  formData.append('backup', selectedFile);
-                  fetch('/api/admin/backup/restore', {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` },
-                    body: formData,
-                  })
-                    .then(r => r.json())
-                    .then(result => {
-                      if (result.success) {
-                        alert('Backup restored! The page will reload when the server restarts.');
-                        setTimeout(() => window.location.reload(), 3000);
-                      } else {
-                        alert(`Restore failed: ${result.error}`);
-                        setRestoring(false);
-                      }
-                    })
-                    .catch(() => {
-                      alert('Restore failed — check your connection and try again.');
-                      setRestoring(false);
-                    })
-                    .finally(() => {
-                      setShowRestoreConfirm(false);
-                      setSelectedFile(null);
-                    });
-                }}
+                onClick={restoreBackup}
                 disabled={restoring}
                 className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 transition-colors flex items-center gap-2"
               >
