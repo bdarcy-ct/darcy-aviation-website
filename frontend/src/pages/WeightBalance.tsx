@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { computePerformance, getPerfProfile } from './perf';
 
 // Hide number input spinners + print styles
 const printStyles = `
@@ -444,6 +445,7 @@ export default function WeightBalance() {
   const [ldGrDest, setLdGrDest] = useState('');
   const [ldObsDest, setLdObsDest] = useState('');
   const [ldWx, setLdWx] = useState(false);
+  const [perfManual, setPerfManual] = useState(false);
 
   const [fw, setFw] = useState(0);
   const [rw, setRw] = useState(0);
@@ -530,7 +532,7 @@ export default function WeightBalance() {
   const depWeatherOk = useMemo(() => checkWeather(depM), [depM, windLimit]);
   const destWeatherOk = useMemo(() => (dest.length >= 3 ? checkWeather(destM) : true), [destM, dest, windLimit]);
   const weatherOk = useMemo(() => depWeatherOk && destWeatherOk, [depWeatherOk, destWeatherOk]);
-  useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); setTaxi(ac.taxiFuelLbs); }, [sel, ac]);
+  useEffect(() => { setFw(0); setRw(0); setB1(0); setB2(0); setFuel(0); setBurn(0); setTaxi(ac.taxiFuelLbs); setPerfManual(false); setToGr(''); setToObs(''); setLdGrDest(''); setLdObsDest(''); }, [sel, ac]);
   useEffect(() => { if (burn > fuel) setBurn(fuel); }, [fuel]);
 
   // Weather
@@ -588,6 +590,32 @@ export default function WeightBalance() {
   const vaBase = ac.model.startsWith('PA-') ? 111 : ac.model === 'C152' ? 88 : ac.model === 'C172-180' ? 104 : 99;
   const vaTo = c.toW > 0 ? vaBase * Math.sqrt(c.toW / ac.maxGrossWeight) : 0;
   const vaLd = c.lW > 0 ? vaBase * Math.sqrt(c.lW / ac.maxGrossWeight) : 0;
+
+  // ─── POH performance auto-calc (ground roll + 50' obstacle) ───────────────
+  const perfProfile = useMemo(() => getPerfProfile(ac.tailNumber), [ac]);
+  // Takeoff = departure weather + takeoff weight + departure runway headwind.
+  const pohTakeoff = useMemo(() => {
+    if (!perfProfile || !wxD || c.toW <= 0) return null;
+    return computePerformance(ac.tailNumber, {
+      pressAlt: wxD.pa, oatC: wxD.t, densAlt: wxD.da, weight: c.toW, headwind: depWind ? depWind.hw : 0,
+    });
+  }, [perfProfile, ac, wxD, c.toW, depWind]);
+  // Landing = destination weather (or departure if no destination) + landing weight + runway headwind.
+  const pohLanding = useMemo(() => {
+    const useDest = dest.length >= 3 && !!wxA;
+    const wx = useDest ? wxA : wxD;
+    const wind = useDest ? destWind : depWind;
+    if (!perfProfile || !wx || c.lW <= 0) return null;
+    return computePerformance(ac.tailNumber, {
+      pressAlt: wx.pa, oatC: wx.t, densAlt: wx.da, weight: c.lW, headwind: wind ? wind.hw : 0,
+    });
+  }, [perfProfile, ac, wxA, wxD, dest, c.lW, destWind, depWind]);
+  // Auto-fill the performance boxes from POH unless the student has manually overridden.
+  useEffect(() => {
+    if (perfManual) return;
+    if (pohTakeoff) { setToGr(String(pohTakeoff.toRoll)); setToObs(String(pohTakeoff.toObst)); }
+    if (pohLanding) { setLdGrDest(String(pohLanding.ldgRoll)); setLdObsDest(String(pohLanding.ldgObst)); }
+  }, [pohTakeoff, pohLanding, perfManual]);
 
   // ─── Validation: mandatory fields for emailing (#2, #3, #4, #6) ──────────
   const canSubmit = useMemo(() => {
@@ -709,6 +737,7 @@ export default function WeightBalance() {
           // Performance
           vaTo: vaTo.toFixed(1), vaLd: vaLd.toFixed(1),
           toGr, toObs, ldGrDest, ldObsDest,
+          perfSource: perfProfile?.source || '', perfAuto: !perfManual, perfNote: perfProfile?.note || '',
           // W&B rows
           rows,
           // IMSAFE + weather gate
@@ -906,8 +935,21 @@ export default function WeightBalance() {
             <SecBar><u>Density Altitude</u></SecBar>
             <DualVal l={wxD ? f(wxD.da) : '—'} r={wxA ? f(wxA.da) : '—'} />
 
-            {/* ─── Performance (#2) — Bold + Boxed ─── */}
+            {/* ─── Performance (#2) — POH auto-calc, Bold + Boxed ─── */}
             <SecBar dark>Performance</SecBar>
+            {perfProfile && (
+              <div className="text-[9px] leading-tight px-1 py-0.5 text-center">
+                <div className="flex items-center justify-center gap-1">
+                  <span className="text-emerald-400/90 font-semibold">POH auto-calc</span>
+                  <button type="button" onClick={() => setPerfManual(false)}
+                    className="text-[9px] px-1.5 py-0.5 rounded border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors">↻ Recalc</button>
+                </div>
+                <div className="text-white/30 mt-0.5">{perfProfile.source}</div>
+                {perfManual && <div className="text-amber-400/70 mt-0.5">Manual override — tap Recalc to restore POH</div>}
+                {perfProfile.note && <div className="text-amber-400/70 mt-0.5">⚠ {perfProfile.note}</div>}
+                {!wxD && <div className="text-white/30 mt-0.5">Enter departure airport + weights to auto-fill</div>}
+              </div>
+            )}
             <SecBar><u>Maneuvering speed (V<sub>A</sub>)</u></SecBar>
             <div className="flex text-[10px] font-semibold text-white/40">
               <div className="flex-1 text-center">Takeoff</div>
@@ -923,8 +965,8 @@ export default function WeightBalance() {
                 <div className="flex-1 text-center">Over 50'</div>
               </div>
               <div className="grid grid-cols-2 gap-1">
-                <PerfInput value={toGr} onChange={setToGr} />
-                <PerfInput value={toObs} onChange={setToObs} />
+                <PerfInput value={toGr} onChange={v => { setPerfManual(true); setToGr(v); }} />
+                <PerfInput value={toObs} onChange={v => { setPerfManual(true); setToObs(v); }} />
               </div>
             </div>
 
@@ -936,8 +978,8 @@ export default function WeightBalance() {
                 <div className="flex-1 text-center">Over 50'</div>
               </div>
               <div className="grid grid-cols-2 gap-1">
-                <PerfInput value={ldGrDest} onChange={setLdGrDest} />
-                <PerfInput value={ldObsDest} onChange={setLdObsDest} />
+                <PerfInput value={ldGrDest} onChange={v => { setPerfManual(true); setLdGrDest(v); }} />
+                <PerfInput value={ldObsDest} onChange={v => { setPerfManual(true); setLdObsDest(v); }} />
               </div>
             </div>
           </GlassCard>
