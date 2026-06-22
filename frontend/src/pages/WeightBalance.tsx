@@ -195,22 +195,25 @@ const AIRCRAFT: Aircraft[] = [
     ],
   },
   {
-    tailNumber: 'N84001', type: 'Piper Warrior', model: 'PA-28-151',
+    tailNumber: 'N84001', type: 'Piper Warrior', model: 'PA-28-161',
     basicEmptyWeight: 1467.70, basicEmptyArm: 84.10, basicEmptyMoment: 123389.00,
-    maxGrossWeight: 2325, usefulLoad: 857.30,
+    maxGrossWeight: 2440, usefulLoad: 972.30,
     fuelArm: 95.0, maxFuelLbs: 288, taxiFuelLbs: 8,
     frontArm: 80.5, rearArm: 118.1, bag1Arm: 142.8, bag2Arm: 0,
     bag1Max: 200, bag2Max: 0, hasRear: true, hasBag2: false,
     frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
     bag1Label: 'Baggage Back', bag2Label: '', fuelLabel: 'Usable Fuel (wings)',
+    // PA-28-161 Warrior II normal category (POH Fig 6-x): fwd 83.0 to 1950 lb, ramping to 88.3 @ 2440; aft 93.0.
     cgEnvelope: [
-      { weight: 1200, fwd: 82.0, aft: 93.0 },
-      { weight: 1950, fwd: 82.0, aft: 93.0 },
-      { weight: 2325, fwd: 87.0, aft: 93.0 },
+      { weight: 1200, fwd: 83.0, aft: 93.0 },
+      { weight: 1950, fwd: 83.0, aft: 93.0 },
+      { weight: 2440, fwd: 88.3, aft: 93.0 },
     ],
+    // Utility category: max 2020 lb, fwd 83.0 to 1950 ramping to 83.8 @ 2020; aft 93.0.
     utilityEnvelope: [
-      { weight: 1200, fwd: 82.0, aft: 86.5 },
-      { weight: 1950, fwd: 82.0, aft: 86.5 },
+      { weight: 1200, fwd: 83.0, aft: 93.0 },
+      { weight: 1950, fwd: 83.0, aft: 93.0 },
+      { weight: 2020, fwd: 83.8, aft: 93.0 },
     ],
   },
 ];

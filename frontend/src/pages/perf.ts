@@ -69,9 +69,9 @@ function cessnaWindFactor(headwind: number): number {
 
 // ── Per-type methods ──────────────────────────────────────────────────────────
 
-// Cessna 172N: tables keyed by weight × oat × pressureAlt (takeoff) and oat × alt (landing).
-function calcC172N(inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
-  const T = PERF_TABLES.C172N as Record<string, PTable>;
+// Cessna 100-series: takeoff tables keyed weight × oat × pressureAlt, landing keyed oat × alt.
+// The 172N (160 HP) and 172S (180 HP) POHs share this structure — only the table values differ.
+function calcCessna(T: Record<string, PTable>, inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
   const wf = cessnaWindFactor(inp.headwind);
   const k3: boolean[] = [true, true, true];
   const k2: boolean[] = [true, true];
@@ -82,6 +82,8 @@ function calcC172N(inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
     ldgObst: round5(lookupNumeric(T.ldgObst.a, [inp.oatC, inp.pressAlt], k2) * wf),
   };
 }
+function calcC172N(inp: PerfInputs) { return calcCessna(PERF_TABLES.C172N as Record<string, PTable>, inp); }
+function calcC172S(inp: PerfInputs) { return calcCessna(PERF_TABLES.C172S as Record<string, PTable>, inp); }
 
 // Cessna 152: single gross weight (1670). Tables keyed altitude × oat.
 function calcC152(inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
@@ -139,20 +141,18 @@ function calcPA28_151(inp: PerfInputs, flap: 'none' | 'partial' = 'none'): Omit<
 }
 
 // ── Aircraft → profile map ─────────────────────────────────────────────────────
-type ProfileKey = 'C172N' | 'C152' | 'PA28_161' | 'PA28_151';
+type ProfileKey = 'C172N' | 'C172S' | 'C152' | 'PA28_161' | 'PA28_151';
 interface Profile { key: ProfileKey; source: string; note?: string; flap?: 'none' | 'partial'; }
 
 const PROFILES: Record<string, Profile> = {
   N121MS: { key: 'C172N', source: '1978 Cessna 172N POH (160 HP)' },
   N6475D: { key: 'C172N', source: '1978 Cessna 172N POH (160 HP)' },
-  N9426E: { key: 'C172N', source: '1978 Cessna 172N POH',
-            note: '180 HP STC — using stock 160 HP POH as a conservative baseline (longer than actual). Load STC perf supplement for exact figures.' },
+  N9426E: { key: 'C172S', source: 'Cessna 172S NAV III POH (180 HP, 2550 lb)',
+            note: '180 HP STC — uses factory 172S (IO-360) POH figures. If the STC AFM supplement publishes its own takeoff/landing tables, those are authoritative and supersede these.' },
   N65563: { key: 'C152', source: 'Cessna 152 POH (Fig 5-4 / 5-10, 1670 lb)' },
   N8715C: { key: 'PA28_151', source: 'Cherokee Warrior PA-28-151 POH (density-altitude charts, gross)' },
-  // N84001: master currently lists this as PA-28-151. Its FAA serial (28-8516080) is a
-  // PA-28-161 Warrior II (2440 lb). Kept on -151 until Ludwig confirms; -161 engine is ready.
-  N84001: { key: 'PA28_151', source: 'Cherokee Warrior PA-28-151 POH (density-altitude charts, gross)',
-            note: 'Identity check: FAA serial indicates PA-28-161 (2440 lb). Confirm to switch to the granular -161 charts.' },
+  // N84001: confirmed PA-28-161 Warrior II (2440 lb) by Ludwig + FAA serial 28-8516080.
+  N84001: { key: 'PA28_161', source: 'Warrior II PA-28-161 POH (base + weight/headwind adjustment charts)' },
 };
 
 export function getPerfProfile(tail: string): Profile | null {
@@ -165,6 +165,7 @@ export function hasPerfProfile(tail: string): boolean { return !!PROFILES[tail];
 export function computeByProfileKey(key: ProfileKey, inp: PerfInputs, flap: 'none' | 'partial' = 'none'): Omit<PerfResult, 'profile' | 'note'> {
   switch (key) {
     case 'C172N': return calcC172N(inp);
+    case 'C172S': return calcC172S(inp);
     case 'C152': return calcC152(inp);
     case 'PA28_161': return calcPA28_161(inp, flap);
     case 'PA28_151': return calcPA28_151(inp, flap);
@@ -177,6 +178,7 @@ export function computePerformance(tail: string, inp: PerfInputs): PerfResult | 
   let core: Omit<PerfResult, 'profile' | 'note'>;
   switch (prof.key) {
     case 'C172N': core = calcC172N(inp); break;
+    case 'C172S': core = calcC172S(inp); break;
     case 'C152': core = calcC152(inp); break;
     case 'PA28_161': core = calcPA28_161(inp, prof.flap); break;
     case 'PA28_151': core = calcPA28_151(inp, prof.flap); break;
