@@ -71,7 +71,7 @@ function approvalRequestBanner(d: any, reasons: string[], note: string, approveU
       <td style="padding-right:10px"><a href="${approveUrl}" style="display:inline-block;background:#059669;color:white;text-decoration:none;font-weight:800;font-size:14px;padding:12px 28px;border-radius:8px">✅ Approve &amp; Dispatch</a></td>
       <td><a href="${rejectUrl}" style="display:inline-block;background:#dc2626;color:white;text-decoration:none;font-weight:800;font-size:14px;padding:12px 28px;border-radius:8px">❌ Reject</a></td>
     </tr></table>
-    <div style="font-size:10px;color:#a16207;margin-top:10px">The full weight &amp; balance sheet is below for your review. Approving emails it straight to dispatch.</div>
+    <div style="font-size:10px;color:#a16207;margin-top:10px">The full weight &amp; balance sheet is below for your review. You'll get a quick confirmation screen — confirming there emails it straight to dispatch.</div>
   </div>`;
 }
 
@@ -303,6 +303,48 @@ function buildCgChartSVG(d: any): string {
   </svg>`;
 }
 
+// ─── QuickChart CG Chart URL (backend fallback) ──────────────────────────────
+// The frontend pre-generates a short QuickChart URL (d.chartUrl). If that call
+// failed (network/QuickChart down → silent catch), chartUrl is empty and the
+// email chart goes blank. This rebuilds a self-contained QuickChart GET URL from
+// the envelope data so every email (request / dispatch / approved) always shows
+// the CG chart with the dots, no live API call required at send time.
+function buildCgChartUrl(d: any): string {
+  const env = d.cgEnvelope || [];
+  if (!Array.isArray(env) || env.length < 2) return '';
+
+  const closed = (poly: any[]) => [
+    ...poly.map((e: any) => ({ x: e.fwd, y: e.weight })),
+    ...[...poly].reverse().map((e: any) => ({ x: e.aft, y: e.weight })),
+    { x: poly[0].fwd, y: poly[0].weight },
+  ];
+
+  const datasets: any[] = [
+    { label: 'Normal', data: closed(env), borderColor: '#059669', backgroundColor: 'rgba(34,197,94,0.15)', fill: true, showLine: true, pointRadius: 0, borderWidth: 2, tension: 0 },
+  ];
+  if (Array.isArray(d.utilityEnvelope) && d.utilityEnvelope.length >= 2) {
+    datasets.push({ label: 'Utility', data: closed(d.utilityEnvelope), borderColor: '#d97706', borderDash: [6, 3], backgroundColor: 'rgba(217,119,6,0.08)', fill: true, showLine: true, pointRadius: 0, borderWidth: 1.5, tension: 0 });
+  }
+  const dot = (label: string, cg: number, w: number, bg: string, bd: string) =>
+    ({ label: `${label} ${Math.round(w)} lbs`, data: [{ x: cg, y: w }], backgroundColor: bg, borderColor: bd, pointRadius: 7, pointBorderWidth: 2, showLine: false });
+  if (d.zfwWeight > 0) datasets.push(dot('ZFW', d.zfwCg || 0, d.zfwWeight, '#7c3aed', '#5b21b6'));
+  if (d.takeoffWeight > 0) datasets.push(dot('T/O', d.takeoffCg || 0, d.takeoffWeight, '#2563eb', '#1d4ed8'));
+  if (d.landingWeight > 0) datasets.push(dot('Ldg', d.landingCg || 0, d.landingWeight, '#059669', '#047857'));
+
+  const config = {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 9 }, boxWidth: 12 } } },
+      scales: {
+        x: { title: { display: true, text: 'CG Station (inches)', font: { weight: 'bold' } }, grid: { color: '#e5e7eb' } },
+        y: { title: { display: true, text: 'Weight (lbs)', font: { weight: 'bold' } }, grid: { color: '#e5e7eb' } },
+      },
+    },
+  };
+  return `https://quickchart.io/chart?width=520&height=320&backgroundColor=white&c=${encodeURIComponent(JSON.stringify(config))}`;
+}
+
 // ─── HTML Email Builder ─────────────────────────────────────────────────────
 
 function buildDispatchHTML(d: any): string {
@@ -469,10 +511,10 @@ function buildDispatchHTML(d: any): string {
     </table>
 
     <!-- CG Envelope Chart -->
-    ${(d._chartUrl || d.chartUrl) ? `<div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center">
+    ${(() => { const chartImg = d._chartUrl || d.chartUrl || buildCgChartUrl(d); return chartImg ? `<div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center">
       <div style="font-weight:700;font-size:12px;color:#334155;margin-bottom:8px">Center of Gravity Envelope</div>
-      <img src="${d._chartUrl || d.chartUrl}" alt="CG Envelope Chart" style="max-width:100%;height:auto" width="500" />
-    </div>` : ''}
+      <img src="${chartImg}" alt="CG Envelope Chart" style="max-width:100%;height:auto" width="500" />
+    </div>` : ''; })()}
 
     <!-- METAR raw -->
     <div style="margin-top:14px;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:10px;font-family:'Courier New',monospace;color:#64748b;line-height:1.6">
@@ -742,7 +784,54 @@ T/O: ${d.takeoffWeight?.toFixed?.(1)} lbs / CG ${d.takeoffCg?.toFixed?.(2)}"`;
     `<strong>${row.aircraft}</strong> for ${row.student} is approved.${emailed ? ' The weight &amp; balance sheet has been sent to dispatch.' : ' (Email not configured — recorded only.)'}`));
 }
 
-router.get('/approve/:token', (req: Request, res: Response) => { decide(String(req.params.token), 'approved', req, res); });
-router.get('/reject/:token', (req: Request, res: Response) => { decide(String(req.params.token), 'rejected', req, res); });
+// Confirmation landing page. GET is safe (no state change) so email security
+// scanners / link prefetchers can't consume the one-time token before Brent
+// actually decides. The real approve/reject happens on the POST below.
+function confirmPage(token: string, decision: 'approved' | 'rejected', row: any): string {
+  const isApprove = decision === 'approved';
+  const color = isApprove ? '#059669' : '#dc2626';
+  const verb = isApprove ? 'Approve & Send to Dispatch' : 'Reject';
+  const icon = isApprove ? '✅' : '❌';
+  const reasons: string[] = (() => { try { return JSON.parse(row.reasons || '[]'); } catch { return []; } })();
+  const reasonItems = reasons.map(r => `<li style="margin:2px 0">${r}</li>`).join('');
+  const route = `${row.departure || 'KDXR'} → ${row.destination || '—'}`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Confirm ${isApprove ? 'Approval' : 'Rejection'}</title></head>
+  <body style="margin:0;font-family:'Segoe UI',Inter,Helvetica,Arial,sans-serif;background:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
+    <div style="max-width:460px;background:white;border-radius:16px;padding:32px;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
+      <div style="font-size:42px;text-align:center;margin-bottom:8px">${icon}</div>
+      <div style="font-size:20px;font-weight:800;color:${color};text-align:center">Confirm ${isApprove ? 'Approval' : 'Rejection'}</div>
+      <div style="font-size:14px;color:#475569;margin-top:16px;line-height:1.6">
+        <strong>${row.aircraft}</strong> for <strong>${row.student}</strong><br/>
+        <span style="color:#64748b">${route}${row.type_of_flight ? ` · ${row.type_of_flight}` : ''}</span>
+      </div>
+      ${reasonItems ? `<div style="font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:10px 14px;margin-top:14px"><strong>Flagged for:</strong><ul style="margin:6px 0 0;padding-left:18px">${reasonItems}</ul></div>` : ''}
+      <div style="font-size:12px;color:#64748b;margin-top:16px">${isApprove ? 'Approving will email the full weight &amp; balance sheet to dispatch as an override.' : 'Rejecting will NOT send the sheet to dispatch. The student stays uncleared.'}</div>
+      <form method="POST" action="/api/wb/${isApprove ? 'approve' : 'reject'}/${token}" style="margin-top:24px">
+        <button type="submit" style="width:100%;background:${color};color:white;border:none;font-weight:800;font-size:16px;padding:14px;border-radius:10px;cursor:pointer">${icon} ${verb}</button>
+      </form>
+      <div style="font-size:11px;color:#94a3b8;margin-top:20px;text-align:center">Darcy Aviation — KDXR Danbury, CT</div>
+    </div>
+  </body></html>`;
+}
+
+function showConfirm(token: string, decision: 'approved' | 'rejected', res: Response) {
+  const row: any = db.prepare('SELECT * FROM wb_approvals WHERE token = ?').get(token);
+  if (!row) {
+    res.status(404).send(resultPage('Link not found', '#dc2626', 'This approval link is invalid or has expired.'));
+    return;
+  }
+  if (row.status !== 'pending') {
+    const when = row.decided_at ? ` on ${new Date(row.decided_at + 'Z').toLocaleString('en-US', { timeZone: 'America/New_York' })}` : '';
+    res.send(resultPage('Already handled', '#475569', `This request was already <strong>${row.status}</strong>${when}. No further action needed.`));
+    return;
+  }
+  res.send(confirmPage(token, decision, row));
+}
+
+// GET = safe confirmation page (prefetch-proof). POST = actually decide.
+router.get('/approve/:token', (req: Request, res: Response) => { showConfirm(String(req.params.token), 'approved', res); });
+router.get('/reject/:token', (req: Request, res: Response) => { showConfirm(String(req.params.token), 'rejected', res); });
+router.post('/approve/:token', (req: Request, res: Response) => { decide(String(req.params.token), 'approved', req, res); });
+router.post('/reject/:token', (req: Request, res: Response) => { decide(String(req.params.token), 'rejected', req, res); });
 
 export default router;

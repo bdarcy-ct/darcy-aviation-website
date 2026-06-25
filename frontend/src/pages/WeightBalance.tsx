@@ -477,7 +477,6 @@ export default function WeightBalance() {
   const [approvalNote, setApprovalNote] = useState('');
   const [approving, setApproving] = useState(false);
   const [approvalMsg, setApprovalMsg] = useState('');
-  const [approvalLinks, setApprovalLinks] = useState<{ approveUrl: string; rejectUrl: string } | null>(null);
 
   // IMSAFE checklist state
   type ImSafeValue = 'yes' | 'no' | null;
@@ -807,7 +806,7 @@ export default function WeightBalance() {
   // backend emails the sheet to dispatch automatically.
   const requestApproval = async () => {
     if (!canRequestApproval) return;
-    setApproving(true); setApprovalMsg(''); setApprovalLinks(null);
+    setApproving(true); setApprovalMsg('');
     try {
       const body = await buildDispatchBody();
       const r = await fetch('/api/wb/approval-request', {
@@ -817,7 +816,6 @@ export default function WeightBalance() {
       const data = await r.json().catch(() => ({} as any));
       if (r.ok && data.success) {
         setApprovalMsg(data.message || 'Sent for approval.');
-        if (data._localLinks) setApprovalLinks(data._localLinks);
       } else {
         setApprovalMsg(data.error || 'Failed to send approval request.');
       }
@@ -1171,7 +1169,7 @@ export default function WeightBalance() {
                     {sending ? 'Sending...' : '📧 Dispatch'}
                   </button>
                   {needsApproval && (
-                    <button onClick={() => { setApprovalMsg(''); setApprovalLinks(null); setApprovalOpen(true); }} disabled={!canRequestApproval}
+                    <button onClick={() => { setApprovalMsg(''); setApprovalOpen(true); }} disabled={!canRequestApproval}
                       className={`flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
                         canRequestApproval
                           ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-400/40 hover:shadow-xl active:scale-95'
@@ -1184,14 +1182,6 @@ export default function WeightBalance() {
               </div>
               {msg && <p className={`text-xs mt-2 text-center ${msg.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{msg}</p>}
               {approvalMsg && <p className="text-xs mt-2 text-center text-amber-300">{approvalMsg}</p>}
-              {approvalLinks && (
-                <div className="mt-2 text-[10px] text-center text-white/40">
-                  <span className="text-amber-300/70">Local test (no email configured):</span>{' '}
-                  <a href={approvalLinks.approveUrl} target="_blank" rel="noreferrer" className="text-emerald-400 underline">Approve</a>
-                  {' · '}
-                  <a href={approvalLinks.rejectUrl} target="_blank" rel="noreferrer" className="text-red-400 underline">Reject</a>
-                </div>
-              )}
             </GlassCard>
 
             {/* IMSAFE Modal */}
@@ -1276,14 +1266,6 @@ export default function WeightBalance() {
                     </button>
                   </div>
                   {approvalMsg && <p className="text-xs mt-3 text-center text-amber-300">{approvalMsg}</p>}
-                  {approvalLinks && (
-                    <div className="mt-2 text-[10px] text-center text-white/40">
-                      <span className="text-amber-300/70">Local test:</span>{' '}
-                      <a href={approvalLinks.approveUrl} target="_blank" rel="noreferrer" className="text-emerald-400 underline">Approve</a>
-                      {' · '}
-                      <a href={approvalLinks.rejectUrl} target="_blank" rel="noreferrer" className="text-red-400 underline">Reject</a>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
