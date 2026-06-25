@@ -342,7 +342,9 @@ function buildCgChartUrl(d: any): string {
       },
     },
   };
-  return `https://quickchart.io/chart?width=520&height=320&backgroundColor=white&c=${encodeURIComponent(JSON.stringify(config))}`;
+  // v=3 pins Chart.js 3 — the GET endpoint defaults to v2, which rejects the
+  // v3-style scales/title config with a 400 (renders a blank/error image).
+  return `https://quickchart.io/chart?width=520&height=320&backgroundColor=white&v=3&c=${encodeURIComponent(JSON.stringify(config))}`;
 }
 
 // ─── HTML Email Builder ─────────────────────────────────────────────────────
