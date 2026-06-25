@@ -75,6 +75,37 @@ async function sendWbMail(opts: { to: string; subject: string; html: string; tex
       if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 2000));
     }
   }
+  // HTTPS relay fallback. Railway blocks outbound SMTP (ports 25/465/587) on
+  // non-Pro plans, so on the affected instance every SMTP attempt above just
+  // times out. Bounce the already-built email through the working production
+  // instance over HTTPS — exactly like the /dispatch route already does — so
+  // approval emails get out without a paid plan. _relayTo/_relaySubject keep the
+  // real recipient (e.g. the approver) instead of defaulting to dispatch@.
+  const RELAY_URL = process.env.EMAIL_RELAY_URL;
+  if (RELAY_URL) {
+    try {
+      const relayRes = await fetch(RELAY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          aircraft: '(relayed)', pilotName: '(relayed)',
+          _prebuiltHtml: opts.html,
+          _prebuiltText: opts.text,
+          _relayTo: opts.to,
+          _relaySubject: opts.subject,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const relayData = await relayRes.json() as any;
+      if (relayData && relayData.success) {
+        console.log(`📤 mail relayed via working instance → ${opts.to}`);
+        return { ok: true, configured: true };
+      }
+      lastErr = `relay rejected: ${JSON.stringify(relayData).slice(0, 120)}`;
+    } catch (relayErr: any) {
+      lastErr = `relay failed: ${relayErr?.message || relayErr}`;
+    }
+  }
   return { ok: false, configured: true, error: lastErr };
 }
 
@@ -671,8 +702,8 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
 
       await transporter.sendMail({
         from: `"Darcy Aviation W&B" <${SMTP_USER}>`,
-        to: DISPATCH_EMAIL,
-        subject: `W&B Sheet — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`,
+        to: d._relayTo || DISPATCH_EMAIL,
+        subject: d._relaySubject || `W&B Sheet — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`,
         text: textBody,
         html: htmlBody,
       });
