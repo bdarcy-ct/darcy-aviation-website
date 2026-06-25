@@ -27,6 +27,12 @@ db.exec(`
   );
 `);
 
+// Add email-delivery tracking columns to older DBs (no-op if they already exist).
+// send_status: 'sending' | 'sent' | 'failed' | 'unconfigured'
+for (const col of ['send_status TEXT', 'send_error TEXT', 'send_attempts INTEGER DEFAULT 0']) {
+  try { db.exec(`ALTER TABLE wb_approvals ADD COLUMN ${col}`); } catch { /* column exists */ }
+}
+
 // Resolve the public base URL used to build magic links inside emails.
 function getBaseUrl(req: Request): string {
   if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL.replace(/\/$/, '');
@@ -70,6 +76,44 @@ async function sendWbMail(opts: { to: string; subject: string; html: string; tex
     }
   }
   return { ok: false, configured: true, error: lastErr };
+}
+
+// Background approval-email delivery. The student's "Request Approval" returns
+// immediately; this keeps re-trying the send over ~2 minutes so a transient Zoho
+// throttle (which can last longer than a single burst of retries) still gets the
+// approval email out. Final outcome is persisted to wb_approvals.send_status,
+// which the UI polls — so a real, permanent failure is still surfaced (a silently
+// dropped approval email would be a safety problem).
+function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+
+async function deliverApprovalEmail(token: string, mailOpts: { to: string; subject: string; html: string; text: string }) {
+  // Spaced attempts: ~0s, 5s, 12s, 25s, 45s, 75s — outlasts a short Zoho throttle.
+  const delays = [0, 5000, 7000, 13000, 20000, 30000];
+  let lastErr = 'mail error';
+  for (let i = 0; i < delays.length; i++) {
+    if (delays[i]) await sleep(delays[i]);
+    // Bail if the request was already decided or removed in the meantime.
+    const cur: any = db.prepare('SELECT status, send_status FROM wb_approvals WHERE token = ?').get(token);
+    if (!cur || cur.send_status === 'sent') return;
+
+    const r = await sendWbMail(mailOpts);
+    try { db.prepare('UPDATE wb_approvals SET send_attempts = COALESCE(send_attempts,0) + 1 WHERE token = ?').run(token); } catch {}
+
+    if (r.ok) {
+      db.prepare("UPDATE wb_approvals SET send_status = 'sent', send_error = NULL WHERE token = ?").run(token);
+      console.log(`🛂 approval email DELIVERED for ${token.slice(0, 8)}… on attempt ${i + 1}`);
+      return;
+    }
+    if (!r.configured) {
+      db.prepare("UPDATE wb_approvals SET send_status = 'unconfigured' WHERE token = ?").run(token);
+      console.log(`🛂 approval email not sent (SMTP unconfigured) for ${token.slice(0, 8)}…`);
+      return;
+    }
+    lastErr = r.error || 'mail error';
+    console.error(`🛂 approval email attempt ${i + 1}/${delays.length} failed for ${token.slice(0, 8)}…: ${lastErr}`);
+  }
+  db.prepare("UPDATE wb_approvals SET send_status = 'failed', send_error = ? WHERE token = ?").run(lastErr, token);
+  console.error(`🛂 approval email PERMANENTLY FAILED for ${token.slice(0, 8)}… after ${delays.length} attempts: ${lastErr}`);
 }
 
 // Inject a colored banner block just above the white sheet card in the email HTML.
@@ -706,8 +750,8 @@ router.post('/approval-request', async (req: Request, res: Response) => {
   const token = crypto.randomBytes(24).toString('hex');
 
   db.prepare(`INSERT INTO wb_approvals
-    (token, aircraft, student, instructor, type_of_flight, departure, destination, reasons, note, payload, status)
-    VALUES (?,?,?,?,?,?,?,?,?,?,'pending')`).run(
+    (token, aircraft, student, instructor, type_of_flight, departure, destination, reasons, note, payload, status, send_status)
+    VALUES (?,?,?,?,?,?,?,?,?,?,'pending','sending')`).run(
     token,
     d.aircraft || '',
     d.studentName || d.pilotName || '',
@@ -734,23 +778,36 @@ Approve: ${approveUrl}
 Reject:  ${rejectUrl}`;
 
   const APPROVER_EMAIL = process.env.APPROVER_EMAIL || process.env.DISPATCH_EMAIL || 'brent@darcyaviation.com';
+  const subject = `⚠️ Approval needed — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`;
 
-  const mail = await sendWbMail({ to: APPROVER_EMAIL, subject: `⚠️ Approval needed — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
-
-  console.log(`🛂 W&B approval requested for ${d.aircraft} (${d.studentName || d.pilotName}) — reasons: ${reasons.join('; ')} — emailed=${mail.ok}${mail.error ? ` err=${mail.error}` : ''}`);
-
-  if (mail.ok) {
-    res.json({ success: true, approvalId: token, message: `Sent for approval. You'll be cleared once it's approved.` });
+  // If SMTP isn't configured (local dev) there's nothing to retry — surface the
+  // links immediately so the loop can be tested locally.
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    db.prepare("UPDATE wb_approvals SET send_status = 'unconfigured' WHERE token = ?").run(token);
+    console.log(`🛂 W&B approval requested for ${d.aircraft} (${d.studentName || d.pilotName}) — SMTP unconfigured, returning local links`);
+    res.json({ success: true, approvalId: token, sendStatus: 'unconfigured', message: `Approval request recorded, but email isn't configured on this server so nothing was sent. (Email sends from the live site.)`, _localLinks: { approveUrl, rejectUrl } });
     return;
   }
-  if (!mail.configured) {
-    // No SMTP (local dev). Surface the links so the loop can be tested locally.
-    res.json({ success: true, approvalId: token, message: `Approval request recorded, but email isn't configured on this server so nothing was sent. (Email sends from the live site.)`, _localLinks: { approveUrl, rejectUrl } });
-    return;
-  }
-  // SMTP is configured but the send failed — tell the user so they retry. Do NOT
-  // report success; a silently-dropped approval email is a safety problem.
-  res.status(502).json({ success: false, approvalId: token, error: `Couldn't send the approval email — the mail server didn't accept it (it may be briefly rate-limited). Please hit Send again in a moment.` });
+
+  // Send in the background and keep retrying over ~2 min so a transient Zoho
+  // throttle doesn't surface as a hard error. The UI polls /approval-status.
+  deliverApprovalEmail(token, { to: APPROVER_EMAIL, subject, html, text })
+    .catch(e => {
+      console.error(`🛂 background approval send crashed for ${token.slice(0, 8)}…:`, e?.message || e);
+      try { db.prepare("UPDATE wb_approvals SET send_status = 'failed', send_error = ? WHERE token = ?").run(String(e?.message || e), token); } catch {}
+    });
+
+  console.log(`🛂 W&B approval requested for ${d.aircraft} (${d.studentName || d.pilotName}) — reasons: ${reasons.join('; ')} — sending in background`);
+  res.json({ success: true, approvalId: token, pending: true, sendStatus: 'sending', message: `Sending approval to Brent…` });
+});
+
+// ─── GET /api/wb/approval-status/:token — UI polls this after requesting ─────
+// Returns the background email-delivery outcome so the student knows the approval
+// actually went out (or needs a retry).
+router.get('/approval-status/:token', (req: Request, res: Response) => {
+  const row: any = db.prepare('SELECT send_status, send_error, status FROM wb_approvals WHERE token = ?').get(req.params.token);
+  if (!row) { res.status(404).json({ error: 'not found' }); return; }
+  res.json({ sendStatus: row.send_status || 'sending', sendError: row.send_error || null, decision: row.status });
 });
 
 // ─── Approve / Reject magic links (clicked from Brent's email) ───────────────

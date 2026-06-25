@@ -814,11 +814,33 @@ export default function WeightBalance() {
         body: JSON.stringify({ ...body, reasons: approvalReasons, note: approvalNote.trim() }),
       });
       const data = await r.json().catch(() => ({} as any));
-      if (r.ok && data.success) {
-        setApprovalMsg(data.message || 'Sent for approval.');
-      } else {
+      if (!(r.ok && data.success)) {
         setApprovalMsg(data.error || 'Failed to send approval request.');
+        setApproving(false);
+        return;
       }
+      // Send happens in the background server-side (retries past a Zoho throttle).
+      // Poll for the real delivery outcome so a true failure is still surfaced.
+      if (data.pending && data.approvalId) {
+        setApprovalMsg('📤 Sending approval to Brent…');
+        const token = data.approvalId;
+        const deadline = Date.now() + 150000; // poll up to ~2.5 min
+        const poll = async (): Promise<void> => {
+          try {
+            const s = await fetch(`/api/wb/approval-status/${token}`);
+            const sd = await s.json().catch(() => ({} as any));
+            if (sd.sendStatus === 'sent') { setApprovalMsg('✅ Sent for approval. You\'ll be cleared once it\'s approved.'); setApproving(false); return; }
+            if (sd.sendStatus === 'failed') { setApprovalMsg('⚠️ Couldn\'t reach the mail server after several tries. Tap Request Approval again to retry.'); setApproving(false); return; }
+            if (sd.sendStatus === 'unconfigured') { setApprovalMsg('Approval recorded (email not configured on this server).'); setApproving(false); return; }
+          } catch { /* keep polling */ }
+          if (Date.now() < deadline) { setTimeout(poll, 3000); return; }
+          setApprovalMsg('📤 Still sending — this is taking longer than usual. You can leave this; Brent will get it once the mail server responds.');
+          setApproving(false);
+        };
+        setTimeout(poll, 2500);
+        return;
+      }
+      setApprovalMsg(data.message || 'Sent for approval.');
     } catch { setApprovalMsg('Network error'); }
     setApproving(false);
   };
