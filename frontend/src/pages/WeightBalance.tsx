@@ -736,12 +736,22 @@ export default function WeightBalance() {
           }
         }`;
 
-        const qcRes = await fetch('https://quickchart.io/chart/create', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ width:520, height:320, backgroundColor:'white', chart: chartJs }),
-        });
-        const qcData = await qcRes.json();
-        if (qcData.success && qcData.url) chartUrl = qcData.url;
+        // Hard timeout: QuickChart can be slow / rate-limit a browser. Without
+        // this the await hangs and the whole Send/Request-Approval freezes before
+        // it ever POSTs. On timeout we bail with chartUrl='' and the BACKEND's
+        // self-contained chart fallback (buildCgChartUrl) renders the envelope in
+        // the email instead — so the chart is never lost and the send never hangs.
+        const qcCtrl = new AbortController();
+        const qcTimer = setTimeout(() => qcCtrl.abort(), 5000);
+        try {
+          const qcRes = await fetch('https://quickchart.io/chart/create', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ width:520, height:320, backgroundColor:'white', chart: chartJs }),
+            signal: qcCtrl.signal,
+          });
+          const qcData = await qcRes.json();
+          if (qcData.success && qcData.url) chartUrl = qcData.url;
+        } finally { clearTimeout(qcTimer); }
       } catch {}
 
       return {
