@@ -35,22 +35,41 @@ function getBaseUrl(req: Request): string {
   return `${proto}://${host}`;
 }
 
-// Shared mailer used by the approval flow. Returns whether SMTP actually sent.
-async function sendWbMail(opts: { to: string; subject: string; html: string; text: string }): Promise<boolean> {
+// Shared mailer used by the approval flow.
+//  ok=true            → message accepted by the SMTP server
+//  ok=false,configured=false → no SMTP env (local dev) — nothing attempted
+//  ok=false,configured=true,error → SMTP is set up but the send failed (timeout,
+//                       auth, throttle). The caller must surface this, NOT treat
+//                       it as success — otherwise a dispatch approval silently
+//                       never reaches the inbox.
+// Retries up to 3x with backoff so a transient Zoho throttle/slow greeting (the
+// usual cause) doesn't drop the email.
+type MailResult = { ok: boolean; configured: boolean; error?: string };
+async function sendWbMail(opts: { to: string; subject: string; html: string; text: string }): Promise<MailResult> {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return false;
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return { ok: false, configured: false };
   const port = parseInt(SMTP_PORT || '465');
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port,
     secure: port === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
-    connectionTimeout: 4000,
-    greetingTimeout: 4000,
-    socketTimeout: 6000,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
-  await transporter.sendMail({ from: `"Darcy Aviation W&B" <${SMTP_USER}>`, ...opts });
-  return true;
+  let lastErr = '';
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await transporter.sendMail({ from: `"Darcy Aviation W&B" <${SMTP_USER}>`, ...opts });
+      return { ok: true, configured: true };
+    } catch (err: any) {
+      lastErr = err?.message || String(err);
+      console.error(`sendWbMail attempt ${attempt}/3 to ${opts.to} failed: ${lastErr}`);
+      if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 2000));
+    }
+  }
+  return { ok: false, configured: true, error: lastErr };
 }
 
 // Inject a colored banner block just above the white sheet card in the email HTML.
@@ -716,28 +735,22 @@ Reject:  ${rejectUrl}`;
 
   const APPROVER_EMAIL = process.env.APPROVER_EMAIL || process.env.DISPATCH_EMAIL || 'brent@darcyaviation.com';
 
-  let emailed = false;
-  try {
-    emailed = await sendWbMail({ to: APPROVER_EMAIL, subject: `⚠️ Approval needed — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
-  } catch (err: any) {
-    console.error('Approval email failed:', err.message);
-  }
+  const mail = await sendWbMail({ to: APPROVER_EMAIL, subject: `⚠️ Approval needed — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
 
-  console.log(`🛂 W&B approval requested for ${d.aircraft} (${d.studentName || d.pilotName}) — reasons: ${reasons.join('; ')} — emailed=${emailed}`);
+  console.log(`🛂 W&B approval requested for ${d.aircraft} (${d.studentName || d.pilotName}) — reasons: ${reasons.join('; ')} — emailed=${mail.ok}${mail.error ? ` err=${mail.error}` : ''}`);
 
-  const payload: any = {
-    success: true,
-    approvalId: token,
-    message: emailed
-      ? `Sent for approval. You'll be cleared once it's approved.`
-      : `Approval request recorded, but email isn't configured on this server so nothing was sent. (Email sends from the live site.)`,
-  };
-  // When SMTP isn't configured (e.g. local review), surface the links so the
-  // full approve→dispatch loop can be tested without a live inbox.
-  if (!emailed) {
-    payload._localLinks = { approveUrl, rejectUrl };
+  if (mail.ok) {
+    res.json({ success: true, approvalId: token, message: `Sent for approval. You'll be cleared once it's approved.` });
+    return;
   }
-  res.json(payload);
+  if (!mail.configured) {
+    // No SMTP (local dev). Surface the links so the loop can be tested locally.
+    res.json({ success: true, approvalId: token, message: `Approval request recorded, but email isn't configured on this server so nothing was sent. (Email sends from the live site.)`, _localLinks: { approveUrl, rejectUrl } });
+    return;
+  }
+  // SMTP is configured but the send failed — tell the user so they retry. Do NOT
+  // report success; a silently-dropped approval email is a safety problem.
+  res.status(502).json({ success: false, approvalId: token, error: `Couldn't send the approval email — the mail server didn't accept it (it may be briefly rate-limited). Please hit Send again in a moment.` });
 });
 
 // ─── Approve / Reject magic links (clicked from Brent's email) ───────────────
@@ -774,16 +787,16 @@ Approved despite: ${reasons.join('; ')}
 Student: ${d.studentName || d.pilotName} | Aircraft: ${d.aircraft} | ${d.departure || 'KDXR'} → ${d.destination || '—'}
 T/O: ${d.takeoffWeight?.toFixed?.(1)} lbs / CG ${d.takeoffCg?.toFixed?.(2)}"`;
 
-  let emailed = false;
-  try {
-    emailed = await sendWbMail({ to: DISPATCH_EMAIL, subject: `✅ APPROVED (Override) — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
-  } catch (err: any) {
-    console.error('Post-approval dispatch email failed:', err.message);
-  }
-  console.log(`🛂 W&B approval APPROVED for ${row.aircraft} (${row.student}) — dispatch emailed=${emailed}`);
+  const mail = await sendWbMail({ to: DISPATCH_EMAIL, subject: `✅ APPROVED (Override) — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
+  console.log(`🛂 W&B approval APPROVED for ${row.aircraft} (${row.student}) — dispatch emailed=${mail.ok}${mail.error ? ` err=${mail.error}` : ''}`);
 
+  const tail = mail.ok
+    ? ' The weight &amp; balance sheet has been sent to dispatch.'
+    : mail.configured
+      ? ` <strong style="color:#dc2626">But the email to dispatch failed to send (${mail.error || 'mail error'}) — please forward it to dispatch manually.</strong>`
+      : ' (Email not configured — recorded only.)';
   res.send(resultPage('Approved', '#059669',
-    `<strong>${row.aircraft}</strong> for ${row.student} is approved.${emailed ? ' The weight &amp; balance sheet has been sent to dispatch.' : ' (Email not configured — recorded only.)'}`));
+    `<strong>${row.aircraft}</strong> for ${row.student} is approved.${tail}`));
 }
 
 // Confirmation landing page. GET is safe (no state change) so email security
