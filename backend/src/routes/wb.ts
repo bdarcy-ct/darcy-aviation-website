@@ -730,7 +730,7 @@ Reject:  ${rejectUrl}`;
     approvalId: token,
     message: emailed
       ? `Sent for approval. You'll be cleared once it's approved.`
-      : `Approval request recorded. (Email not configured — use the link below to test.)`,
+      : `Approval request recorded, but email isn't configured on this server so nothing was sent. (Email sends from the live site.)`,
   };
   // When SMTP isn't configured (e.g. local review), surface the links so the
   // full approve→dispatch loop can be tested without a live inbox.
