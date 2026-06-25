@@ -472,6 +472,13 @@ export default function WeightBalance() {
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState('');
 
+  // Dispatch-approval (IFR / outside-SOP override → Brent) state
+  const [approvalOpen, setApprovalOpen] = useState(false);
+  const [approvalNote, setApprovalNote] = useState('');
+  const [approving, setApproving] = useState(false);
+  const [approvalMsg, setApprovalMsg] = useState('');
+  const [approvalLinks, setApprovalLinks] = useState<{ approveUrl: string; rejectUrl: string } | null>(null);
+
   // IMSAFE checklist state
   type ImSafeValue = 'yes' | 'no' | null;
   interface ImSafeState {
@@ -621,28 +628,58 @@ export default function WeightBalance() {
   }, [pohTakeoff, pohLanding, perfManual]);
 
   // ─── Validation: mandatory fields for emailing (#2, #3, #4, #6) ──────────
-  const canSubmit = useMemo(() => {
-    return (
-      studentName.trim() !== '' &&
-      instructorName.trim() !== '' &&
-      directionOfFlight.trim() !== '' &&
-      typeOfFlight.trim() !== '' &&
-      toGr.trim() !== '' &&
-      toObs.trim() !== '' &&
-      ldGrDest.trim() !== '' &&
-      ldObsDest.trim() !== '' &&
-      fw > 0 &&
-      fuel > 0 &&
-      c.ok &&
-      imSafeComplete &&
-      weatherOk
-    );
-  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok, imSafeComplete, weatherOk]);
+  // Core data every sheet needs, regardless of dispatch path.
+  const mandatoryData = useMemo(() => (
+    studentName.trim() !== '' &&
+    instructorName.trim() !== '' &&
+    directionOfFlight.trim() !== '' &&
+    typeOfFlight.trim() !== '' &&
+    toGr.trim() !== '' &&
+    toObs.trim() !== '' &&
+    ldGrDest.trim() !== '' &&
+    ldObsDest.trim() !== '' &&
+    fw > 0 &&
+    fuel > 0
+  ), [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel]);
 
-  const submit = async () => {
-    if (!canSubmit) return;
-    setSending(true); setMsg('');
-    try {
+  // ─── Dispatch approval gate (IFR flights + anything outside SOP) ──────────
+  // IFR flights ALWAYS route through Brent. So does any flight the SOP weather
+  // gate blocks (winds over limit / below VFR). W&B over POH limits stays a hard
+  // stop — Brent can't override an out-of-envelope load.
+  const isIFR = typeOfFlight === 'IFR';
+
+  const approvalReasons = useMemo(() => {
+    const r: string[] = [];
+    if (isIFR) r.push('IFR flight — requires authorization');
+    const wx = (label: string, m: MetarData | null, icao: string) => {
+      if (!m) return;
+      const spd = m.wind_speed_kt ?? 0;
+      const gust = m.wind_gust_kt ?? 0;
+      if (spd > windLimit) r.push(`${label} ${icao} winds ${spd} kt exceed SOP limit ${windLimit} kt`);
+      else if (gust > windLimit) r.push(`${label} ${icao} gusts ${gust} kt exceed SOP limit ${windLimit} kt`);
+      if (m.flight_category && m.flight_category !== 'VFR') r.push(`${label} ${icao} is ${m.flight_category} — below SOP VFR minimums`);
+    };
+    wx('Departure', depM, dep.toUpperCase());
+    if (dest.length >= 3) wx('Destination', destM, dest.toUpperCase());
+    return r;
+  }, [isIFR, depM, destM, windLimit, dep, dest]);
+
+  const needsApproval = useMemo(() => isIFR || !weatherOk, [isIFR, weatherOk]);
+
+  // Normal dispatch/print: only when nothing requires Brent's approval.
+  const canSubmit = useMemo(() => (
+    mandatoryData && c.ok && imSafeComplete && weatherOk && !needsApproval
+  ), [mandatoryData, c.ok, imSafeComplete, weatherOk, needsApproval]);
+
+  // Approval request: same data + W&B + IMSAFE, but bypasses the weather gate
+  // (that's the whole point) and needs a concrete reason to send Brent.
+  const canRequestApproval = useMemo(() => (
+    needsApproval && mandatoryData && c.ok && imSafeComplete && approvalReasons.length > 0
+  ), [needsApproval, mandatoryData, c.ok, imSafeComplete, approvalReasons]);
+
+  // Build the full dispatch payload (W&B rows + CG chart + conditions).
+  // Shared by the normal Dispatch button and the Brent approval request.
+  const buildDispatchBody = async () => {
       const rows = [
         { label: 'Basic Empty Weight', op: '', weight: ac.basicEmptyWeight, arm: ac.basicEmptyArm, moment: ac.basicEmptyMoment, opM: '' },
         { label: ac.frontLabel, op: '+', weight: fw, arm: ac.frontArm, moment: c.fm, opM: '+' },
@@ -708,9 +745,7 @@ export default function WeightBalance() {
         if (qcData.success && qcData.url) chartUrl = qcData.url;
       } catch {}
 
-      const r = await fetch('/api/wb/dispatch', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      return {
           pilotName: studentName, // backward compat
           studentName,
           instructorName,
@@ -751,11 +786,43 @@ export default function WeightBalance() {
           destWeatherOk,
           windLimit,
           timestamp: new Date().toISOString(),
-        }),
+      };
+  };
+
+  const submit = async () => {
+    if (!canSubmit) return;
+    setSending(true); setMsg('');
+    try {
+      const body = await buildDispatchBody();
+      const r = await fetch('/api/wb/dispatch', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
       setMsg(r.ok ? '✅ Sent to dispatch!' : 'Failed');
     } catch { setMsg('Network error'); }
     setSending(false);
+  };
+
+  // Send the sheet to Brent for approval (IFR / outside-SOP). On approve, the
+  // backend emails the sheet to dispatch automatically.
+  const requestApproval = async () => {
+    if (!canRequestApproval) return;
+    setApproving(true); setApprovalMsg(''); setApprovalLinks(null);
+    try {
+      const body = await buildDispatchBody();
+      const r = await fetch('/api/wb/approval-request', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, reasons: approvalReasons, note: approvalNote.trim() }),
+      });
+      const data = await r.json().catch(() => ({} as any));
+      if (r.ok && data.success) {
+        setApprovalMsg(data.message || 'Sent for approval.');
+        if (data._localLinks) setApprovalLinks(data._localLinks);
+      } else {
+        setApprovalMsg(data.error || 'Failed to send approval request.');
+      }
+    } catch { setApprovalMsg('Network error'); }
+    setApproving(false);
   };
 
   const now = new Date();
@@ -775,9 +842,10 @@ export default function WeightBalance() {
     if (fuel <= 0) m.push('Fuel');
     if (!c.ok) m.push('W&B within limits');
     if (!imSafeComplete) m.push('IMSAFE checklist');
-    if (!weatherOk) m.push('Weather within SOP');
+    // Weather out-of-SOP is handled via the Brent approval button, not a blocker.
+    if (!weatherOk && !needsApproval) m.push('Weather within SOP');
     return m;
-  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok, imSafeComplete, weatherOk]);
+  }, [studentName, instructorName, directionOfFlight, typeOfFlight, toGr, toObs, ldGrDest, ldObsDest, fw, fuel, c.ok, imSafeComplete, weatherOk, needsApproval]);
 
   return (
     <>
@@ -848,6 +916,7 @@ export default function WeightBalance() {
                 <option value="Discovery Flight" className="bg-[#1a1f2e]">Discovery Flight</option>
                 <option value="BFR / Flight Review" className="bg-[#1a1f2e]">BFR / Flight Review</option>
                 <option value="IPC" className="bg-[#1a1f2e]">IPC</option>
+                <option value="IFR" className="bg-[#1a1f2e]">IFR Flight</option>
                 <option value="Other" className="bg-[#1a1f2e]">Other</option>
               </select>
             </div>
@@ -1066,6 +1135,15 @@ export default function WeightBalance() {
                   <span className="font-semibold">Required:</span> {missingFields.join(' · ')}
                 </div>
               )}
+              {needsApproval && (
+                <div className="mb-3 text-[11px] text-amber-300 bg-amber-500/[0.08] border border-amber-400/30 rounded-lg px-3 py-2.5">
+                  <div className="font-bold flex items-center gap-1.5">🛂 Approval required to dispatch</div>
+                  <ul className="mt-1.5 ml-4 list-disc text-amber-200/80 space-y-0.5">
+                    {approvalReasons.map((r, i) => <li key={i}>{r}</li>)}
+                  </ul>
+                  <div className="mt-1.5 text-amber-200/50 text-[10px]">Normal dispatch &amp; print are locked — send it for approval below.</div>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <div className="flex items-center gap-3 flex-1 flex-wrap">
                   <button onClick={() => setImSafeOpen(true)}
@@ -1092,9 +1170,28 @@ export default function WeightBalance() {
                     }`}>
                     {sending ? 'Sending...' : '📧 Dispatch'}
                   </button>
+                  {needsApproval && (
+                    <button onClick={() => { setApprovalMsg(''); setApprovalLinks(null); setApprovalOpen(true); }} disabled={!canRequestApproval}
+                      className={`flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
+                        canRequestApproval
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-400/40 hover:shadow-xl active:scale-95'
+                          : 'bg-white/5 text-white/20 cursor-not-allowed'
+                      }`}>
+                      🛂 Request Approval
+                    </button>
+                  )}
                 </div>
               </div>
               {msg && <p className={`text-xs mt-2 text-center ${msg.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{msg}</p>}
+              {approvalMsg && <p className="text-xs mt-2 text-center text-amber-300">{approvalMsg}</p>}
+              {approvalLinks && (
+                <div className="mt-2 text-[10px] text-center text-white/40">
+                  <span className="text-amber-300/70">Local test (no email configured):</span>{' '}
+                  <a href={approvalLinks.approveUrl} target="_blank" rel="noreferrer" className="text-emerald-400 underline">Approve</a>
+                  {' · '}
+                  <a href={approvalLinks.rejectUrl} target="_blank" rel="noreferrer" className="text-red-400 underline">Reject</a>
+                </div>
+              )}
             </GlassCard>
 
             {/* IMSAFE Modal */}
@@ -1139,6 +1236,54 @@ export default function WeightBalance() {
                       Close
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Dispatch Approval Modal */}
+            {approvalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm print:hidden" onClick={() => setApprovalOpen(false)}>
+                <div className="w-full max-w-md bg-[#111827] border border-white/10 rounded-2xl shadow-2xl p-5" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-bold text-white">🛂 Request Dispatch Approval</h3>
+                    <button onClick={() => setApprovalOpen(false)} className="text-white/40 hover:text-white text-xl leading-none">×</button>
+                  </div>
+                  <p className="text-[11px] text-white/50 mb-3">
+                    This sends the full W&amp;B sheet for approval. Once approved, it's emailed straight to dispatch. The flight is not cleared until it's approved.
+                  </p>
+                  <div className="mb-4 text-[11px] bg-amber-500/[0.08] border border-amber-400/25 rounded-lg px-3 py-2.5">
+                    <div className="font-bold text-amber-300 mb-1">Sending for approval because:</div>
+                    <ul className="ml-4 list-disc text-amber-200/80 space-y-0.5">
+                      {approvalReasons.map((r, i) => <li key={i}>{r}</li>)}
+                    </ul>
+                  </div>
+                  <label className="block text-[10px] font-semibold text-white/40 mb-1">Note (optional)</label>
+                  <textarea value={approvalNote} onChange={e => setApprovalNote(e.target.value)} rows={3}
+                    placeholder="e.g. Instrument lesson, ceilings forecast to lift by 1400Z…"
+                    className="w-full text-[12px] bg-white/[0.06] border border-white/15 rounded-lg px-3 py-2 text-white placeholder-white/25 focus:border-amber-400/50 focus:outline-none resize-none mb-4" />
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={() => setApprovalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-sm font-bold bg-white/[0.08] hover:bg-white/15 text-white/70 transition-all active:scale-95">
+                      Cancel
+                    </button>
+                    <button onClick={requestApproval} disabled={approving || !canRequestApproval}
+                      className={`px-5 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                        canRequestApproval && !approving
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30'
+                          : 'bg-white/5 text-white/20 cursor-not-allowed'
+                      }`}>
+                      {approving ? 'Sending…' : 'Send for approval'}
+                    </button>
+                  </div>
+                  {approvalMsg && <p className="text-xs mt-3 text-center text-amber-300">{approvalMsg}</p>}
+                  {approvalLinks && (
+                    <div className="mt-2 text-[10px] text-center text-white/40">
+                      <span className="text-amber-300/70">Local test:</span>{' '}
+                      <a href={approvalLinks.approveUrl} target="_blank" rel="noreferrer" className="text-emerald-400 underline">Approve</a>
+                      {' · '}
+                      <a href={approvalLinks.rejectUrl} target="_blank" rel="noreferrer" className="text-red-400 underline">Reject</a>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

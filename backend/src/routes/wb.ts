@@ -1,7 +1,100 @@
 import { Router, Request, Response } from 'express';
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import db from '../database';
 
 const router = Router();
+
+// ─── Dispatch approval store (IFR / outside-SOP overrides) ───────────────────
+// A flight that is IFR or outside SOP can't be dispatched directly. Instead the
+// student sends an approval request here; Brent gets a magic-link email and
+// either approves (sheet is then emailed to dispatch) or rejects it.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS wb_approvals (
+    token         TEXT PRIMARY KEY,
+    aircraft      TEXT,
+    student       TEXT,
+    instructor    TEXT,
+    type_of_flight TEXT,
+    departure     TEXT,
+    destination   TEXT,
+    reasons       TEXT,
+    note          TEXT,
+    payload       TEXT,
+    status        TEXT DEFAULT 'pending',
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    decided_at    DATETIME
+  );
+`);
+
+// Resolve the public base URL used to build magic links inside emails.
+function getBaseUrl(req: Request): string {
+  if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL.replace(/\/$/, '');
+  const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'http';
+  const host = req.get('host') || `localhost:${process.env.PORT || 3001}`;
+  return `${proto}://${host}`;
+}
+
+// Shared mailer used by the approval flow. Returns whether SMTP actually sent.
+async function sendWbMail(opts: { to: string; subject: string; html: string; text: string }): Promise<boolean> {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return false;
+  const port = parseInt(SMTP_PORT || '465');
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+    connectionTimeout: 4000,
+    greetingTimeout: 4000,
+    socketTimeout: 6000,
+  });
+  await transporter.sendMail({ from: `"Darcy Aviation W&B" <${SMTP_USER}>`, ...opts });
+  return true;
+}
+
+// Inject a colored banner block just above the white sheet card in the email HTML.
+function injectBanner(sheetHtml: string, bannerHtml: string): string {
+  const anchor = '<div style="max-width:750px;margin:0 auto;background:white';
+  if (sheetHtml.includes(anchor)) return sheetHtml.replace(anchor, bannerHtml + anchor);
+  return bannerHtml + sheetHtml;
+}
+
+function approvalRequestBanner(d: any, reasons: string[], note: string, approveUrl: string, rejectUrl: string): string {
+  const reasonItems = (reasons || []).map(r => `<li style="margin:2px 0">${r}</li>`).join('');
+  return `<div style="max-width:750px;margin:0 auto 16px;background:#fffbeb;border:2px solid #f59e0b;border-radius:10px;padding:18px 24px">
+    <div style="font-size:16px;font-weight:800;color:#b45309">⚠️ Dispatch Approval Required</div>
+    <div style="font-size:12px;color:#92400e;margin-top:6px">${d.studentName || d.pilotName || 'A pilot'} requested to dispatch <strong>${d.aircraft || ''}</strong> (${d.departure || 'KDXR'} → ${d.destination || '—'}) outside standard dispatch.</div>
+    <div style="font-size:12px;color:#92400e;margin-top:8px"><strong>Why this needs your approval:</strong><ul style="margin:6px 0 0;padding-left:18px;color:#92400e">${reasonItems}</ul></div>
+    ${note ? `<div style="font-size:12px;color:#92400e;margin-top:8px"><strong>Note from pilot:</strong> ${note}</div>` : ''}
+    <table style="margin-top:14px"><tr>
+      <td style="padding-right:10px"><a href="${approveUrl}" style="display:inline-block;background:#059669;color:white;text-decoration:none;font-weight:800;font-size:14px;padding:12px 28px;border-radius:8px">✅ Approve &amp; Dispatch</a></td>
+      <td><a href="${rejectUrl}" style="display:inline-block;background:#dc2626;color:white;text-decoration:none;font-weight:800;font-size:14px;padding:12px 28px;border-radius:8px">❌ Reject</a></td>
+    </tr></table>
+    <div style="font-size:10px;color:#a16207;margin-top:10px">The full weight &amp; balance sheet is below for your review. Approving emails it straight to dispatch.</div>
+  </div>`;
+}
+
+function approvedBanner(reasons: string[]): string {
+  const reasonItems = (reasons || []).map(r => `<li style="margin:2px 0">${r}</li>`).join('');
+  return `<div style="max-width:750px;margin:0 auto 16px;background:#ecfdf5;border:2px solid #059669;border-radius:10px;padding:16px 24px">
+    <div style="font-size:15px;font-weight:800;color:#047857">✅ APPROVED BY BRENT — Dispatch Override</div>
+    <div style="font-size:11px;color:#065f46;margin-top:6px"><strong>Approved despite:</strong><ul style="margin:6px 0 0;padding-left:18px">${reasonItems}</ul></div>
+  </div>`;
+}
+
+// Minimal HTML page rendered when Brent clicks an approve/reject link.
+function resultPage(title: string, color: string, body: string): string {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${title}</title></head>
+  <body style="margin:0;font-family:'Segoe UI',Inter,Helvetica,Arial,sans-serif;background:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
+    <div style="max-width:440px;background:white;border-radius:16px;padding:36px 32px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
+      <div style="font-size:48px;margin-bottom:8px">${title.startsWith('Approved') ? '✅' : title.startsWith('Rejected') ? '❌' : 'ℹ️'}</div>
+      <div style="font-size:22px;font-weight:800;color:${color}">${title}</div>
+      <div style="font-size:14px;color:#475569;margin-top:12px;line-height:1.5">${body}</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:24px">Darcy Aviation — KDXR Danbury, CT</div>
+    </div>
+  </body></html>`;
+}
 
 // ─── METAR Cache ─────────────────────────────────────────────────────────────
 
@@ -525,5 +618,131 @@ DEST METAR: ${d.destMetar || 'N/A'}`;
     message: 'Weight & Balance sheet recorded (email delivery pending SMTP setup)',
   });
 });
+
+// ─── POST /api/wb/approval-request ──────────────────────────────────────────
+// Body = full dispatch payload + { reasons: string[], note?: string }.
+// Creates a pending approval and emails Brent the sheet with approve/reject links.
+
+router.post('/approval-request', async (req: Request, res: Response) => {
+  const d = req.body || {};
+  const reasons: string[] = Array.isArray(d.reasons) ? d.reasons : [];
+  const note: string = (d.note || '').toString().slice(0, 1000);
+
+  if ((!d.studentName && !d.pilotName) || !d.aircraft) {
+    res.status(400).json({ error: 'Student name and aircraft required' });
+    return;
+  }
+  if (reasons.length === 0) {
+    res.status(400).json({ error: 'No approval reason supplied' });
+    return;
+  }
+
+  const now = new Date(d.timestamp || Date.now());
+  d.dateStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+
+  const token = crypto.randomBytes(24).toString('hex');
+
+  db.prepare(`INSERT INTO wb_approvals
+    (token, aircraft, student, instructor, type_of_flight, departure, destination, reasons, note, payload, status)
+    VALUES (?,?,?,?,?,?,?,?,?,?,'pending')`).run(
+    token,
+    d.aircraft || '',
+    d.studentName || d.pilotName || '',
+    d.instructorName || '',
+    d.typeOfFlight || '',
+    d.departure || '',
+    d.destination || '',
+    JSON.stringify(reasons),
+    note,
+    JSON.stringify(d),
+  );
+
+  const base = getBaseUrl(req);
+  const approveUrl = `${base}/api/wb/approve/${token}`;
+  const rejectUrl = `${base}/api/wb/reject/${token}`;
+
+  const sheetHtml = buildDispatchHTML(d);
+  const html = injectBanner(sheetHtml, approvalRequestBanner(d, reasons, note, approveUrl, rejectUrl));
+  const text = `DISPATCH APPROVAL REQUIRED — Darcy Aviation
+${d.studentName || d.pilotName} requests to dispatch ${d.aircraft} (${d.departure || 'KDXR'} → ${d.destination || '—'}).
+Reasons: ${reasons.join('; ')}
+${note ? `Note: ${note}\n` : ''}
+Approve: ${approveUrl}
+Reject:  ${rejectUrl}`;
+
+  const APPROVER_EMAIL = process.env.APPROVER_EMAIL || process.env.DISPATCH_EMAIL || 'brent@darcyaviation.com';
+
+  let emailed = false;
+  try {
+    emailed = await sendWbMail({ to: APPROVER_EMAIL, subject: `⚠️ Approval needed — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
+  } catch (err: any) {
+    console.error('Approval email failed:', err.message);
+  }
+
+  console.log(`🛂 W&B approval requested for ${d.aircraft} (${d.studentName || d.pilotName}) — reasons: ${reasons.join('; ')} — emailed=${emailed}`);
+
+  const payload: any = {
+    success: true,
+    approvalId: token,
+    message: emailed
+      ? `Sent for approval. You'll be cleared once it's approved.`
+      : `Approval request recorded. (Email not configured — use the link below to test.)`,
+  };
+  // When SMTP isn't configured (e.g. local review), surface the links so the
+  // full approve→dispatch loop can be tested without a live inbox.
+  if (!emailed) {
+    payload._localLinks = { approveUrl, rejectUrl };
+  }
+  res.json(payload);
+});
+
+// ─── Approve / Reject magic links (clicked from Brent's email) ───────────────
+
+async function decide(token: string, decision: 'approved' | 'rejected', req: Request, res: Response) {
+  const row: any = db.prepare('SELECT * FROM wb_approvals WHERE token = ?').get(token);
+  if (!row) {
+    res.status(404).send(resultPage('Link not found', '#dc2626', 'This approval link is invalid or has expired.'));
+    return;
+  }
+  if (row.status !== 'pending') {
+    const when = row.decided_at ? ` on ${new Date(row.decided_at + 'Z').toLocaleString('en-US', { timeZone: 'America/New_York' })}` : '';
+    res.send(resultPage('Already handled', '#475569', `This request was already <strong>${row.status}</strong>${when}. No further action needed.`));
+    return;
+  }
+
+  db.prepare('UPDATE wb_approvals SET status = ?, decided_at = CURRENT_TIMESTAMP WHERE token = ?').run(decision, token);
+
+  const d = JSON.parse(row.payload || '{}');
+  const reasons: string[] = JSON.parse(row.reasons || '[]');
+
+  if (decision === 'rejected') {
+    console.log(`🛂 W&B approval REJECTED for ${row.aircraft} (${row.student})`);
+    res.send(resultPage('Rejected', '#dc2626',
+      `<strong>${row.aircraft}</strong> for ${row.student} was <strong>not</strong> approved. The sheet was not sent to dispatch.`));
+    return;
+  }
+
+  // Approved → email the sheet to dispatch, stamped as a Brent-approved override.
+  const DISPATCH_EMAIL = process.env.DISPATCH_EMAIL || 'dispatch@darcyaviation.com';
+  const html = injectBanner(buildDispatchHTML(d), approvedBanner(reasons));
+  const text = `W&B SHEET — APPROVED BY BRENT (Override)
+Approved despite: ${reasons.join('; ')}
+Student: ${d.studentName || d.pilotName} | Aircraft: ${d.aircraft} | ${d.departure || 'KDXR'} → ${d.destination || '—'}
+T/O: ${d.takeoffWeight?.toFixed?.(1)} lbs / CG ${d.takeoffCg?.toFixed?.(2)}"`;
+
+  let emailed = false;
+  try {
+    emailed = await sendWbMail({ to: DISPATCH_EMAIL, subject: `✅ APPROVED (Override) — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
+  } catch (err: any) {
+    console.error('Post-approval dispatch email failed:', err.message);
+  }
+  console.log(`🛂 W&B approval APPROVED for ${row.aircraft} (${row.student}) — dispatch emailed=${emailed}`);
+
+  res.send(resultPage('Approved', '#059669',
+    `<strong>${row.aircraft}</strong> for ${row.student} is approved.${emailed ? ' The weight &amp; balance sheet has been sent to dispatch.' : ' (Email not configured — recorded only.)'}`));
+}
+
+router.get('/approve/:token', (req: Request, res: Response) => { decide(String(req.params.token), 'approved', req, res); });
+router.get('/reject/:token', (req: Request, res: Response) => { decide(String(req.params.token), 'rejected', req, res); });
 
 export default router;
