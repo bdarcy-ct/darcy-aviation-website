@@ -29,7 +29,7 @@ db.exec(`
 
 // Add email-delivery tracking columns to older DBs (no-op if they already exist).
 // send_status: 'sending' | 'sent' | 'failed' | 'unconfigured'
-for (const col of ['send_status TEXT', 'send_error TEXT', 'send_attempts INTEGER DEFAULT 0']) {
+for (const col of ['send_status TEXT', 'send_error TEXT', 'send_attempts INTEGER DEFAULT 0', 'brent_response TEXT']) {
   try { db.exec(`ALTER TABLE wb_approvals ADD COLUMN ${col}`); } catch { /* column exists */ }
 }
 
@@ -169,11 +169,16 @@ function approvalRequestBanner(d: any, reasons: string[], note: string, approveU
   </div>`;
 }
 
-function approvedBanner(reasons: string[]): string {
+function approvedBanner(reasons: string[], studentMsg?: string, brentResponse?: string): string {
   const reasonItems = (reasons || []).map(r => `<li style="margin:2px 0">${r}</li>`).join('');
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const pilotMsg = (studentMsg || '').trim();
+  const reply = (brentResponse || '').trim();
   return `<div style="max-width:750px;margin:0 auto 16px;background:#ecfdf5;border:2px solid #059669;border-radius:10px;padding:16px 24px">
     <div style="font-size:15px;font-weight:800;color:#047857">✅ APPROVED BY BRENT — Dispatch Override</div>
     <div style="font-size:11px;color:#065f46;margin-top:6px"><strong>Approved despite:</strong><ul style="margin:6px 0 0;padding-left:18px">${reasonItems}</ul></div>
+    ${pilotMsg ? `<div style="font-size:12px;color:#065f46;margin-top:8px"><strong>Pilot's message:</strong> ${esc(pilotMsg)}</div>` : ''}
+    ${reply ? `<div style="font-size:12px;color:#065f46;margin-top:6px;background:#d1fae5;border-radius:6px;padding:8px 12px"><strong>Brent's response:</strong> ${esc(reply)}</div>` : ''}
   </div>`;
 }
 
@@ -774,6 +779,10 @@ router.post('/approval-request', async (req: Request, res: Response) => {
     res.status(400).json({ error: 'No approval reason supplied' });
     return;
   }
+  if (!note.trim()) {
+    res.status(400).json({ error: 'A message to Brent is required' });
+    return;
+  }
 
   const now = new Date(d.timestamp || Date.now());
   d.dateStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
@@ -855,25 +864,29 @@ async function decide(token: string, decision: 'approved' | 'rejected', req: Req
     return;
   }
 
-  db.prepare('UPDATE wb_approvals SET status = ?, decided_at = CURRENT_TIMESTAMP WHERE token = ?').run(decision, token);
+  // Brent's optional response message, typed on the confirmation page.
+  const brentResponse = (req.body?.response || '').toString().slice(0, 1000).trim();
+  db.prepare('UPDATE wb_approvals SET status = ?, brent_response = ?, decided_at = CURRENT_TIMESTAMP WHERE token = ?').run(decision, brentResponse || null, token);
 
   const d = JSON.parse(row.payload || '{}');
   const reasons: string[] = JSON.parse(row.reasons || '[]');
+  const escR = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const replyLine = brentResponse ? `<div style="font-size:13px;color:#334155;margin-top:14px;background:#f1f5f9;border-radius:8px;padding:10px 14px;text-align:left"><strong>Your message to the pilot:</strong> ${escR(brentResponse)}</div>` : '';
 
   if (decision === 'rejected') {
     console.log(`🛂 W&B approval REJECTED for ${row.aircraft} (${row.student})`);
     res.send(resultPage('Rejected', '#dc2626',
-      `<strong>${row.aircraft}</strong> for ${row.student} was <strong>not</strong> approved. The sheet was not sent to dispatch.`));
+      `<strong>${row.aircraft}</strong> for ${row.student} was <strong>not</strong> approved. The sheet was not sent to dispatch.${replyLine}`));
     return;
   }
 
   // Approved → email the sheet to dispatch, stamped as a Brent-approved override.
   const DISPATCH_EMAIL = process.env.DISPATCH_EMAIL || 'dispatch@darcyaviation.com';
-  const html = injectBanner(buildDispatchHTML(d), approvedBanner(reasons));
+  const html = injectBanner(buildDispatchHTML(d), approvedBanner(reasons, row.note, brentResponse));
   const text = `W&B SHEET — APPROVED BY BRENT (Override)
 Approved despite: ${reasons.join('; ')}
 Student: ${d.studentName || d.pilotName} | Aircraft: ${d.aircraft} | ${d.departure || 'KDXR'} → ${d.destination || '—'}
-T/O: ${d.takeoffWeight?.toFixed?.(1)} lbs / CG ${d.takeoffCg?.toFixed?.(2)}"`;
+T/O: ${d.takeoffWeight?.toFixed?.(1)} lbs / CG ${d.takeoffCg?.toFixed?.(2)}"${row.note ? `\nPilot's message: ${row.note}` : ''}${brentResponse ? `\nBrent's response: ${brentResponse}` : ''}`;
 
   const mail = await sendWbMail({ to: DISPATCH_EMAIL, subject: `✅ APPROVED (Override) — ${d.aircraft} — ${d.studentName || d.pilotName} — ${d.departure || 'KDXR'} → ${d.destination || '?'}`, html, text });
   console.log(`🛂 W&B approval APPROVED for ${row.aircraft} (${row.student}) — dispatch emailed=${mail.ok}${mail.error ? ` err=${mail.error}` : ''}`);
@@ -884,7 +897,7 @@ T/O: ${d.takeoffWeight?.toFixed?.(1)} lbs / CG ${d.takeoffCg?.toFixed?.(2)}"`;
       ? ` <strong style="color:#dc2626">But the email to dispatch failed to send (${mail.error || 'mail error'}) — please forward it to dispatch manually.</strong>`
       : ' (Email not configured — recorded only.)';
   res.send(resultPage('Approved', '#059669',
-    `<strong>${row.aircraft}</strong> for ${row.student} is approved.${tail}`));
+    `<strong>${row.aircraft}</strong> for ${row.student} is approved.${tail}${replyLine}`));
 }
 
 // Confirmation landing page. GET is safe (no state change) so email security
@@ -898,6 +911,7 @@ function confirmPage(token: string, decision: 'approved' | 'rejected', row: any)
   const reasons: string[] = (() => { try { return JSON.parse(row.reasons || '[]'); } catch { return []; } })();
   const reasonItems = reasons.map(r => `<li style="margin:2px 0">${r}</li>`).join('');
   const route = `${row.departure || 'KDXR'} → ${row.destination || '—'}`;
+  const pilotMsg = (row.note || '').toString().trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Confirm ${isApprove ? 'Approval' : 'Rejection'}</title></head>
   <body style="margin:0;font-family:'Segoe UI',Inter,Helvetica,Arial,sans-serif;background:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
     <div style="max-width:460px;background:white;border-radius:16px;padding:32px;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
@@ -908,8 +922,11 @@ function confirmPage(token: string, decision: 'approved' | 'rejected', row: any)
         <span style="color:#64748b">${route}${row.type_of_flight ? ` · ${row.type_of_flight}` : ''}</span>
       </div>
       ${reasonItems ? `<div style="font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:10px 14px;margin-top:14px"><strong>Flagged for:</strong><ul style="margin:6px 0 0;padding-left:18px">${reasonItems}</ul></div>` : ''}
+      ${pilotMsg ? `<div style="font-size:13px;color:#334155;background:#f1f5f9;border-radius:8px;padding:10px 14px;margin-top:14px"><strong>Message from ${row.student || 'pilot'}:</strong><br/>${pilotMsg}</div>` : ''}
       <div style="font-size:12px;color:#64748b;margin-top:16px">${isApprove ? 'Approving will email the full weight &amp; balance sheet to dispatch as an override.' : 'Rejecting will NOT send the sheet to dispatch. The student stays uncleared.'}</div>
-      <form method="POST" action="/api/wb/${isApprove ? 'approve' : 'reject'}/${token}" style="margin-top:24px">
+      <form method="POST" action="/api/wb/${isApprove ? 'approve' : 'reject'}/${token}" style="margin-top:20px">
+        <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">Response message ${isApprove ? '(shown on the dispatch sheet)' : '(optional)'}</label>
+        <textarea name="response" rows="3" placeholder="Optional — add a note back to the pilot / dispatch…" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:13px;border:1px solid #cbd5e1;border-radius:8px;padding:10px;resize:vertical;margin-bottom:16px"></textarea>
         <button type="submit" style="width:100%;background:${color};color:white;border:none;font-weight:800;font-size:16px;padding:14px;border-radius:10px;cursor:pointer">${icon} ${verb}</button>
       </form>
       <div style="font-size:11px;color:#94a3b8;margin-top:20px;text-align:center">Darcy Aviation — KDXR Danbury, CT</div>

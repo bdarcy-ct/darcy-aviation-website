@@ -255,6 +255,8 @@ function cgOk(env: CgLimit[], w: number, cg: number): boolean {
 }
 function f(n: number, d = 2) { return n.toFixed(d); }
 type FuelUnit = 'gal' | 'lbs';
+// SOP: density altitude above this (ft) at departure or destination requires Brent's approval.
+const DA_APPROVAL_LIMIT = 2500;
 const FUEL_LBS_PER_GAL = 6;
 const fuelDisplay = (lbs: number, unit: FuelUnit) => unit === 'gal' ? lbs / FUEL_LBS_PER_GAL : lbs;
 const fuelToLbs = (value: number, unit: FuelUnit) => unit === 'gal' ? value * FUEL_LBS_PER_GAL : value;
@@ -660,10 +662,18 @@ export default function WeightBalance() {
     };
     wx('Departure', depM, dep.toUpperCase());
     if (dest.length >= 3) wx('Destination', destM, dest.toUpperCase());
+    // SOP: density altitude above 2,500 ft (departure or destination) requires Brent's approval.
+    if (wxD && wxD.da > DA_APPROVAL_LIMIT) r.push(`Departure ${dep.toUpperCase()} density altitude ${wxD.da.toFixed(0)} ft exceeds SOP limit ${DA_APPROVAL_LIMIT} ft`);
+    if (dest.length >= 3 && wxA && wxA.da > DA_APPROVAL_LIMIT) r.push(`Destination ${dest.toUpperCase()} density altitude ${wxA.da.toFixed(0)} ft exceeds SOP limit ${DA_APPROVAL_LIMIT} ft`);
     return r;
-  }, [isIFR, depM, destM, windLimit, dep, dest]);
+  }, [isIFR, depM, destM, windLimit, dep, dest, wxD, wxA]);
 
-  const needsApproval = useMemo(() => isIFR || !weatherOk, [isIFR, weatherOk]);
+  // DA over the SOP limit is an approval trigger Brent can override (same as weather).
+  const daOverLimit = useMemo(() => (
+    (!!wxD && wxD.da > DA_APPROVAL_LIMIT) || (dest.length >= 3 && !!wxA && wxA.da > DA_APPROVAL_LIMIT)
+  ), [wxD, wxA, dest]);
+
+  const needsApproval = useMemo(() => isIFR || !weatherOk || daOverLimit, [isIFR, weatherOk, daOverLimit]);
 
   // Normal dispatch/print: only when nothing requires Brent's approval.
   const canSubmit = useMemo(() => (
@@ -673,8 +683,8 @@ export default function WeightBalance() {
   // Approval request: same data + W&B + IMSAFE, but bypasses the weather gate
   // (that's the whole point) and needs a concrete reason to send Brent.
   const canRequestApproval = useMemo(() => (
-    needsApproval && mandatoryData && c.ok && imSafeComplete && approvalReasons.length > 0
-  ), [needsApproval, mandatoryData, c.ok, imSafeComplete, approvalReasons]);
+    needsApproval && mandatoryData && c.ok && imSafeComplete && approvalReasons.length > 0 && approvalNote.trim() !== ''
+  ), [needsApproval, mandatoryData, c.ok, imSafeComplete, approvalReasons, approvalNote]);
 
   // Build the full dispatch payload (W&B rows + CG chart + conditions).
   // Shared by the normal Dispatch button and the Brent approval request.
@@ -1279,10 +1289,12 @@ export default function WeightBalance() {
                       {approvalReasons.map((r, i) => <li key={i}>{r}</li>)}
                     </ul>
                   </div>
-                  <label className="block text-[10px] font-semibold text-white/40 mb-1">Note (optional)</label>
+                  <label className="block text-[10px] font-semibold text-white/40 mb-1">Message to Brent <span className="text-amber-400">*required</span></label>
                   <textarea value={approvalNote} onChange={e => setApprovalNote(e.target.value)} rows={3}
                     placeholder="e.g. Instrument lesson, ceilings forecast to lift by 1400Z…"
-                    className="w-full text-[12px] bg-white/[0.06] border border-white/15 rounded-lg px-3 py-2 text-white placeholder-white/25 focus:border-amber-400/50 focus:outline-none resize-none mb-4" />
+                    className="w-full text-[12px] bg-white/[0.06] border border-white/15 rounded-lg px-3 py-2 text-white placeholder-white/25 focus:border-amber-400/50 focus:outline-none resize-none mb-1" />
+                  {approvalNote.trim() === '' && <p className="text-[10px] text-amber-300/70 mb-3">Add a message explaining the request before sending.</p>}
+                  {approvalNote.trim() !== '' && <div className="mb-3" />}
                   <div className="flex items-center justify-end gap-2">
                     <button onClick={() => setApprovalOpen(false)}
                       className="px-4 py-2 rounded-xl text-sm font-bold bg-white/[0.08] hover:bg-white/15 text-white/70 transition-all active:scale-95">
