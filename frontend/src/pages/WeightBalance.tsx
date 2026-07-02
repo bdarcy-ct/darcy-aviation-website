@@ -682,9 +682,16 @@ export default function WeightBalance() {
 
   // Approval request: same data + W&B + IMSAFE, but bypasses the weather gate
   // (that's the whole point) and needs a concrete reason to send Brent.
+  // Opening the approval modal only needs a valid, approvable flight — the note
+  // is typed INSIDE the modal, so requiring it here would deadlock the button.
+  const canOpenApproval = useMemo(() => (
+    needsApproval && mandatoryData && c.ok && imSafeComplete && approvalReasons.length > 0
+  ), [needsApproval, mandatoryData, c.ok, imSafeComplete, approvalReasons]);
+
+  // Actually sending also requires the message to Brent (entered in the modal).
   const canRequestApproval = useMemo(() => (
-    needsApproval && mandatoryData && c.ok && imSafeComplete && approvalReasons.length > 0 && approvalNote.trim() !== ''
-  ), [needsApproval, mandatoryData, c.ok, imSafeComplete, approvalReasons, approvalNote]);
+    canOpenApproval && approvalNote.trim() !== ''
+  ), [canOpenApproval, approvalNote]);
 
   // Build the full dispatch payload (W&B rows + CG chart + conditions).
   // Shared by the normal Dispatch button and the Brent approval request.
@@ -1211,9 +1218,9 @@ export default function WeightBalance() {
                     {sending ? 'Sending...' : '📧 Dispatch'}
                   </button>
                   {needsApproval && (
-                    <button onClick={() => { setApprovalMsg(''); setApprovalOpen(true); }} disabled={!canRequestApproval}
+                    <button onClick={() => { setApprovalMsg(''); setApprovalOpen(true); }} disabled={!canOpenApproval}
                       className={`flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
-                        canRequestApproval
+                        canOpenApproval
                           ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-400/40 hover:shadow-xl active:scale-95'
                           : 'bg-white/5 text-white/20 cursor-not-allowed'
                       }`}>
