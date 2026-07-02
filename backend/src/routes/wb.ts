@@ -247,7 +247,7 @@ router.get('/metar', async (req: Request, res: Response) => {
       wind_gust_kt: metar.wgst ?? null,
       visibility_miles: typeof metar.visib === 'number' ? metar.visib : parseFloat(metar.visib) || 10,
       flight_category: metar.fltCat || 'VFR',
-      elevation_ft: metar.elev ?? null,
+      elevation_ft: metar.elev != null ? Math.round(metar.elev * 3.28084) : null, // API returns elev in METERS
       clouds: metar.clouds || [],
     };
 
