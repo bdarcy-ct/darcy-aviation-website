@@ -1188,7 +1188,7 @@ export function initializeDatabase(): void {
     `).run(
       'simulator-intro',
       'Redbird MCX Simulator',
-      '$179/hour',
+      '$200/hour',
       'Step into our full-motion, wrap-around Redbird MCX and experience an immersive flight lesson in an FAA-certified Advanced Aviation Training Device.',
       null,
       JSON.stringify(['Full-motion Redbird MCX', 'FAA-certified AATD', 'No experience required']),
@@ -1198,6 +1198,16 @@ export function initializeDatabase(): void {
       1
     );
     console.log('✅ Redbird simulator experience added');
+  }
+
+  // Apply the requested price change while preserving any unrelated CMS edits.
+  const simulatorPriceUpdate = db.prepare(`
+    UPDATE experiences
+    SET price = '$200/hour', updated_at = CURRENT_TIMESTAMP
+    WHERE slug = 'simulator-intro' AND price = '$179/hour'
+  `).run();
+  if (simulatorPriceUpdate.changes > 0) {
+    console.log('✅ Redbird simulator price updated to $200/hour');
   }
 
   // Seed maintenance services if empty

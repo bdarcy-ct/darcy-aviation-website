@@ -112,7 +112,7 @@ const fallbackExperiences = [
   {
     slug: 'simulator-intro',
     title: 'Redbird MCX Simulator',
-    price: '$179/hour',
+    price: '$200/hour',
     description: 'Step into our full-motion, wrap-around Redbird MCX and experience an immersive flight lesson in an FAA-certified Advanced Aviation Training Device.',
     highlights: ['Full-motion Redbird MCX', 'FAA-certified AATD', 'No experience required'],
     booking_url: 'https://www.flightcircle.com/shop/97822f668fb9/4000001845',
@@ -146,7 +146,7 @@ function ExperiencesPage() {
     <div className="pt-24">
       <SEOHead
         title="Book an Experience"
-        description="Book scenic airplane rides and flying experiences in Connecticut — Discovery flights, Candlewood Lake tours, NYC Skyline tours, City Lights night tours, and full-motion Redbird MCX simulator sessions from $179 per hour."
+        description="Book scenic airplane rides and flying experiences in Connecticut — Discovery flights, Candlewood Lake tours, NYC Skyline tours, City Lights night tours, and full-motion Redbird MCX simulator sessions for $200 per hour."
         path="/experiences"
       />
       {/* Hero */}
