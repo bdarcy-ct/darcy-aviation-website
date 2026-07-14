@@ -69,4 +69,22 @@ let c3 = computeByProfileKey('PA28_161', zero({ pressAlt: 0, oatC: 15, densAlt: 
 log('PA161 none gross +15HW', c3);
 if (!(c3.toRoll < c.toRoll)) { fails++; console.log('FAIL  PA161 headwind should shorten', c3.toRoll, c.toRoll); }
 
+console.log('── Landing weight response (all aircraft) ──');
+const landingWeightCases: [string, number][] = [
+  ['N121MS', 2300],
+  ['N6475D', 2300],
+  ['N5546J', 2300],
+  ['N9426E', 2550],
+  ['N65563', 1670],
+  ['N8715C', 2325],
+  ['N84001', 2325],
+];
+for (const [tail, referenceWeight] of landingWeightCases) {
+  const heavy = computePerformance(tail, zero({ pressAlt: 0, oatC: 20, densAlt: 0, weight: referenceWeight }))!;
+  const light = computePerformance(tail, zero({ pressAlt: 0, oatC: 20, densAlt: 0, weight: referenceWeight - 120 }))!;
+  const ok = light.ldgRoll < heavy.ldgRoll && light.ldgObst < heavy.ldgObst;
+  if (!ok) fails++;
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${tail} fuel-burn/landing-weight response: ${heavy.ldgRoll}/${heavy.ldgObst} → ${light.ldgRoll}/${light.ldgObst}`);
+}
+
 console.log(`\n${fails === 0 ? '✅ ALL CHECKS PASSED' : '❌ ' + fails + ' CHECK(S) FAILED'}`);

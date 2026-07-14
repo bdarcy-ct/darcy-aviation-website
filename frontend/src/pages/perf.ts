@@ -61,6 +61,14 @@ function flapsBranch(table: PTable, flap: string): PNode[] {
 function clamp(x: number, lo: number, hi: number): number { return Math.max(lo, Math.min(hi, x)); }
 function round5(x: number): number { return Math.round(x / 5) * 5; }
 
+// FAA-H-8083-25C, Chapter 11: minimum landing distance varies in direct
+// proportion to landing gross weight. The POH landing tables below are
+// published at a fixed reference weight, so scale their result to the actual
+// landing weight passed by the W&B sheet (including taxi fuel and fuel burn).
+function landingWeightFactor(weight: number, referenceWeight: number): number {
+  return Math.max(0, weight / referenceWeight);
+}
+
 // Cessna-style wind factor: -10% per 9 kt headwind, +10% per 2 kt tailwind.
 function cessnaWindFactor(headwind: number): number {
   if (headwind >= 0) return Math.max(0.45, 1 - 0.10 * headwind / 9);
@@ -71,30 +79,32 @@ function cessnaWindFactor(headwind: number): number {
 
 // Cessna 100-series: takeoff tables keyed weight × oat × pressureAlt, landing keyed oat × alt.
 // The 172N (160 HP) and 172S (180 HP) POHs share this structure — only the table values differ.
-function calcCessna(T: Record<string, PTable>, inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
+function calcCessna(T: Record<string, PTable>, inp: PerfInputs, landingReferenceWeight: number): Omit<PerfResult, 'profile' | 'note'> {
   const wf = cessnaWindFactor(inp.headwind);
+  const lwf = landingWeightFactor(inp.weight, landingReferenceWeight);
   const k3: boolean[] = [true, true, true];
   const k2: boolean[] = [true, true];
   return {
     toRoll: round5(lookupNumeric(T.TOroll.a, [inp.weight, inp.oatC, inp.pressAlt], k3) * wf),
     toObst: round5(lookupNumeric(T.TOobst.a, [inp.weight, inp.oatC, inp.pressAlt], k3) * wf),
-    ldgRoll: round5(lookupNumeric(T.ldgRoll.a, [inp.oatC, inp.pressAlt], k2) * wf),
-    ldgObst: round5(lookupNumeric(T.ldgObst.a, [inp.oatC, inp.pressAlt], k2) * wf),
+    ldgRoll: round5(lookupNumeric(T.ldgRoll.a, [inp.oatC, inp.pressAlt], k2) * wf * lwf),
+    ldgObst: round5(lookupNumeric(T.ldgObst.a, [inp.oatC, inp.pressAlt], k2) * wf * lwf),
   };
 }
-function calcC172N(inp: PerfInputs) { return calcCessna(PERF_TABLES.C172N as Record<string, PTable>, inp); }
-function calcC172S(inp: PerfInputs) { return calcCessna(PERF_TABLES.C172S as Record<string, PTable>, inp); }
+function calcC172N(inp: PerfInputs) { return calcCessna(PERF_TABLES.C172N as Record<string, PTable>, inp, 2300); }
+function calcC172S(inp: PerfInputs) { return calcCessna(PERF_TABLES.C172S as Record<string, PTable>, inp, 2550); }
 
 // Cessna 152: single gross weight (1670). Tables keyed altitude × oat.
 function calcC152(inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
   const T = PERF_TABLES.C152 as Record<string, PTable>;
   const wf = cessnaWindFactor(inp.headwind);
+  const lwf = landingWeightFactor(inp.weight, 1670);
   const k2: boolean[] = [true, true];
   return {
     toRoll: round5(lookupNumeric(T.TOroll.a, [inp.pressAlt, inp.oatC], k2) * wf),
     toObst: round5(lookupNumeric(T.TOobst.a, [inp.pressAlt, inp.oatC], k2) * wf),
-    ldgRoll: round5(lookupNumeric(T.ldgRoll.a, [inp.pressAlt, inp.oatC], k2) * wf),
-    ldgObst: round5(lookupNumeric(T.ldgObst.a, [inp.pressAlt, inp.oatC], k2) * wf),
+    ldgRoll: round5(lookupNumeric(T.ldgRoll.a, [inp.pressAlt, inp.oatC], k2) * wf * lwf),
+    ldgObst: round5(lookupNumeric(T.ldgObst.a, [inp.pressAlt, inp.oatC], k2) * wf * lwf),
   };
 }
 
@@ -119,8 +129,10 @@ function calcPA28_161(inp: PerfInputs, flap: 'none' | 'partial' = 'none'): Omit<
   toObst = Math.max(toObst, obMin);
   // landing (headwind × density altitude, gross weight, built-in wind correction)
   const hwL = clamp(inp.headwind, -5, 15);
-  const ldgRoll = lookupNumeric(T.ldgRoll.a, [hwL, inp.densAlt], [false, true]);
-  const ldgObst = lookupNumeric(T.ldgObst.a, [hwL, inp.densAlt], [false, true]);
+  // The digitized Warrior II landing chart is referenced to 2325 lb.
+  const lwf = landingWeightFactor(inp.weight, 2325);
+  const ldgRoll = lookupNumeric(T.ldgRoll.a, [hwL, inp.densAlt], [false, true]) * lwf;
+  const ldgObst = lookupNumeric(T.ldgObst.a, [hwL, inp.densAlt], [false, true]) * lwf;
   return { toRoll: round5(toRoll), toObst: round5(toObst), ldgRoll: round5(ldgRoll), ldgObst: round5(ldgObst) };
 }
 
@@ -128,6 +140,7 @@ function calcPA28_161(inp: PerfInputs, flap: 'none' | 'partial' = 'none'): Omit<
 function calcPA28_151(inp: PerfInputs, flap: 'none' | 'partial' = 'none'): Omit<PerfResult, 'profile' | 'note'> {
   const T = PERF_TABLES.PA28_151 as Record<string, any>;
   const wf = cessnaWindFactor(inp.headwind);
+  const lwf = landingWeightFactor(inp.weight, 2325);
   const toRollDA = (flapsBranch(T.TOroll, flap)[0].a) as PNode[];      // headwind 0 branch → DA list
   const toObstDA = (flapsBranch(T.TOobst, flap)[0].a) as PNode[];
   const ldgRollDA = (T.ldgRoll.a[0].a) as PNode[];
@@ -135,8 +148,8 @@ function calcPA28_151(inp: PerfInputs, flap: 'none' | 'partial' = 'none'): Omit<
   return {
     toRoll: round5(lookupNumeric(toRollDA, [inp.densAlt], [true]) * wf),
     toObst: round5(lookupNumeric(toObstDA, [inp.densAlt], [true]) * wf),
-    ldgRoll: round5(lookupNumeric(ldgRollDA, [inp.densAlt], [true]) * wf),
-    ldgObst: round5(lookupNumeric(ldgObstDA, [inp.densAlt], [true]) * wf),
+    ldgRoll: round5(lookupNumeric(ldgRollDA, [inp.densAlt], [true]) * wf * lwf),
+    ldgObst: round5(lookupNumeric(ldgObstDA, [inp.densAlt], [true]) * wf * lwf),
   };
 }
 
