@@ -1176,6 +1176,30 @@ export function initializeDatabase(): void {
     console.log('✅ Experiences seeded with hardcoded content');
   }
 
+  // Add the Redbird simulator experience to existing installations without
+  // overwriting any later edits made through the Experiences CMS.
+  const simulatorExperience = db.prepare("SELECT id FROM experiences WHERE slug = 'simulator-intro'").get();
+  if (!simulatorExperience) {
+    db.prepare(`
+      INSERT INTO experiences (
+        slug, title, price, description, icon_svg, highlights,
+        booking_url, featured, sort_order, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'simulator-intro',
+      'Redbird MCX Simulator',
+      '$179/hour',
+      'Step into our full-motion, wrap-around Redbird MCX and experience an immersive flight lesson in an FAA-certified Advanced Aviation Training Device.',
+      null,
+      JSON.stringify(['Full-motion Redbird MCX', 'FAA-certified AATD', 'No experience required']),
+      'https://www.flightcircle.com/shop/97822f668fb9/4000001845',
+      0,
+      6,
+      1
+    );
+    console.log('✅ Redbird simulator experience added');
+  }
+
   // Seed maintenance services if empty
   const maintenanceCount = db.prepare('SELECT COUNT(*) as count FROM maintenance_services').get() as { count: number };
   if (maintenanceCount.count === 0) {

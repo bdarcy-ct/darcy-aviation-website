@@ -53,6 +53,12 @@ const defaultIcons: Record<string, JSX.Element> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
     </svg>
   ),
+  'simulator-intro': (
+    <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 4.5h13.5A2.25 2.25 0 0121 6.75v8.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15.25v-8.5A2.25 2.25 0 015.25 4.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 13.5l2.15-2.15a1.2 1.2 0 011.7 0L12 12.5l2.15-2.15a1.2 1.2 0 011.7 0L18 12.5M8.25 20h7.5M12 17.5V20M8 8h.01" />
+    </svg>
+  ),
 };
 
 const defaultIcon = (
@@ -103,6 +109,15 @@ const fallbackExperiences = [
     highlights: ['~1.5 hours', 'Night flight over NYC', 'Unforgettable date night'],
     featured: true,
   },
+  {
+    slug: 'simulator-intro',
+    title: 'Redbird MCX Simulator',
+    price: '$179/hour',
+    description: 'Step into our full-motion, wrap-around Redbird MCX and experience an immersive flight lesson in an FAA-certified Advanced Aviation Training Device.',
+    highlights: ['Full-motion Redbird MCX', 'FAA-certified AATD', 'No experience required'],
+    booking_url: 'https://www.flightcircle.com/shop/97822f668fb9/4000001845',
+    featured: false,
+  },
 ];
 
 function ExperiencesPage() {
@@ -131,7 +146,7 @@ function ExperiencesPage() {
     <div className="pt-24">
       <SEOHead
         title="Book an Experience"
-        description="Book scenic airplane rides and flying experiences in Connecticut — Discovery flights from $279, Candlewood Lake tours, West Point &amp; Hudson River tours, NYC Skyline tours, and City Lights night tours. Gift certificates available."
+        description="Book scenic airplane rides and flying experiences in Connecticut — Discovery flights, Candlewood Lake tours, NYC Skyline tours, City Lights night tours, and full-motion Redbird MCX simulator sessions from $179 per hour."
         path="/experiences"
       />
       {/* Hero */}
@@ -144,7 +159,7 @@ function ExperiencesPage() {
             </span>
           </h1>
           <p className="section-subtitle">
-            From your first time at the controls to a nighttime flight through the Manhattan skyline — 
+            From your first time at the controls to a full-motion simulator session or a nighttime flight through the Manhattan skyline —{' '}
             choose your adventure and make memories that last a lifetime.
           </p>
         </div>
