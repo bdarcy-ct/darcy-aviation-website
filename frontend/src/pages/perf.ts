@@ -147,6 +147,7 @@ interface Profile { key: ProfileKey; source: string; note?: string; flap?: 'none
 const PROFILES: Record<string, Profile> = {
   N121MS: { key: 'C172N', source: '1978 Cessna 172N POH (160 HP)' },
   N6475D: { key: 'C172N', source: '1978 Cessna 172N POH (160 HP)' },
+  N5546J: { key: 'C172N', source: '1978 Cessna 172N POH (160 HP)' },
   N9426E: { key: 'C172S', source: 'Cessna 172S NAV III POH (180 HP, 2550 lb)',
             note: '180 HP STC — uses factory 172S (IO-360) POH figures. If the STC AFM supplement publishes its own takeoff/landing tables, those are authoritative and supersede these.' },
   N65563: { key: 'C152', source: 'Cessna 152 POH (Fig 5-4 / 5-10, 1670 lb)' },

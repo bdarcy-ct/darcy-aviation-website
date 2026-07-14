@@ -136,6 +136,28 @@ const AIRCRAFT: Aircraft[] = [
     ],
   },
   {
+    tailNumber: 'N5546J', type: 'Cessna 172N', model: 'C172N',
+    // Harrisburg Jet Center W&B revision dated 09-May-2006, A/C S/N 17273816.
+    // The certified moment is retained directly; the printed 39.70 in arm is rounded.
+    basicEmptyWeight: 1472.23, basicEmptyArm: 39.70, basicEmptyMoment: 58449.29,
+    maxGrossWeight: 2300, usefulLoad: 827.77,
+    fuelArm: 47.9, maxFuelLbs: 240, taxiFuelLbs: 8,
+    frontArm: 37, rearArm: 73, bag1Arm: 95, bag2Arm: 123,
+    bag1Max: 120, bag2Max: 120, hasRear: true, hasBag2: true,
+    frontLabel: 'Front Pilots', rearLabel: 'Rear Passengers',
+    bag1Label: 'Baggage 1', bag2Label: 'Baggage 2', fuelLabel: 'Usable Fuel (wings)',
+    cgEnvelope: [
+      { weight: 1500, fwd: 35.0, aft: 47.3 },
+      { weight: 1950, fwd: 35.0, aft: 47.3 },
+      { weight: 2300, fwd: 40.5, aft: 47.3 },
+    ],
+    utilityEnvelope: [
+      { weight: 1500, fwd: 35.0, aft: 40.5 },
+      { weight: 1950, fwd: 35.0, aft: 40.5 },
+      { weight: 2000, fwd: 35.8, aft: 40.5 },
+    ],
+  },
+  {
     tailNumber: 'N9426E', type: 'Cessna 172 (180 HP)', model: 'C172-180',
     basicEmptyWeight: 1516.9, basicEmptyArm: 39.98, basicEmptyMoment: 60649,
     maxGrossWeight: 2550, usefulLoad: 1033.2,
