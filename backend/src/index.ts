@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
-import { initializeDatabase } from './database';
+import { initializeDatabase, startAutomaticBackups } from './database';
 import fleetRoutes from './routes/fleet';
 import testimonialRoutes from './routes/testimonials';
 // bookings and contact routes removed — bookings via FlightCircle, contact via email
@@ -60,6 +60,7 @@ setInterval(() => {
 
 // Initialize database
 initializeDatabase();
+startAutomaticBackups();
 
 // Health check
 app.get('/api/health', (_req, res) => {

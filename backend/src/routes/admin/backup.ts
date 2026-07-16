@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
 import Database from 'better-sqlite3';
-import liveDb from '../../database';
+import liveDb, { backupsDir, dataDir, dbPath, pendingRestorePath } from '../../database';
 import { authenticateAdmin } from '../../middleware/auth';
 
 const router = express.Router();
@@ -12,37 +12,19 @@ router.use(authenticateAdmin);
 
 const upload = multer({ dest: '/tmp', limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB max
 
-function getDataDir(): string {
-  return fs.existsSync('/data') ? '/data' : path.join(__dirname, '../../../../data');
-}
-
-function getDbPath(): string {
-  return path.join(getDataDir(), 'darcy.db');
-}
-
-function unlinkSqliteSidecars(dbPath: string): void {
-  for (const suffix of ['-wal', '-shm']) {
-    try { fs.unlinkSync(`${dbPath}${suffix}`); } catch {}
-  }
-}
-
 // Download database backup
 router.get('/download', async (_req, res) => {
   try {
-    const dataDir = getDataDir();
-    const dbPath = getDbPath();
-
     if (!fs.existsSync(dbPath)) {
       return res.status(404).json({ error: 'Database not found' });
     }
 
     // Use SQLite's backup API instead of copying darcy.db directly.
     // In WAL mode, recent writes may live in darcy.db-wal and raw copies can be stale or empty.
-    const backupDir = path.join(dataDir, 'backups');
-    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+    if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const backupPath = path.join(backupDir, `darcy-backup-${timestamp}.db`);
+    const backupPath = path.join(backupsDir, `darcy-backup-${timestamp}.db`);
     await liveDb.backup(backupPath);
 
     // Send the backup file
@@ -62,9 +44,6 @@ router.get('/download', async (_req, res) => {
 // Get backup info
 router.get('/info', (_req, res) => {
   try {
-    const dataDir = getDataDir();
-    const dbPath = getDbPath();
-
     if (!fs.existsSync(dbPath)) {
       return res.json({ exists: false });
     }
@@ -74,6 +53,15 @@ router.get('/info', (_req, res) => {
     const shmPath = `${dbPath}-shm`;
     const walStats = fs.existsSync(walPath) ? fs.statSync(walPath) : null;
     const shmStats = fs.existsSync(shmPath) ? fs.statSync(shmPath) : null;
+    const automaticBackups = fs.existsSync(backupsDir)
+      ? fs.readdirSync(backupsDir)
+        .filter((name) => /^auto-.*\.db$/.test(name))
+        .map((name) => {
+          const stats = fs.statSync(path.join(backupsDir, name));
+          return { name, size: stats.size, createdAt: stats.mtime.toISOString() };
+        })
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      : [];
 
     res.json({
       exists: true,
@@ -93,6 +81,11 @@ router.get('/info', (_req, res) => {
         sizeHuman: `${(shmStats.size / 1024).toFixed(1)} KB`,
         lastModified: shmStats.mtime.toISOString(),
       } : { exists: false },
+      automaticBackups: {
+        count: automaticBackups.length,
+        latest: automaticBackups[0] || null,
+        retention: 14,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get backup info' });
@@ -132,31 +125,28 @@ router.post('/restore', upload.single('backup'), async (req, res) => {
     }
 
     // Find the current database
-    const dataDir = getDataDir();
-    const dbPath = getDbPath();
-
     // Create a safety backup of the current database before overwriting
-    const backupDir = path.join(dataDir, 'backups');
-    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+    if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const safetyBackupPath = path.join(backupDir, `pre-restore-${timestamp}.db`);
+    const safetyBackupPath = path.join(backupsDir, `pre-restore-${timestamp}.db`);
 
     if (fs.existsSync(dbPath)) {
       await liveDb.backup(safetyBackupPath);
     }
 
-    // Replace the database file with the uploaded one
-    unlinkSqliteSidecars(dbPath);
-    fs.copyFileSync(uploadedPath, dbPath);
-    unlinkSqliteSidecars(dbPath);
+    // Stage the validated database on the same volume. The next process installs
+    // it before opening SQLite, avoiding an unsafe live-file replacement.
+    const stagingPath = path.join(dataDir, `pending-restore-${timestamp}.tmp`);
+    fs.copyFileSync(uploadedPath, stagingPath);
+    fs.renameSync(stagingPath, pendingRestorePath);
     fs.unlinkSync(uploadedPath);
 
-    // The server needs to restart to pick up the new database
+    // The server needs to restart to install the staged database.
     // Send success response first, then exit so Railway/process manager restarts
     res.json({
       success: true,
-      message: 'Backup restored successfully. Server will restart to apply changes.',
+      message: 'Backup validated and staged. Server will restart to apply it safely.',
       safetyBackup: `pre-restore-${timestamp}.db`,
     });
 

@@ -3,18 +3,90 @@ import path from 'path';
 import fs from 'fs';
 import { SOP_SEED_SECTIONS } from './sopSeed';
 
-// Use Railway volume (/data) if available, otherwise local ./data
-const dataDir = fs.existsSync('/data') ? '/data' : path.join(__dirname, '../../data');
+// Railway exposes the attached persistent volume path explicitly. Falling back to
+// a generic /data directory can silently put the CMS on ephemeral storage in
+// environments where /data exists but is not a mounted volume.
+export const dataDir = process.env.RAILWAY_VOLUME_MOUNT_PATH
+  || (process.env.RAILWAY_ENVIRONMENT && fs.existsSync('/data') ? '/data' : path.join(__dirname, '../../data'));
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const dbPath = path.join(dataDir, 'darcy.db');
+export const dbPath = path.join(dataDir, 'darcy.db');
+export const backupsDir = path.join(dataDir, 'backups');
+export const pendingRestorePath = path.join(dataDir, 'pending-restore.db');
+
+function timestampForFilename(): string {
+  return new Date().toISOString().replace(/[:.]/g, '-');
+}
+
+// A restore is staged by the API and only installed here, before SQLite opens
+// the database. Replacing an open WAL-mode database can discard recent writes or
+// leave the process attached to the old inode.
+function applyPendingRestore(): void {
+  if (!fs.existsSync(pendingRestorePath)) return;
+
+  for (const suffix of ['-wal', '-shm']) {
+    try { fs.unlinkSync(`${dbPath}${suffix}`); } catch {}
+  }
+
+  fs.renameSync(pendingRestorePath, dbPath);
+  console.log('✅ Staged database restore applied before startup');
+}
+
+applyPendingRestore();
+
 const db = new Database(dbPath);
 
-// Enable WAL mode for better performance
+// Durable SQLite settings for CMS writes on the Railway volume.
 db.pragma('journal_mode = WAL');
+db.pragma('synchronous = FULL');
+db.pragma('busy_timeout = 5000');
+db.pragma('wal_autocheckpoint = 100');
 db.pragma('foreign_keys = ON');
+
+export function checkpointDatabase(): void {
+  db.pragma('wal_checkpoint(TRUNCATE)');
+}
+
+export async function createAutomaticBackup(reason = 'scheduled'): Promise<string> {
+  if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir, { recursive: true });
+
+  const backupPath = path.join(backupsDir, `auto-${timestampForFilename()}.db`);
+  await db.backup(backupPath);
+
+  // Keep the latest 14 automatic backups. Manual/pre-restore backups are never
+  // removed by this retention policy.
+  const automaticBackups = fs.readdirSync(backupsDir)
+    .filter((name) => /^auto-.*\.db$/.test(name))
+    .map((name) => ({ name, mtime: fs.statSync(path.join(backupsDir, name)).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime);
+
+  for (const oldBackup of automaticBackups.slice(14)) {
+    try { fs.unlinkSync(path.join(backupsDir, oldBackup.name)); } catch {}
+  }
+
+  console.log(`✅ Automatic database backup created (${reason}): ${path.basename(backupPath)}`);
+  return backupPath;
+}
+
+export function startAutomaticBackups(): void {
+  // Back up once after startup and every 24 hours afterward. Timers are unref'd
+  // so they never delay a graceful process shutdown.
+  const startupTimer = setTimeout(() => {
+    createAutomaticBackup('startup').catch((error) => {
+      console.error('Automatic startup backup failed:', error?.message || error);
+    });
+  }, 5_000);
+  startupTimer.unref();
+
+  const dailyTimer = setInterval(() => {
+    createAutomaticBackup('daily').catch((error) => {
+      console.error('Automatic daily backup failed:', error?.message || error);
+    });
+  }, 24 * 60 * 60 * 1000);
+  dailyTimer.unref();
+}
 
 export function initializeDatabase(): void {
   db.exec(`
@@ -1449,6 +1521,11 @@ export function initializeDatabase(): void {
     );
   });
   runMigrations();
+
+  // Fold any recovered WAL pages into the main database file after startup.
+  // This keeps the durable state self-contained instead of allowing months of
+  // CMS changes to accumulate only in darcy.db-wal.
+  checkpointDatabase();
 
   console.log('✅ Database initialized and seeded');
 }
