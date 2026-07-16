@@ -2,11 +2,12 @@
 
 import sys
 import sqlite3
+import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 
-BASE_URL = "http://127.0.0.1:3901"
+BASE_URL = os.environ.get("CMS_BASE_URL", "http://127.0.0.1:3901").rstrip("/")
 TEAM_NAME = "Persistence Test Instructor"
 AIRCRAFT_NAME = "Persistence Test Cessna"
 
@@ -89,8 +90,8 @@ def round_trip_backup_restore(page):
 
 
 def main():
-    if len(sys.argv) != 2 or sys.argv[1] not in {"create", "verify", "restore"}:
-        raise SystemExit("usage: cms_persistence_e2e.py create|verify|restore")
+    if len(sys.argv) != 2 or sys.argv[1] not in {"smoke", "create", "verify", "restore"}:
+        raise SystemExit("usage: cms_persistence_e2e.py smoke|create|verify|restore")
 
     browser_errors = []
     with sync_playwright() as playwright:
@@ -103,7 +104,9 @@ def main():
         page.on("pageerror", lambda error: browser_errors.append(str(error)))
         login(page)
 
-        if sys.argv[1] == "create":
+        if sys.argv[1] == "smoke":
+            assert_admin_pages_load(page)
+        elif sys.argv[1] == "create":
             assert_admin_pages_load(page)
             create_records(page)
         elif sys.argv[1] == "verify":
