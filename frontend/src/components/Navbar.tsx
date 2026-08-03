@@ -6,6 +6,7 @@ const navLinks = [
   { path: '/', label: 'Home' },
   { path: '/experiences', label: 'Experiences' },
   { path: '/training', label: 'Training' },
+  { path: '/thegame', label: 'Jeopardy' },
   { path: '/fleet', label: 'Fleet' },
   { path: '/maintenance', label: 'Maintenance' },
   { path: '/sop', label: 'SOP' },

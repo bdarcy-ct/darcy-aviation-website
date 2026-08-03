@@ -27,6 +27,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 const Experiences = lazy(() => import('./pages/Experiences'));
 const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
 const WeightBalance = lazy(() => import('./pages/WeightBalance'));
+const DGame = lazy(() => import('./pages/DGame'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function ScrollToTop() {
@@ -61,6 +62,11 @@ export default function App() {
           {/* Weight & Balance Calculator - standalone */}
           <Route path="/wb" element={<WeightBalance />} />
           <Route path="/weight-balance" element={<WeightBalance />} />
+
+          {/* Darcy Aviation training game - immersive standalone experience */}
+          <Route path="/thegame" element={<DGame />} />
+          <Route path="/d-game" element={<DGame />} />
+          <Route path="/dgame" element={<DGame />} />
           
           {/* Main App Routes */}
           <Route path="/*" element={

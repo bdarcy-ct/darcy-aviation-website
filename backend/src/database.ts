@@ -300,6 +300,36 @@ export function initializeDatabase(): void {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- Darcy Aviation Jeopardy player profiles and score history
+    CREATE TABLE IF NOT EXISTS game_players (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+      access_code_hash TEXT NOT NULL,
+      access_code_salt TEXT NOT NULL,
+      xp INTEGER NOT NULL DEFAULT 0,
+      current_level INTEGER NOT NULL DEFAULT 1,
+      games_played INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_login DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS game_scores (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      player_id INTEGER NOT NULL,
+      track TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      max_score INTEGER NOT NULL,
+      correct_answers INTEGER NOT NULL,
+      answered_count INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(player_id) REFERENCES game_players(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_game_scores_player_track
+      ON game_scores(player_id, track, score DESC);
+    CREATE INDEX IF NOT EXISTS idx_game_scores_track_score
+      ON game_scores(track, score DESC);
   `);
 
   // Migrations: add columns to existing tables
