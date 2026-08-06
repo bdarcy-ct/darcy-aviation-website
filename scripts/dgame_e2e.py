@@ -38,6 +38,11 @@ with sync_playwright() as playwright:
     assert set(first_categories).isdisjoint(second_categories), "Consecutive boards repeated categories before rotating the pool"
     page.locator(".dg-board__column > button").first.click()
     page.locator(".dg-question-card").wait_for()
+    page.locator(".dg-think-window").wait_for()
+    assert page.locator(".dg-choices").count() == 0, "Answer choices appeared before the no-hints think window ended"
+    page.screenshot(path="/tmp/dgame-think-window.png", full_page=True)
+    page.locator(".dg-choices").wait_for(timeout=10_000)
+    page.screenshot(path="/tmp/dgame-hard-choices.png", full_page=True)
     page.locator(".dg-choices button").first.click()
     page.get_by_role("button", name="BACK TO BOARD →").click()
     page.locator(".dg-question-card").wait_for(state="detached")

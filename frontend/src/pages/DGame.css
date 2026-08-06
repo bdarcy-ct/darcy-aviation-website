@@ -239,7 +239,10 @@
 .dg-question-card, .dg-debrief { width: min(880px, calc(100vw - 40px)); max-height: calc(100vh - 40px); overflow-y: auto; background: linear-gradient(155deg, #102c3c, #091924 75%); border: 1px solid #355366; box-shadow: 0 40px 130px #000; padding: clamp(25px, 5vw, 60px); box-sizing: border-box; position: relative; }
 .dg-question-card::before, .dg-debrief::before { content: ''; position: absolute; inset: 12px; border: 1px solid rgba(149,181,194,.1); pointer-events: none; }
 .dg-question-card__top { display: flex; justify-content: space-between; color: var(--track-accent); letter-spacing: .15em; font-size: 11px; }
-.dg-question-card h2 { font-family: 'DM Serif Display', Georgia, serif; font-size: clamp(28px, 4.5vw, 48px); font-weight: 400; line-height: 1.14; margin: 35px 0; }
+.dg-question-card h2 { font-family: 'DM Serif Display', Georgia, serif; font-size: clamp(24px, 3.2vw, 38px); font-weight: 400; line-height: 1.18; margin: 28px 0; }
+.dg-think-window { display: flex; align-items: center; justify-content: center; gap: 18px; min-height: 105px; border: 1px solid color-mix(in srgb, var(--track-accent) 45%, #294656); background: color-mix(in srgb, var(--track-accent) 8%, #0a1c27); }
+.dg-think-window > span { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--track-accent); color: var(--track-accent); font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; box-shadow: 0 0 24px color-mix(in srgb, var(--track-accent) 25%, transparent); }
+.dg-think-window > div { display: grid; gap: 5px; }.dg-think-window strong { letter-spacing: .16em; font-size: 12px; }.dg-think-window small { color: #8fa2aa; font-size: 12px; }
 .dg-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .dg-choices button { min-height: 70px; display: flex; align-items: center; text-align: left; gap: 14px; background: #0a1c27; border: 1px solid #294656; color: #d8e0e2; padding: 14px 18px; font-family: 'Avenir Next', sans-serif; font-size: 14px; line-height: 1.35; }
 .dg-choices button:hover:not(:disabled) { border-color: var(--track-accent); background: #112b39; }

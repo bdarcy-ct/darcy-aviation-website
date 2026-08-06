@@ -21,6 +21,7 @@ type PilotStats = { score: number; correct: number; attempts: number };
 
 const SESSION_KEY = 'darcy-d-game-session';
 const MAX_SCORE = 7500;
+const THINK_WINDOW_SECONDS = 7;
 
 function apiHeaders(token?: string) {
   return {
@@ -93,6 +94,7 @@ export default function DGame() {
   const [buzzedPlayerId, setBuzzedPlayerId] = useState<number | null>(null);
   const [questionAttempts, setQuestionAttempts] = useState<number[]>([]);
   const [revealAnswer, setRevealAnswer] = useState(false);
+  const [thinkSeconds, setThinkSeconds] = useState(0);
   const [showDebrief, setShowDebrief] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const resultSaved = useRef(false);
@@ -100,6 +102,12 @@ export default function DGame() {
   useEffect(() => {
     document.title = 'Darcy Aviation Jeopardy Game';
   }, []);
+
+  useEffect(() => {
+    if (!activeQuestion || thinkSeconds <= 0 || selectedChoice) return;
+    const timer = window.setTimeout(() => setThinkSeconds((current) => Math.max(0, current - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [activeQuestion, selectedChoice, thinkSeconds]);
 
   const answeredCount = Object.keys(answered).length;
   const progress = answeredCount / 25;
@@ -220,6 +228,7 @@ export default function DGame() {
     setBuzzedPlayerId(null);
     setQuestionAttempts([]);
     setRevealAnswer(false);
+    setThinkSeconds(THINK_WINDOW_SECONDS);
   }
 
   function chooseAnswer(choice: string) {
@@ -464,7 +473,13 @@ export default function DGame() {
             {gameMode === 'multi' && buzzedPlayerId === null && (
               <div className="dg-buzzer-stage"><p>BUZZ IN TO ANSWER</p><div>{activeCrew.map((participant) => <button key={participant.player.id} disabled={questionAttempts.includes(participant.player.id)} onClick={() => setBuzzedPlayerId(participant.player.id)}><span>{participant.player.name.slice(0, 1).toUpperCase()}</span><b>{participant.player.name}</b><small>{questionAttempts.includes(participant.player.id) ? 'LOCKED OUT' : 'BUZZ'}</small></button>)}</div></div>
             )}
-            {(gameMode === 'single' || buzzedPlayerId !== null) && (
+            {(gameMode === 'single' || buzzedPlayerId !== null) && thinkSeconds > 0 && (
+              <div className="dg-think-window" role="status" aria-live="polite">
+                <span>{thinkSeconds}</span>
+                <div><strong>COMMIT YOUR ANSWER</strong><small>Choices unlock after the no-hints think window.</small></div>
+              </div>
+            )}
+            {(gameMode === 'single' || buzzedPlayerId !== null) && thinkSeconds === 0 && (
               <>
                 {gameMode === 'multi' && <p className="dg-answering-pilot"><span /> {buzzedParticipant?.player.name} has control</p>}
                 <div className="dg-choices">
