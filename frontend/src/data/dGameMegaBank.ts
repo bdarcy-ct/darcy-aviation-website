@@ -22,15 +22,36 @@ function pairedAnswer(first: string, second: string) {
   return `A: ${first}  /  B: ${second}`;
 }
 
-/**
- * Every generated item now tests two independently useful pieces of pilot
- * knowledge. The old bank repeated one easy clue behind 25 cosmetic labels;
- * these variants use 25 different partner questions and near-miss pairings.
- */
+function maskAnswer(explanation: string, answer: string) {
+  const escapedAnswer = answer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const stopWords = new Set(['and', 'the', 'this', 'that', 'with', 'from', 'into', 'only', 'about', 'your']);
+  const answerTokens = (answer.match(/[A-Za-z0-9]+/g) || [])
+    .filter((token) => (token.length >= 3 || /^\d/.test(token)) && !stopWords.has(token.toLowerCase()));
+  return answerTokens.reduce(
+    (masked, token) => masked.replace(new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi'), '_____'),
+    explanation.replace(new RegExp(`\\b${escapedAnswer}\\b`, 'gi'), 'the correct response'),
+  );
+}
+
 function expandQuestion(question: GameQuestion, partnerQuestions: GameQuestion[], anchorIndex: number): GameQuestion[] {
   return challengeFrames.map((frame, variant) => {
-    // Seven is coprime with the 75-question track bank, so the first 25
-    // variants receive 25 different partners without pairing an item to itself.
+    const id = `${question.id}-v${String(variant + 1).padStart(2, '0')}`;
+
+    // Three of the 25 variants are two-part cross-checks. Most of the bank
+    // remains a single aviation question, with some clues inverted into an
+    // explanation-based oral to keep the rhythm and difficulty varied.
+    const isPairedChallenge = variant % 8 === 7;
+    if (!isPairedChallenge) {
+      const isExplanationChallenge = variant % 3 === 1;
+      return {
+        ...question,
+        id,
+        clue: isExplanationChallenge
+          ? `${frame}: ${maskAnswer(question.explanation, question.answer)} Which response identifies the concept, action, or limitation being described?`
+          : `${frame}: ${question.clue}`,
+      };
+    }
+
     const partner = partnerQuestions[(anchorIndex + 1 + variant * 7) % partnerQuestions.length];
     const firstWrong = question.choices[(variant % (question.choices.length - 1)) + 1];
     const secondWrong = partner.choices[((variant + 1) % (partner.choices.length - 1)) + 1];
@@ -39,7 +60,7 @@ function expandQuestion(question: GameQuestion, partnerQuestions: GameQuestion[]
     const answer = pairedAnswer(question.answer, partner.answer);
 
     return {
-      id: `${question.id}-v${String(variant + 1).padStart(2, '0')}`,
+      id,
       value: question.value,
       clue: `${frame}: resolve both items before choosing. A — ${withoutFinalPeriod(question.clue)}. B — ${withoutFinalPeriod(partner.clue)}. Which paired response is fully correct?`,
       answer,
