@@ -69,6 +69,17 @@ let c3 = computeByProfileKey('PA28_161', zero({ pressAlt: 0, oatC: 15, densAlt: 
 log('PA161 none gross +15HW', c3);
 if (!(c3.toRoll < c.toRoll)) { fails++; console.log('FAIL  PA161 headwind should shorten', c3.toRoll, c.toRoll); }
 
+console.log('── Cirrus SR20 G6 (N43VU) ──');
+// POH 11934-005 direct cells: 3150 lb, sea level, 20°C, zero wind.
+r = computePerformance('N43VU', zero({ pressAlt: 0, oatC: 20, densAlt: 0, weight: 3150 }))!;
+log('3150/20C/SL', r);
+approx('SR20 G6 toRoll', r.toRoll, 1750, 1);
+approx('SR20 G6 toObst', r.toObst, 2620, 1);
+approx('SR20 G6 ldgRoll', r.ldgRoll, 870, 1);
+approx('SR20 G6 ldgObst', r.ldgObst, 2665, 1);
+const sr20Hw = computePerformance('N43VU', zero({ pressAlt: 0, oatC: 20, densAlt: 0, weight: 3150, headwind: 12 }))!;
+if (!(sr20Hw.toRoll < r.toRoll && sr20Hw.toObst < r.toObst)) { fails++; console.log('FAIL  SR20 headwind should shorten takeoff distances', sr20Hw, r); }
+
 console.log('── Landing weight response (all aircraft) ──');
 const landingWeightCases: [string, number][] = [
   ['N121MS', 2300],
@@ -78,6 +89,7 @@ const landingWeightCases: [string, number][] = [
   ['N65563', 1670],
   ['N8715C', 2325],
   ['N84001', 2325],
+  ['N43VU', 3150],
 ];
 for (const [tail, referenceWeight] of landingWeightCases) {
   const heavy = computePerformance(tail, zero({ pressAlt: 0, oatC: 20, densAlt: 0, weight: referenceWeight }))!;

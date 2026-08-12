@@ -1,6 +1,7 @@
 // POH takeoff/landing performance engine for the Darcy W&B sheet.
 // Pure functions — no React. Tables live in perfData.ts (auto-generated from POH sources).
 import { PERF_TABLES } from './perfData';
+import { SR20_ALTS, SR20_LANDING, SR20_TAKEOFF, SR20_TEMPS } from './sr20PerfData';
 
 export type PNode = { p: number | string; v?: number; a?: PNode[] };
 export type PTable = { parmNames: string[]; a: PNode[] };
@@ -61,6 +62,16 @@ function flapsBranch(table: PTable, flap: string): PNode[] {
 function clamp(x: number, lo: number, hi: number): number { return Math.max(lo, Math.min(hi, x)); }
 function round5(x: number): number { return Math.round(x / 5) * 5; }
 
+function lookupGrid(alts: readonly number[], temps: readonly number[], values: readonly (readonly number[])[], altitude: number, oatC: number): number {
+  const rows: PNode[] = alts.map((alt, row) => ({
+    p: alt,
+    a: temps.map((temp, col) => ({ p: temp, v: values[row][col] })),
+  }));
+  // The SR20 POH directs pilots to use the coldest tabulated value below 0°C;
+  // warmer/higher values are linearly extrapolated and should be used with caution.
+  return lookupNumeric(rows, [altitude, oatC], [true, true]);
+}
+
 // FAA-H-8083-25C, Chapter 11: minimum landing distance varies in direct
 // proportion to landing gross weight. The POH landing tables below are
 // published at a fixed reference weight, so scale their result to the actual
@@ -105,6 +116,28 @@ function calcC152(inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
     toObst: round5(lookupNumeric(T.TOobst.a, [inp.pressAlt, inp.oatC], k2) * wf),
     ldgRoll: round5(lookupNumeric(T.ldgRoll.a, [inp.pressAlt, inp.oatC], k2) * wf * lwf),
     ldgObst: round5(lookupNumeric(T.ldgObst.a, [inp.pressAlt, inp.oatC], k2) * wf * lwf),
+  };
+}
+
+// Cirrus SR20 G6: POH tables provide takeoff distances at 2600 and 3150 lb.
+// Interpolate between them and conservatively clamp lighter weights to 2600.
+// Landing is published at 3150 lb and scales directly with landing weight.
+function calcSR20G6(inp: PerfInputs): Omit<PerfResult, 'profile' | 'note'> {
+  const tableAt = (weight: 2600 | 3150, key: 'roll' | 'obstacle') =>
+    lookupGrid(SR20_ALTS, SR20_TEMPS, SR20_TAKEOFF[weight][key], inp.pressAlt, inp.oatC);
+  const w = clamp(inp.weight, 2600, 3150);
+  const toRoll = lerp(w, 2600, 3150, tableAt(2600, 'roll'), tableAt(3150, 'roll'));
+  const toObst = lerp(w, 2600, 3150, tableAt(2600, 'obstacle'), tableAt(3150, 'obstacle'));
+  const toWind = inp.headwind >= 0 ? Math.max(0.45, 1 - 0.10 * inp.headwind / 12) : 1 + 0.10 * (-inp.headwind) / 2;
+  const ldgWind = inp.headwind >= 0 ? Math.max(0.45, 1 - 0.10 * inp.headwind / 13) : 1 + 0.10 * (-inp.headwind) / 2;
+  const ldgWeight = landingWeightFactor(inp.weight, 3150);
+  const ldgRoll = lookupGrid(SR20_ALTS, SR20_TEMPS, SR20_LANDING.roll, inp.pressAlt, inp.oatC);
+  const ldgObst = lookupGrid(SR20_ALTS, SR20_TEMPS, SR20_LANDING.obstacle, inp.pressAlt, inp.oatC);
+  return {
+    toRoll: round5(toRoll * toWind),
+    toObst: round5(toObst * toWind),
+    ldgRoll: round5(ldgRoll * ldgWind * ldgWeight),
+    ldgObst: round5(ldgObst * ldgWind * ldgWeight),
   };
 }
 
@@ -154,7 +187,7 @@ function calcPA28_151(inp: PerfInputs, flap: 'none' | 'partial' = 'none'): Omit<
 }
 
 // ── Aircraft → profile map ─────────────────────────────────────────────────────
-type ProfileKey = 'C172N' | 'C172S' | 'C152' | 'PA28_161' | 'PA28_151';
+type ProfileKey = 'C172N' | 'C172S' | 'C152' | 'PA28_161' | 'PA28_151' | 'SR20_G6';
 interface Profile { key: ProfileKey; source: string; note?: string; flap?: 'none' | 'partial'; }
 
 const PROFILES: Record<string, Profile> = {
@@ -167,6 +200,8 @@ const PROFILES: Record<string, Profile> = {
   N8715C: { key: 'PA28_151', source: 'Cherokee Warrior PA-28-151 POH (density-altitude charts, gross)' },
   // N84001: confirmed PA-28-161 Warrior II (2440 lb) by Ludwig + FAA serial 28-8516080.
   N84001: { key: 'PA28_161', source: 'Warrior II PA-28-161 POH (base + weight/headwind adjustment charts)' },
+  N43VU: { key: 'SR20_G6', source: 'Cirrus SR20 G6 POH 11934-005 (50% flap takeoff / 100% flap landing)',
+           note: 'Dry, level, paved runway; air conditioning OFF for takeoff. Apply POH corrections for runway slope, grass, or A/C use.' },
 };
 
 export function getPerfProfile(tail: string): Profile | null {
@@ -183,6 +218,7 @@ export function computeByProfileKey(key: ProfileKey, inp: PerfInputs, flap: 'non
     case 'C152': return calcC152(inp);
     case 'PA28_161': return calcPA28_161(inp, flap);
     case 'PA28_151': return calcPA28_151(inp, flap);
+    case 'SR20_G6': return calcSR20G6(inp);
   }
 }
 
@@ -196,6 +232,7 @@ export function computePerformance(tail: string, inp: PerfInputs): PerfResult | 
     case 'C152': core = calcC152(inp); break;
     case 'PA28_161': core = calcPA28_161(inp, prof.flap); break;
     case 'PA28_151': core = calcPA28_151(inp, prof.flap); break;
+    case 'SR20_G6': core = calcSR20G6(inp); break;
     default: return null;
   }
   return { ...core, profile: prof.source, note: prof.note };

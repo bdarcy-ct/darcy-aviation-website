@@ -238,6 +238,25 @@ const AIRCRAFT: Aircraft[] = [
       { weight: 2020, fwd: 83.8, aft: 93.0 },
     ],
   },
+  {
+    tailNumber: 'N43VU', type: 'Cirrus SR20 G6', model: 'SR20-G6',
+    // First Wing Jet Center W&B revision dated 28-Jun-2019, A/C S/N 2441.
+    // The certified moment is retained directly; its computed arm is 141.422875 in.
+    basicEmptyWeight: 2156.9, basicEmptyArm: 141.4229, basicEmptyMoment: 305035,
+    maxGrossWeight: 3150, usefulLoad: 993.1,
+    // Cirrus SR20 POH P/N 11934-005, Figures 6-1 and 6-2.
+    fuelArm: 153.8, maxFuelLbs: 336, taxiFuelLbs: 9,
+    frontArm: 143.5, rearArm: 180.0, bag1Arm: 208.0, bag2Arm: 0,
+    bag1Max: 130, bag2Max: 0, hasRear: true, hasBag2: false,
+    frontLabel: 'Front Seat Occupants', rearLabel: 'Rear Seat Occupants',
+    bag1Label: 'Baggage Area', bag2Label: '', fuelLabel: 'Usable Fuel (wings)',
+    // SR20 G6 normal-category envelope, POH P/N 11934-005 Figure 2-1.
+    cgEnvelope: [
+      { weight: 2100, fwd: 137.8, aft: 148.1 },
+      { weight: 2700, fwd: 139.1, aft: 148.1 },
+      { weight: 3150, fwd: 141.1, aft: 148.1 },
+    ],
+  },
 ];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -620,7 +639,7 @@ export default function WeightBalance() {
     return { fm, rm, b1m, b2m, zfw, zA, zM, fM, rW, rA, rM, tM, toW, toA, toM, bM, lW, lA, lM, toOk, lOk, ok: toOk && lOk };
   }, [ac, fw, rw, b1, b2, fuel, burn, taxi]);
 
-  const vaBase = ac.model.startsWith('PA-') ? 111 : ac.model === 'C152' ? 88 : ac.model === 'C172-180' ? 104 : 99;
+  const vaBase = ac.model === 'SR20-G6' ? 133 : ac.model.startsWith('PA-') ? 111 : ac.model === 'C152' ? 88 : ac.model === 'C172-180' ? 104 : 99;
   const vaTo = c.toW > 0 ? vaBase * Math.sqrt(c.toW / ac.maxGrossWeight) : 0;
   const vaLd = c.lW > 0 ? vaBase * Math.sqrt(c.lW / ac.maxGrossWeight) : 0;
 
