@@ -57,7 +57,7 @@ function getTheme(condition: string, isNight: boolean, windKt: number): WeatherT
         base.blobs = [
           { color: '#3b82f6', size: 'w-96 h-96', position: '-top-48 -left-48', opacity: 0.15 },
           { color: '#d4af37', size: 'w-72 h-72', position: 'top-1/3 right-0', opacity: 0.12 },
-          { color: '#8b5cf6', size: 'w-80 h-80', position: 'bottom-0 left-1/4', opacity: 0.12 },
+          { color: '#1e3a5f', size: 'w-80 h-80', position: 'bottom-0 left-1/4', opacity: 0.12 },
           { color: '#d4af37', size: 'w-64 h-64', position: 'bottom-1/4 right-1/4', opacity: 0.1 },
         ];
       }
@@ -68,7 +68,7 @@ function getTheme(condition: string, isNight: boolean, windKt: number): WeatherT
       base.blobs = [
         { color: '#3b82f6', size: 'w-96 h-96', position: '-top-48 -left-48', opacity: 0.12 },
         { color: '#d4af37', size: 'w-72 h-72', position: 'top-1/3 right-0', opacity: 0.08 },
-        { color: '#8b5cf6', size: 'w-80 h-80', position: 'bottom-0 left-1/4', opacity: 0.1 },
+        { color: '#1e3a5f', size: 'w-80 h-80', position: 'bottom-0 left-1/4', opacity: 0.1 },
         { color: '#64748b', size: 'w-64 h-64', position: 'bottom-1/4 right-1/4', opacity: 0.08 },
       ];
       base.showClouds = true;
@@ -133,7 +133,7 @@ function getTheme(condition: string, isNight: boolean, windKt: number): WeatherT
       base.blobs = [
         { color: '#3b82f6', size: 'w-96 h-96', position: '-top-48 -left-48', opacity: 0.15 },
         { color: '#d4af37', size: 'w-72 h-72', position: 'top-1/3 right-0', opacity: 0.12 },
-        { color: '#8b5cf6', size: 'w-80 h-80', position: 'bottom-0 left-1/4', opacity: 0.12 },
+        { color: '#1e3a5f', size: 'w-80 h-80', position: 'bottom-0 left-1/4', opacity: 0.12 },
         { color: '#3b82f6', size: 'w-64 h-64', position: 'bottom-1/4 right-1/4', opacity: 0.1 },
       ];
   }
@@ -277,7 +277,8 @@ export default function WeatherBackground() {
   const animDuration = baseDuration / theme.animSpeedMultiplier;
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 weather-bg-transition">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 weather-bg-transition" style={{ opacity: 0.6 }}>
+      <div className="absolute inset-0 chart-grid" />
       {/* Blobs */}
       {theme.blobs.map((blob, i) => (
         <div

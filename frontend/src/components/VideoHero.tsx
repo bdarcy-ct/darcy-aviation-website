@@ -27,7 +27,8 @@ export default function VideoHero() {
         className="absolute inset-0 w-full h-full object-cover"
       />
       {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-navy-900/70 via-navy-900/50 to-navy-900/90" />
+      <div className="absolute inset-0 bg-gradient-to-r from-navy-900/90 via-navy-900/55 to-navy-900/10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy-900/60 via-transparent to-navy-900" />
     </div>
   );
 }

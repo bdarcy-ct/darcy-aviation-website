@@ -140,10 +140,11 @@ export default function About() {
       />
       {/* About Hero */}
       <SectionWrapper>
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}>
+        <div className="page-header">
+          <div className="eyebrow">About us</div>
+          <h1 className="page-title">
             About{' '}
-            <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">Darcy Aviation</span>
+            <span className="text-gold">Darcy Aviation</span>
           </h1>
           <p className="section-subtitle">
             A passion for flight. A commitment to excellence. Your home airport at KDXR.
@@ -167,11 +168,11 @@ export default function About() {
                 </p>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-aviation-blue/20 to-gold/20 rounded-2xl p-8 text-center">
+            <div className="border border-gold/25 bg-gold/[0.05] rounded-xl p-8 text-center">
               <div className="text-aviation-blue mb-4 flex justify-center">
                 <PlaneIcon />
               </div>
-              <div className="text-5xl font-extrabold bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent mb-2">
+              <div className="text-5xl font-extrabold text-gold mb-2">
                 Est. 2019
               </div>
               <p className="text-slate-400">Danbury Municipal Airport</p>
@@ -195,7 +196,7 @@ export default function About() {
                   <img src={member.photo} alt={member.name} className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-aviation-blue to-gold mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full border border-gold/40 bg-navy-800 ring-4 ring-gold/[0.06] text-gold mx-auto mb-4 flex items-center justify-center">
                   <PilotIcon />
                 </div>
               )}

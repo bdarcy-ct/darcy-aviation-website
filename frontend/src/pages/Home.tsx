@@ -9,6 +9,7 @@ import { TestimonialSkeleton } from '../components/Skeleton';
 import VideoHero from '../components/VideoHero';
 import ReviewCarousel from '../components/ReviewCarousel';
 import { useCmsContent } from '../hooks/useCmsContent';
+import { useExperiences } from '../hooks/useExperiences';
 
 interface Testimonial {
   id: number;
@@ -32,6 +33,29 @@ interface ServiceTile {
 
 export default function Home() {
   const { get: cms } = useCmsContent();
+  const { experiences } = useExperiences();
+
+  // Experiences board + discovery pricing come from the CMS so prices never drift
+  const fallbackBoard = [
+    { title: 'Discovery Flight', duration: '~30 minutes', price: '$279' },
+    { title: 'Candlewood Lake Tour', duration: '~45 minutes', price: '$290' },
+    { title: 'West Point & Hudson River Tour', duration: '~1 hour', price: '$379' },
+    { title: 'NYC Skyline Tour', duration: '~1.5 hours', price: '$550' },
+    { title: 'City Lights Night Tour', duration: '~1.5 hours', price: '$680' },
+  ];
+  const board = experiences.length > 0
+    ? experiences.map((exp) => ({
+        title: exp.title,
+        duration: (exp.highlights || []).find((h) => /min|hour/i.test(h)) || '—',
+        price: exp.price,
+      }))
+    : fallbackBoard;
+  const discoveryExp = experiences.find((exp) => exp.slug === 'discovery-flight');
+  const discovery = {
+    title: discoveryExp?.title || 'Discovery Flight',
+    price: discoveryExp?.price || '$279',
+    duration: (discoveryExp?.highlights || []).find((h) => /min|hour/i.test(h)) || '~30 min',
+  };
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [serviceTiles, setServiceTiles] = useState<ServiceTile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,281 +250,296 @@ export default function Home() {
         })}</script>
       </Helmet>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Looping hero videos */}
+      {/* ============================ HERO ============================ */}
+      <section className="relative min-h-[100svh] flex items-end overflow-hidden">
         <VideoHero />
+        <div className="absolute inset-0 film-grain pointer-events-none" />
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto pt-24 sm:pt-0">
-          {/* Logo */}
-          <div className="mb-6">
-            <img src="/logo-darcy-v3.png?v=1772822630" alt="Darcy Aviation" className="w-40 sm:w-52 mx-auto drop-shadow-2xl" />
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10 md:pb-12">
+          <div className="grid lg:grid-cols-12 gap-10 items-end">
+            {/* Headline column */}
+            <div className="lg:col-span-8">
+              <div className="flex flex-wrap items-center gap-3 animate-rise" style={{ animationDelay: '80ms' }}>
+                <span className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-navy-900/50 backdrop-blur px-3.5 py-1.5 text-[12.5px] text-slate-200">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                  </span>
+                  {cms('hero', 'badge_text', 'Now accepting students at KDXR — Danbury, CT')}
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/[0.08] px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-gold">
+                  FAA Certified
+                </span>
+              </div>
+
+              <h1
+                className="mt-7 font-extrabold text-white leading-[0.94] text-[2.9rem] sm:text-6xl md:text-7xl xl:text-[5.4rem] animate-rise"
+                style={{ animationDelay: '180ms', textShadow: '0 10px 40px rgba(0,0,0,0.35)' }}
+              >
+                Take flight at
+                <span className="block text-gold">Darcy Aviation.</span>
+              </h1>
+
+              <p className="mt-7 max-w-xl text-lg md:text-xl text-slate-200/90 leading-relaxed animate-rise" style={{ animationDelay: '280ms' }}>
+                {cms('hero', 'subheadline', "Connecticut's premier flight training destination. Professional instruction, premium fleet, and unforgettable scenic tours at Danbury Municipal Airport.")}
+              </p>
+
+              <div className="mt-9 flex flex-col sm:flex-row sm:items-center gap-3 animate-rise" style={{ animationDelay: '380ms' }}>
+                <Link to="/experiences" className="btn-gold text-base !py-3.5 group">
+                  <svg className="w-4 h-4 transition-transform group-hover:-rotate-12" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                  Book an Experience
+                </Link>
+                <Link to="/training" className="btn-blue text-base !py-3.5 backdrop-blur-sm">
+                  Learn to Fly
+                </Link>
+                <div className="flex items-center gap-6 sm:ml-4 pt-2 sm:pt-0">
+                  <Link to="/fleet" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-slate-200 hover:text-gold">
+                    Our Fleet
+                    <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </Link>
+                  <Link to="/maintenance" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-slate-200 hover:text-gold">
+                    Maintenance
+                    <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Discovery flight "boarding pass" */}
+            <div className="hidden lg:block lg:col-span-4 animate-rise" style={{ animationDelay: '520ms' }}>
+              <Link to="/experiences" className="group block rounded-xl border border-white/15 bg-navy-900/60 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40 hover:border-gold/50 transition-colors">
+                <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">
+                  <span>First flight</span>
+                  <span className="text-gold">KDXR ⟶ KDXR</span>
+                </div>
+                <div className="px-5 pt-5 pb-6">
+                  <div className="font-display text-2xl font-bold text-white" style={{ fontStretch: '112%' }}>{discovery.title}</div>
+                  <p className="mt-2 text-sm text-slate-400 leading-relaxed">No experience needed — you take the controls with a certified instructor beside you.</p>
+                  <div className="mt-5 grid grid-cols-3 border-y border-dashed border-white/15">
+                    <div className="py-3">
+                      <div className="data-label">Duration</div>
+                      <div className="mt-1 text-sm font-semibold text-white">{discovery.duration}</div>
+                    </div>
+                    <div className="py-3 border-x border-dashed border-white/15 px-3">
+                      <div className="data-label">Pilot</div>
+                      <div className="mt-1 text-sm font-semibold text-white">You</div>
+                    </div>
+                    <div className="py-3 pl-3">
+                      <div className="data-label">Fare</div>
+                      <div className="mt-1 text-sm font-semibold text-gold">{discovery.price}</div>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-white group-hover:text-gold transition-colors">Book your first flight</span>
+                    <span className="w-9 h-9 rounded-md bg-gold text-navy-900 flex items-center justify-center transition-transform group-hover:translate-x-1">→</span>
+                  </div>
+                </div>
+              </Link>
+            </div>
           </div>
 
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-6 backdrop-blur-sm">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-slate-300 text-sm">{cms('hero', 'badge_text', 'Now accepting students at KDXR — Danbury, CT')}</span>
+          {/* Instrument strip */}
+          <div className="mt-12 md:mt-16 grid grid-cols-2 md:grid-cols-4 border-t border-white/20 animate-rise" style={{ animationDelay: '620ms' }}>
+            {[
+              { label: 'Students trained', value: <AnimatedCounter target={600} suffix="+" /> },
+              { label: 'Open every week', value: '7 days' },
+              { label: 'Google rating', value: '4.9★' },
+              { label: 'Established', value: '2019' },
+            ].map((stat, i) => (
+              <div key={stat.label} className={'pt-5 pb-1 ' + (i % 2 === 1 ? 'pl-5 md:pl-6 ' : 'md:pl-6 ') + (i === 0 ? '!pl-0 ' : '') + (i < 3 ? 'md:border-r md:border-white/10' : '')}>
+                <div className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">{stat.label}</div>
+                <div className="mt-1.5 font-display text-[1.7rem] sm:text-3xl md:text-[2.1rem] font-bold text-white whitespace-nowrap" style={{ fontStretch: '112%' }}>{stat.value}</div>
+              </div>
+            ))}
           </div>
-          
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight" style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}>
-            Take Flight at{' '}
-            <span className="bg-gradient-to-r from-aviation-blue via-blue-400 to-gold bg-clip-text text-transparent">
-              Darcy Aviation
-            </span>
-          </h1>
-          
-          <p className="text-lg sm:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-            {cms('hero', 'subheadline', "Connecticut's premier flight training destination. Professional instruction, premium fleet, and unforgettable scenic tours at Danbury Municipal Airport.")}
-          </p>
-          
-          <div className="hidden md:flex items-center justify-center gap-3">
-            <Link to="/experiences" className="btn-gold text-base group whitespace-nowrap">
-              <span className="inline-flex items-center gap-2">
-                <svg className="w-4 h-4 transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                </svg>
-                Book an Experience
-              </span>
-            </Link>
-            <Link to="/training" className="btn-blue text-base whitespace-nowrap">
-              Learn to Fly →
-            </Link>
-            <Link to="/fleet" className="btn-blue text-base whitespace-nowrap">
-              Our Fleet →
-            </Link>
-            <Link to="/maintenance" className="btn-blue text-base whitespace-nowrap">
-              Maintenance →
-            </Link>
-          </div>
-          {/* Mobile buttons - 2x2 grid */}
-          <div className="md:hidden grid grid-cols-2 gap-3 max-w-sm mx-auto">
-            <Link to="/experiences" className="btn-gold text-sm text-center !px-4 !py-2.5">
-              Book an Experience
-            </Link>
-            <Link to="/training" className="btn-blue text-sm text-center !px-4 !py-2.5">
-              Learn to Fly
-            </Link>
-            <Link to="/fleet" className="btn-blue text-sm text-center !px-4 !py-2.5">
-              Our Fleet
-            </Link>
-            <Link to="/maintenance" className="btn-blue text-sm text-center !px-4 !py-2.5">
-              Maintenance
-            </Link>
-          </div>
-
-          {/* Quick trust badges under CTA */}
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-sm text-slate-500">
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
-              FAA Certified
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-              4.9★ on Google
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
-              600+ Students
-            </span>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
         </div>
       </section>
 
-      {/* Stats Bar with Animated Counters */}
-      <div className="relative z-10 -mt-16">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="glass-card p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">
-                <AnimatedCounter target={600} suffix="+" />
-              </div>
-              <div className="text-slate-400 text-sm mt-1">Students Trained</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">
-                7
-              </div>
-              <div className="text-slate-400 text-sm mt-1">Days a Week</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">
-                4.9★
-              </div>
-              <div className="text-slate-400 text-sm mt-1">Google Rating</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">
-                2019
-              </div>
-              <div className="text-slate-400 text-sm mt-1">Established</div>
-            </div>
+      {/* ============================ SERVICES ============================ */}
+      <SectionWrapper className="!pt-24 md:!pt-32">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+          <div>
+            <div className="eyebrow">Our Services</div>
+            <h2 className="section-title mt-5 max-w-xl">Everything you need to take to the skies.</h2>
           </div>
+          <p className="text-slate-400 max-w-sm md:text-right">Learn to fly, keep your aircraft airworthy, or just go see Connecticut from 3,000 feet.</p>
         </div>
-      </div>
-
-      {/* Services */}
-      <SectionWrapper>
-        <div className="text-center mb-12">
-          <h2 className="section-title">Our Services</h2>
-          <p className="section-subtitle">Everything you need to take to the skies</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {services.map((service: any, i: number) => (
             <Link key={i} to={service.link} className="block group h-full">
-              <GlassCard delay={i * 100} className="h-full overflow-hidden">
-                {service.images && service.images.length > 0 && (
-                  <div className="relative w-full h-40 -mx-5 -mt-5 mb-4 overflow-hidden rounded-t-xl" style={{ width: 'calc(100% + 2.5rem)' }}>
-                    {service.images.map((src: string, imgIdx: number) => (
+              <GlassCard delay={i * 100} className="h-full !p-0 overflow-hidden flex flex-col">
+                <div className="relative h-60 overflow-hidden">
+                  {service.images && service.images.length > 0 ? (
+                    service.images.map((src: string, imgIdx: number) => (
                       <img
                         key={src}
                         src={src}
                         alt={service.title}
-                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                          imgIdx === (tileIndices[i] || 0) % service.images.length ? 'opacity-100' : 'opacity-0'
-                        }`}
+                        loading="lazy"
+                        className={'absolute inset-0 w-full h-full object-cover transition-all duration-1000 group-hover:scale-[1.04] ' +
+                          (imgIdx === (tileIndices[i] || 0) % service.images.length ? 'opacity-100' : 'opacity-0')}
                       />
-                    ))}
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
-                  </div>
-                )}
-                {!service.images && (
-                  <div className="text-aviation-blue mb-4 transition-transform group-hover:scale-110 group-hover:text-gold duration-300">{service.icon}</div>
-                )}
-                <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-gold transition-colors">{service.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{service.desc}</p>
-                <span className="inline-flex items-center gap-1 text-gold text-sm mt-4 font-medium group-hover:gap-2 transition-all">
-                  Learn More
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                </span>
+                    ))
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-gold">{service.icon}</div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/20 to-transparent" />
+                  <span className="absolute top-4 left-4 font-mono text-[11px] tracking-[0.2em] text-white/90 bg-navy-900/60 backdrop-blur px-2 py-1 rounded">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
+                <div className="p-6 pt-2 flex flex-col flex-1">
+                  <h3 className="text-2xl font-bold text-white group-hover:text-gold transition-colors">{service.title}</h3>
+                  <p className="mt-3 text-slate-400 text-[15px] leading-relaxed flex-1">{service.desc}</p>
+                  <span className="mt-6 pt-4 border-t hairline inline-flex items-center justify-between text-sm font-semibold text-white">
+                    Learn more
+                    <span className="text-gold transition-transform group-hover:translate-x-1">→</span>
+                  </span>
+                </div>
               </GlassCard>
             </Link>
           ))}
         </div>
       </SectionWrapper>
 
-      {/* Why Darcy */}
+      {/* ============================ WHY DARCY ============================ */}
       <SectionWrapper>
-        <div className="text-center mb-12">
-          <h2 className="section-title">Why Choose Darcy Aviation</h2>
-          <p className="section-subtitle">What sets us apart from the rest</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {whyDarcy.map((item, i) => (
-            <GlassCard key={i} delay={i * 100}>
-              <div className="w-12 h-12 rounded-xl bg-aviation-blue/10 flex items-center justify-center text-aviation-blue mb-4">
-                {item.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
-            </GlassCard>
-          ))}
-        </div>
-      </SectionWrapper>
-
-      {/* Reviews */}
-      <SectionWrapper>
-        <div className="text-center mb-12">
-          <h2 className="section-title">What Our Students Say</h2>
-          <p className="section-subtitle">Real reviews from Google and our community</p>
-        </div>
-        <div className="max-w-3xl mx-auto">
-          {loading ? (
-            <TestimonialSkeleton />
-          ) : testimonials.length > 0 ? (
-            <ReviewCarousel reviews={testimonials} />
-          ) : null}
-        </div>
-      </SectionWrapper>
-
-      {/* Experience Teaser */}
-      <SectionWrapper>
-        <div className="glass-card p-8 md:p-12 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-gold/5 to-aviation-blue/5" />
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Unforgettable Flying Experiences
-              </h2>
-              <p className="text-slate-300 leading-relaxed mb-6">
-                From your first discovery flight to a breathtaking night tour over the Manhattan skyline — 
-                we offer five unique flying experiences for every occasion.
-              </p>
-              <div className="flex flex-wrap gap-3 mb-6">
-                {['Discovery Flight $279', 'Candlewood Lake $290', 'West Point $379', 'NYC Skyline $550', 'City Lights $680'].map((exp) => (
-                  <span key={exp} className="text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-slate-300">
-                    {exp}
-                  </span>
-                ))}
-              </div>
-              <Link to="/experiences" className="btn-gold">
-                View All Experiences
+        <div className="grid lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-4">
+            <div className="lg:sticky lg:top-32">
+              <div className="eyebrow">Why Darcy</div>
+              <h2 className="section-title mt-5">Why choose Darcy Aviation</h2>
+              <p className="text-slate-400 text-lg leading-relaxed">What sets us apart from the rest — and why 600+ students have trained with us at KDXR.</p>
+              <Link to="/about" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-gold hover:text-gold-light">
+                Meet the team <span>→</span>
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="glass-card p-4 text-center">
-                <div className="text-3xl font-bold text-gold mb-1">5</div>
-                <div className="text-slate-400 text-sm">Unique Tours</div>
-              </div>
-              <div className="glass-card p-4 text-center">
-                <div className="text-3xl font-bold text-aviation-blue mb-1">$279</div>
-                <div className="text-slate-400 text-sm">Starting From</div>
-              </div>
-              <div className="glass-card p-4 text-center">
-                <div className="text-3xl font-bold text-white mb-1">NYC</div>
-                <div className="text-slate-400 text-sm">Skyline Tours</div>
-              </div>
-              <div className="glass-card p-4 text-center">
-                <div className="text-3xl font-bold text-gold mb-1">
-                  <svg className="w-8 h-8 mx-auto" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                  </svg>
+          </div>
+          <div className="lg:col-span-8 grid sm:grid-cols-2 border-t border-l hairline">
+            {whyDarcy.map((item, i) => (
+              <div key={i} className="group relative border-b border-r hairline p-7 md:p-9 transition-colors hover:bg-white/[0.02]">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="w-11 h-11 rounded-md border border-gold/30 bg-gold/[0.07] flex items-center justify-center text-gold">
+                    {item.icon}
+                  </div>
+                  <span className="font-mono text-[11px] tracking-[0.2em] text-slate-600 group-hover:text-gold/80 transition-colors">
+                    {String(i + 1).padStart(2, '0')} / {String(whyDarcy.length).padStart(2, '0')}
+                  </span>
                 </div>
-                <div className="text-slate-400 text-sm">Gift Cards</div>
+                <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-slate-400 leading-relaxed">{item.desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </SectionWrapper>
+
+      {/* ============================ REVIEWS ============================ */}
+      <SectionWrapper>
+        <div className="grid lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-4">
+            <div className="eyebrow">Reviews</div>
+            <h2 className="section-title mt-5">What our students say</h2>
+            <p className="text-slate-400 leading-relaxed">Real reviews from Google and our community.</p>
+            <div className="mt-8 flex items-end gap-4">
+              <div className="font-display text-6xl font-extrabold text-white leading-none" style={{ fontStretch: '115%' }}>4.9</div>
+              <div className="pb-1">
+                <div className="flex gap-0.5 text-gold" aria-hidden="true">
+                  {[0, 1, 2, 3, 4].map((n) => (
+                    <svg key={n} className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                  ))}
+                </div>
+                <div className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Google rating</div>
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-8">
+            {loading ? (
+              <TestimonialSkeleton />
+            ) : testimonials.length > 0 ? (
+              <ReviewCarousel reviews={testimonials} />
+            ) : null}
+          </div>
+        </div>
+      </SectionWrapper>
+
+      {/* ============================ EXPERIENCES BOARD ============================ */}
+      <SectionWrapper>
+        <div className="glass-card overflow-hidden">
+          <div className="grid lg:grid-cols-12">
+            <div className="lg:col-span-5 p-8 md:p-12 border-b lg:border-b-0 lg:border-r hairline flex flex-col">
+              <div className="eyebrow">Experiences</div>
+              <h2 className="section-title mt-5">Unforgettable flying experiences</h2>
+              <p className="text-slate-300 leading-relaxed">
+                From your first discovery flight to a breathtaking night tour over the Manhattan skyline —
+                we offer unique flying experiences for every occasion.
+              </p>
+              <div className="mt-auto pt-10 flex flex-col sm:flex-row gap-3">
+                <Link to="/experiences" className="btn-gold">View All Experiences</Link>
+                <a href="https://www.flightcircle.com/shop/97822f668fb9/4000001831" target="_blank" rel="noopener noreferrer" className="btn-blue">
+                  Gift Cards
+                </a>
+              </div>
+            </div>
+            <div className="lg:col-span-7">
+              <div className="hidden sm:grid grid-cols-12 px-6 md:px-8 py-3 border-b hairline font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 bg-navy-950/40">
+                <span className="col-span-1">No.</span>
+                <span className="col-span-6">Flight</span>
+                <span className="col-span-3">Time</span>
+                <span className="col-span-2 text-right">Fare</span>
+              </div>
+              {board.map((row, i) => (
+                <Link
+                  key={row.title}
+                  to="/experiences"
+                  className="group grid grid-cols-12 items-center gap-y-1 px-6 md:px-8 py-4 border-b last:border-b-0 hairline hover:bg-gold/[0.04] transition-colors"
+                >
+                  <span className="col-span-2 sm:col-span-1 font-mono text-xs text-slate-500 group-hover:text-gold">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="col-span-7 sm:col-span-6 font-semibold text-white group-hover:text-gold transition-colors">{row.title}</span>
+                  <span className="hidden sm:block col-span-3 font-mono text-xs text-slate-400">{row.duration}</span>
+                  <span className="col-span-3 sm:col-span-2 text-right font-mono text-sm font-medium text-gold">{row.price}</span>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
       </SectionWrapper>
 
-      {/* CTA Banner */}
-      <SectionWrapper>
-        <div className="glass-card p-8 md:p-12 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-aviation-blue/10 to-gold/10" />
-          <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      {/* ============================ CTA ============================ */}
+      <section className="relative mt-10 overflow-hidden">
+        <img src="/images/scenic/scenic-4.jpg" alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/85 to-navy-900/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-transparent to-navy-900/60" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+          <div className="max-w-2xl">
+            <div className="eyebrow">Cleared for takeoff</div>
+            <h2 className="section-title mt-5 !text-4xl md:!text-5xl">
               {cms('cta', 'headline', 'Ready to Start Your Aviation Journey?')}
             </h2>
-            <p className="text-slate-300 text-lg mb-8 max-w-xl mx-auto">
+            <p className="text-slate-300 text-lg leading-relaxed mb-10">
               {cms('cta', 'subheadline', "Whether you're dreaming of your private pilot license or looking for a unique gift, we're here to help you take flight.")}
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/experiences" className="btn-gold text-lg">
-                Book a Discovery Flight — $279
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link to="/experiences" className="btn-gold text-base !py-3.5">
+                Book a Discovery Flight — {discovery.price}
               </Link>
               <a
                 href="https://www.flightcircle.com/shop/97822f668fb9/4000001759"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-blue text-lg"
+                className="btn-blue text-base !py-3.5"
               >
-                <span className="inline-flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                  </svg>
-                  Gift Cards
-                </span>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                </svg>
+                Gift Cards
               </a>
             </div>
           </div>
         </div>
-      </SectionWrapper>
+      </section>
     </div>
   );
 }

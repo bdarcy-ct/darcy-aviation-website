@@ -82,7 +82,7 @@ function TrainingPage() {
       slug: '/training/multi-engine',
       desc: cms('multiengine_desc', 'Expand your capabilities with twin-engine aircraft training. Essential for airline and charter careers.'),
       icon: (
-        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 12L3.269 3.126A59.768 59.768 0 0721.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+        <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
       ),
       highlights: ['Twin-engine proficiency', 'Engine-out procedures', 'Systems management'],
     },
@@ -172,10 +172,11 @@ const faqs = [
       />
       {/* Hero */}
       <SectionWrapper>
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}>
+        <div className="page-header">
+          <div className="eyebrow">Flight training</div>
+          <h1 className="page-title">
             Flight Training{' '}
-            <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">Programs</span>
+            <span className="text-gold">Programs</span>
           </h1>
           <p className="section-subtitle">
             {cms('subheadline', 'From your first flight to career-ready certifications. Professional instruction tailored to your goals.')}
@@ -188,7 +189,7 @@ const faqs = [
             <Link key={i} to={program.slug} className="block group">
               <GlassCard delay={i * 100} className={`h-full ${program.featured ? '!border-gold/30 relative' : ''}`}>
                 {program.featured && (
-                  <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
+                  <div className="absolute -top-3 right-6 bg-gold text-navy-900 font-mono text-[10px] tracking-[0.16em] font-medium px-2.5 py-1 rounded">
                     MOST POPULAR
                   </div>
                 )}
@@ -231,7 +232,7 @@ const faqs = [
             {timelineSteps.map((step, i) => (
               <GlassCard key={i} delay={i * 150} className={`md:w-5/12 ${i % 2 === 0 ? 'md:ml-auto md:mr-4' : 'md:mr-auto md:ml-4'} relative`}>
                 {/* Connector dot */}
-                <div className="hidden md:block absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gradient-to-r from-aviation-blue to-gold border-2 border-navy-900 z-10"
+                <div className="hidden md:block absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gold border-2 border-navy-900 z-10"
                   style={{ [i % 2 === 0 ? 'left' : 'right']: '-2.5rem' }}
                 />
                 <div className="flex items-start gap-4">

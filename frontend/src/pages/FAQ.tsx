@@ -129,10 +129,11 @@ export default function FAQ() {
         path="/faq"
       />
       <SectionWrapper>
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}>
+        <div className="page-header">
+          <div className="eyebrow">Questions & answers</div>
+          <h1 className="page-title">
             Frequently Asked{' '}
-            <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">Questions</span>
+            <span className="text-gold">Questions</span>
           </h1>
           <p className="section-subtitle">
             Everything you need to know about flight training, costs, scheduling, and maintenance.
@@ -194,7 +195,7 @@ export default function FAQ() {
       {/* CTA */}
       <SectionWrapper>
         <div className="glass-card p-8 md:p-12 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-aviation-blue/10 to-gold/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-gold/[0.06] to-transparent" />
           <div className="relative z-10">
             <h2 className="text-3xl font-bold text-white mb-4">Still Have Questions?</h2>
             <p className="text-slate-300 mb-8 max-w-xl mx-auto">

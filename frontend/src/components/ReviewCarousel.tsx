@@ -64,7 +64,7 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Quote mark */}
-      <div className="absolute top-4 left-8 text-6xl text-aviation-blue/20 font-serif select-none">"</div>
+      <div className="absolute top-4 left-8 text-7xl text-gold/25 font-serif select-none">"</div>
       
       <div className={`relative z-10 transition-all duration-300 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
         {/* Stars */}

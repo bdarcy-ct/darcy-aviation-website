@@ -14,17 +14,6 @@ const flightCircleLinks: Record<string, string> = {
   'simulator-intro': 'https://www.flightcircle.com/shop/97822f668fb9/4000001845',
 };
 
-// Glow colors for each tile (always-on, intensify on hover)
-const tileGlowColors = [
-  { gradient: 'from-blue-500 to-cyan-500', shadow: 'rgba(59,130,246,0.3)', shadowHover: 'rgba(59,130,246,0.5)' },
-  { gradient: 'from-violet-500 to-purple-500', shadow: 'rgba(139,92,246,0.3)', shadowHover: 'rgba(139,92,246,0.5)' },
-  { gradient: 'from-emerald-500 to-teal-500', shadow: 'rgba(16,185,129,0.3)', shadowHover: 'rgba(16,185,129,0.5)' },
-  { gradient: 'from-amber-500 to-orange-500', shadow: 'rgba(245,158,11,0.3)', shadowHover: 'rgba(245,158,11,0.5)' },
-  { gradient: 'from-pink-500 to-rose-500', shadow: 'rgba(236,72,153,0.3)', shadowHover: 'rgba(236,72,153,0.5)' },
-  { gradient: 'from-indigo-500 to-blue-500', shadow: 'rgba(99,102,241,0.3)', shadowHover: 'rgba(99,102,241,0.5)' },
-  { gradient: 'from-cyan-500 to-sky-500', shadow: 'rgba(6,182,212,0.3)', shadowHover: 'rgba(6,182,212,0.5)' },
-  { gradient: 'from-rose-500 to-red-500', shadow: 'rgba(244,63,94,0.3)', shadowHover: 'rgba(244,63,94,0.5)' },
-];
 
 // Default icon mapped by slug
 const defaultIcons: Record<string, JSX.Element> = {
@@ -151,10 +140,11 @@ function ExperiencesPage() {
       />
       {/* Hero */}
       <SectionWrapper>
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}>
+        <div className="page-header">
+          <div className="eyebrow">Flying experiences</div>
+          <h1 className="page-title">
             Book an{' '}
-            <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">
+            <span className="text-gold">
               Experience
             </span>
           </h1>
@@ -167,22 +157,18 @@ function ExperiencesPage() {
         {/* Experience Tiles */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {experiences.map((exp, i) => {
-            const glow = tileGlowColors[i % tileGlowColors.length];
             return (
               <a key={i} href={(exp as any).booking_url || flightCircleLinks[exp.slug] || '#'} target="_blank" rel="noopener noreferrer" className="block group relative">
-                {/* Always-on glow */}
-                <div
-                  className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
-                  style={{ background: `radial-gradient(ellipse at center, ${glow.shadow}, transparent 70%)` }}
-                />
-                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${glow.gradient} opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 pointer-events-none`} />
-                <GlassCard delay={i * 100} className={`h-full relative ${exp.featured ? '!border-gold/30' : ''}`}>
+                <GlassCard delay={i * 100} className={`h-full relative flex flex-col ${exp.featured ? '!border-gold/40' : ''}`}>
                   {exp.featured && (
-                    <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-dark to-gold text-navy-900 text-xs font-bold px-3 py-1 rounded-full">
+                    <div className="absolute -top-3 right-6 bg-gold text-navy-900 font-mono text-[10px] tracking-[0.16em] font-medium px-2.5 py-1 rounded">
                       {i === 0 ? 'MOST POPULAR' : 'UNFORGETTABLE'}
                     </div>
                   )}
-                  <div className="mb-4">{exp.icon}</div>
+                  <div className="mb-5 flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-md border border-gold/25 bg-gold/[0.06] flex items-center justify-center [&_svg]:w-6 [&_svg]:h-6">{exp.icon}</div>
+                    <span className="font-mono text-[11px] tracking-[0.2em] text-slate-600">{String(i + 1).padStart(2, '0')}</span>
+                  </div>
                   <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-gold transition-colors">{exp.title}</h3>
                   <p className="text-slate-400 text-sm leading-relaxed mb-4">{exp.description}</p>
                   <ul className="space-y-2 mb-4">
@@ -195,14 +181,14 @@ function ExperiencesPage() {
                       </li>
                     ))}
                   </ul>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-gold-dark to-gold text-navy-900 font-bold text-sm px-4 py-2 rounded-lg group-hover:shadow-lg group-hover:shadow-gold/25 transition-all">
+                  <div className="flex items-center justify-between mt-auto pt-5 border-t hairline">
+                    <span className="inline-flex items-center gap-1 bg-gold text-navy-900 font-semibold text-sm px-4 py-2 rounded-md group-hover:bg-gold-light transition-all">
                       Book Now
                       <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </span>
-                    <span className="text-gold font-semibold text-sm">{exp.price}</span>
+                    <span className="font-mono text-lg font-medium text-gold">{exp.price}</span>
                   </div>
                 </GlassCard>
               </a>
@@ -211,11 +197,6 @@ function ExperiencesPage() {
 
           {/* Contact Us tile */}
           <Link to="/contact" className="block group relative">
-            <div
-              className="absolute -inset-1 rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.3), transparent 70%)' }}
-            />
-            <div className="absolute top-0 left-0 right-0 rounded-2xl bg-gradient-to-b from-indigo-500 to-blue-500 opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 pointer-events-none" />
             <GlassCard delay={(experiences.length + 2) * 100} className="h-full relative flex flex-col items-center justify-center text-center">
               <div className="mb-4">
                 <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
