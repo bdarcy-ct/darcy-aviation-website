@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { initializeDatabase, startAutomaticBackups } from './database';
+import { uploadsDir, bundledUploadsDir } from './paths';
 import fleetRoutes from './routes/fleet';
 import testimonialRoutes from './routes/testimonials';
 // bookings and contact routes removed — bookings via FlightCircle, contact via email
@@ -85,7 +86,9 @@ app.all('/api/*', (_req, res) => {
 
 // Serve uploaded media files (accessible at /uploads/...)
 // Check Railway volume first, fallback to local
-const uploadsDir = fs.existsSync('/data/uploads') ? '/data/uploads' : path.join(__dirname, '../uploads');
+// Web-optimized bundled copies win (same filenames, ~10x smaller); everything else
+// comes from the volume. Either one alone keeps the photos working.
+app.use('/uploads', express.static(bundledUploadsDir, { maxAge: '7d' }));
 app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
 
 // Serve frontend in production

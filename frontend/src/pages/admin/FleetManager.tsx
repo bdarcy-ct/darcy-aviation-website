@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useToast } from '../../components/admin/Toast';
+import { resizeImage } from '../../utils/resizeImage';
 
 interface Aircraft {
   id: number;
@@ -94,9 +95,10 @@ const FleetManager: React.FC = () => {
     let uploaded = 0;
     let failed = 0;
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file.type.startsWith('image/')) { failed++; continue; }
+      const original = files[i];
+      if (!original.type.startsWith('image/')) { failed++; continue; }
       try {
+        const file = await resizeImage(original);
         const fd = new FormData();
         fd.append('file', file);
         const res = await fetch('/api/admin/media/upload', {
@@ -115,7 +117,7 @@ const FleetManager: React.FC = () => {
           failed++;
         }
       } catch (err) {
-        console.error('Upload exception for:', file.name, err);
+        console.error('Upload exception for:', original.name, err);
         failed++;
       }
     }
@@ -141,6 +143,25 @@ const FleetManager: React.FC = () => {
     setForm({ ...form, images: imgs });
   };
 
+  const moveAircraft = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= fleet.length) return;
+    const next = [...fleet];
+    [next[index], next[target]] = [next[target], next[index]];
+    setFleet(next);
+    try {
+      const res = await fetch('/api/admin/fleet/reorder', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: next.map((a) => a.id) }),
+      });
+      if (!res.ok) throw new Error('reorder failed');
+    } catch {
+      toast('error', 'Could not save the new order');
+      await fetchFleet();
+    }
+  };
+
   const toggleAvail = async (id: number) => {
     try {
       await fetch(`/api/admin/fleet/${id}/toggle`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
@@ -164,7 +185,7 @@ const FleetManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Fleet Manager</h1>
-          <p className="text-slate-300 text-sm sm:text-base">Manage your aircraft fleet — add multiple photos that cycle on the tile</p>
+          <p className="text-slate-300 text-sm sm:text-base">Use ▲▼ to set the order on the Fleet page. Photos are resized automatically — upload straight from your phone.</p>
         </div>
         <button onClick={startAdd} className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap">+ Add Aircraft</button>
       </div>
@@ -267,10 +288,14 @@ const FleetManager: React.FC = () => {
       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 sm:p-6">
         {fleet.length > 0 ? (
           <div className="space-y-4">
-            {fleet.map(a => (
+            {fleet.map((a, idx) => (
               <div key={a.id} className="bg-white/10 border border-white/20 rounded-lg p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex flex-col gap-1 flex-shrink-0">
+                      <button onClick={() => moveAircraft(idx, -1)} disabled={idx === 0} title="Move up" aria-label={'Move ' + a.name + ' up'} className="w-7 h-6 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-xs disabled:opacity-25 disabled:cursor-not-allowed">▲</button>
+                      <button onClick={() => moveAircraft(idx, 1)} disabled={idx === fleet.length - 1} title="Move down" aria-label={'Move ' + a.name + ' down'} className="w-7 h-6 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-xs disabled:opacity-25 disabled:cursor-not-allowed">▼</button>
+                    </div>
                     {(a.images?.length > 0 || a.image_url) ? (
                       <img src={a.images?.[0] || a.image_url} alt={a.name} className="w-16 h-12 rounded-lg object-cover flex-shrink-0 border border-white/10" />
                     ) : (
@@ -279,7 +304,7 @@ const FleetManager: React.FC = () => {
                     <span className={`w-3 h-3 rounded-full flex-shrink-0 ${a.available ? 'bg-green-400' : 'bg-red-400'}`} />
                     <div className="min-w-0">
                       <h3 className="text-white font-medium truncate">{a.name}</h3>
-                      <p className="text-slate-400 text-sm">{a.type} • {a.seats} seats • {a.images?.length || 0} photos</p>
+                      <p className="text-slate-400 text-sm">{a.type} • {a.seats} seats{a.horsepower ? ' • ' + a.horsepower + ' HP' : ''} • {a.images?.length || 0} photo{(a.images?.length || 0) === 1 ? '' : 's'}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">

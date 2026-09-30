@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { SOP_SEED_SECTIONS } from './sopSeed';
+import { DARCY_FLEET, DARCY_TEAM, SNAPSHOT_DATE } from './seed/darcyContent';
 
 // Railway exposes the attached persistent volume path explicitly. Falling back to
 // a generic /data directory can silently put the CMS on ephemeral storage in
@@ -86,6 +87,56 @@ export function startAutomaticBackups(): void {
     });
   }, 24 * 60 * 60 * 1000);
   dailyTimer.unref();
+}
+
+// The generic placeholder fleet older versions seeded into an empty database.
+const GENERIC_FLEET_NAMES = ['Cessna 172 Skyhawk', 'Piper PA-28 Warrior', 'Multi-Engine Trainer', 'Full-Motion Simulator'];
+
+function insertSnapshotFleet(): void {
+  const insert = db.prepare(`
+    INSERT INTO fleet (name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, images, available, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  for (const a of DARCY_FLEET) {
+    insert.run(a.name, a.type, a.engine, a.seats, a.horsepower, a.cruise_speed, a.range, a.description, a.image_url, JSON.stringify(a.images), a.available, a.sort_order);
+  }
+}
+
+function insertSnapshotTeam(): void {
+  const insert = db.prepare(`
+    INSERT INTO team_members (name, role, bio, photo_url, sort_order, is_active)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  for (const m of DARCY_TEAM) {
+    insert.run(m.name, m.role, m.bio, m.photo_url, m.sort_order, m.is_active);
+  }
+}
+
+// Seed the real fleet and instructors from the hard-coded snapshot when the CMS
+// has nothing (fresh or lost database). Also recovers a database that only holds
+// the old generic placeholder fleet and no instructors — the exact state a lost
+// volume left behind before. Real CMS data is never touched.
+export function seedFleetAndTeam(): void {
+  const fleetRows = db.prepare('SELECT name FROM fleet').all() as { name: string }[];
+  const teamCount = (db.prepare('SELECT COUNT(*) as count FROM team_members').get() as { count: number }).count;
+  const onlyGenericFleet = fleetRows.length > 0
+    && fleetRows.length <= GENERIC_FLEET_NAMES.length
+    && fleetRows.every((r) => GENERIC_FLEET_NAMES.includes(r.name));
+
+  db.transaction(() => {
+    if (fleetRows.length === 0) {
+      insertSnapshotFleet();
+      console.log(`✅ Fleet seeded from ${SNAPSHOT_DATE} snapshot (${DARCY_FLEET.length} aircraft)`);
+    } else if (onlyGenericFleet && teamCount === 0) {
+      db.prepare('DELETE FROM fleet').run();
+      insertSnapshotFleet();
+      console.log(`✅ Replaced placeholder fleet with ${SNAPSHOT_DATE} snapshot (${DARCY_FLEET.length} aircraft)`);
+    }
+    if (teamCount === 0) {
+      insertSnapshotTeam();
+      console.log(`✅ Instructors seeded from ${SNAPSHOT_DATE} snapshot (${DARCY_TEAM.length} people)`);
+    }
+  })();
 }
 
 export function initializeDatabase(): void {
@@ -339,28 +390,14 @@ export function initializeDatabase(): void {
   try { db.prepare("SELECT booking_url FROM experiences LIMIT 1").get(); }
   catch { db.exec("ALTER TABLE experiences ADD COLUMN booking_url TEXT"); }
 
-  // Seed data if tables are empty
-  const fleetCount = db.prepare('SELECT COUNT(*) as count FROM fleet').get() as { count: number };
-  if (fleetCount.count === 0) {
-    const insertFleet = db.prepare(`
-      INSERT INTO fleet (name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, available)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const fleetData = [
-      ['Cessna 172 Skyhawk', 'Single Engine', 'Lycoming IO-360-L2A', 4, 180, '124 kt', '640 nm', 'The world\'s most popular training aircraft. Reliable, forgiving, and perfect for building your foundation as a pilot.', '/images/cessna172.jpg', 1],
-      ['Piper PA-28 Warrior', 'Single Engine', 'Lycoming O-320-D3G', 4, 160, '117 kt', '522 nm', 'A proven trainer with excellent handling characteristics. Low-wing design offers a different flying perspective.', '/images/piper-warrior.jpg', 1],
-      ['Multi-Engine Trainer', 'Twin Engine', 'Dual Lycoming', 4, 360, '160 kt', '800 nm', 'Train for your multi-engine rating in our well-maintained twin-engine aircraft.', '/images/multi-engine.jpg', 1],
-      ['Full-Motion Simulator', 'Simulator', 'N/A', 2, 0, 'N/A', 'N/A', 'Practice in a risk-free environment. Our full-motion simulator is perfect for instrument training and procedure practice.', '/images/simulator.jpg', 1],
-    ];
-
-    const insertMany = db.transaction(() => {
-      for (const data of fleetData) {
-        insertFleet.run(...data);
-      }
-    });
-    insertMany();
+  try { db.prepare("SELECT sort_order FROM fleet LIMIT 1").get(); }
+  catch {
+    db.exec("ALTER TABLE fleet ADD COLUMN sort_order INTEGER DEFAULT 0");
+    db.exec("UPDATE fleet SET sort_order = id");
   }
+
+  // Real fleet + instructors from the hard-coded snapshot when the CMS is empty
+  seedFleetAndTeam();
 
   const testimonialCount = db.prepare('SELECT COUNT(*) as count FROM testimonials').get() as { count: number };
   if (testimonialCount.count === 0) {

@@ -4,13 +4,11 @@ import path from 'path';
 import fs from 'fs';
 import { authenticateAdmin } from '../../middleware/auth';
 import db from '../../database';
+import { uploadsDir } from '../../paths';
 
 const router = express.Router();
 router.use(authenticateAdmin);
 
-// Use Railway volume (/data/uploads) if available, otherwise local
-const uploadsDir = fs.existsSync('/data') ? '/data/uploads' : path.join(__dirname, '../../../uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 // Configure multer for team photos
 const storage = multer.diskStorage({
@@ -22,11 +20,36 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (/jpeg|jpg|png|webp/.test(file.mimetype)) cb(null, true);
     else cb(new Error('Only JPEG, PNG, and WebP images are allowed'));
   },
+});
+
+// Run multer and turn its errors (too large, wrong type) into readable JSON
+function photoUpload(req: any, res: any, next: any) {
+  upload.single('photo')(req, res, (err: any) => {
+    if (!err) return next();
+    const message = err.code === 'LIMIT_FILE_SIZE' ? 'Photo is too large (max 25 MB)' : (err.message || 'Photo upload failed');
+    res.status(400).json({ error: message });
+  });
+}
+
+// Reorder team — body: { ids: number[] } in the desired display order
+router.post('/reorder', (req, res) => {
+  try {
+    const ids = req.body?.ids;
+    if (!Array.isArray(ids) || ids.some((id) => !Number.isInteger(id))) {
+      return res.status(400).json({ error: 'ids must be an array of team member ids' });
+    }
+    const update = db.prepare('UPDATE team_members SET sort_order = ? WHERE id = ?');
+    db.transaction(() => { ids.forEach((id: number, i: number) => update.run(i + 1, id)); })();
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error reordering team:', error);
+    res.status(500).json({ error: 'Failed to reorder team' });
+  }
 });
 
 // GET all team members
@@ -41,7 +64,7 @@ router.get('/', (_req, res) => {
 });
 
 // POST create team member (with optional photo upload)
-router.post('/', upload.single('photo'), (req: any, res) => {
+router.post('/', photoUpload, (req: any, res) => {
   try {
     const { name, role, bio, sort_order, is_active } = req.body;
     console.log('[CMS] Team POST:', { name, role, bio, sort_order, is_active, hasFile: !!req.file });
@@ -76,7 +99,7 @@ router.post('/', upload.single('photo'), (req: any, res) => {
 });
 
 // PUT update team member (with optional photo upload)
-router.put('/:id', upload.single('photo'), (req: any, res) => {
+router.put('/:id', photoUpload, (req: any, res) => {
   try {
     const { id } = req.params;
     const { name, role, bio, sort_order, is_active } = req.body;

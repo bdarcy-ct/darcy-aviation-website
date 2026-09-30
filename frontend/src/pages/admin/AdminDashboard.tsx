@@ -169,7 +169,7 @@ export default function AdminDashboard() {
             onClick={downloadBackup}
             className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
           >
-            💾 Download Backup
+            💾 Download Backup (incl. photos)
           </button>
         </div>
       </div>

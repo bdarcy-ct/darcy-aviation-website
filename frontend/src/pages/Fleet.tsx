@@ -2,9 +2,23 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
+import { DARCY_FLEET } from '../data/darcyContent';
 import SEOHead from '../components/SEOHead';
 import { CardSkeleton } from '../components/Skeleton';
 import { useCmsSection } from '../hooks/useCmsContent';
+
+// Hard-coded fleet snapshot, used if the CMS is unreachable or empty
+const SNAPSHOT_FLEET = DARCY_FLEET.filter((a) => a.available).map((a, i) => ({
+  id: -(i + 1), name: a.name, type: a.type, engine: a.engine, seats: a.seats, horsepower: a.horsepower,
+  cruise_speed: a.cruise_speed, range: a.range, description: a.description, image_url: a.image_url,
+  images: a.images, available: a.available,
+}));
+
+// Brent often types just the number ("124"), so add the unit for display
+function formatSpeed(speed: string): string {
+  const s = (speed || '').trim();
+  return /^\d+$/.test(s) ? s + ' kt' : s || '—';
+}
 
 interface Aircraft {
   id: number;
@@ -75,8 +89,8 @@ export default function Fleet() {
         if (!res.ok) throw new Error('Failed to load fleet data');
         return res.json();
       })
-      .then((data) => { setFleet(data); setLoading(false); })
-      .catch((err) => { setError(err.message); setLoading(false); });
+      .then((data) => { setFleet(Array.isArray(data) && data.length > 0 ? data : SNAPSHOT_FLEET); setLoading(false); })
+      .catch(() => { setFleet(SNAPSHOT_FLEET); setLoading(false); });
   }, []);
 
   return (
@@ -154,8 +168,8 @@ export default function Fleet() {
                   {aircraft.type !== 'Simulator' ? (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Engine</div>
-                        <div className="text-white font-medium text-sm">{aircraft.type}</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{aircraft.engine && aircraft.engine !== 'N/A' ? 'Engine' : 'Type'}</div>
+                        <div className="text-white font-medium text-sm">{aircraft.engine && aircraft.engine !== 'N/A' ? aircraft.engine : aircraft.type}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Seats</div>
@@ -167,7 +181,7 @@ export default function Fleet() {
                       </div>
                       <div className="text-center">
                         <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Cruise</div>
-                        <div className="text-white font-medium text-sm">{aircraft.cruise_speed}</div>
+                        <div className="text-white font-medium text-sm">{formatSpeed(aircraft.cruise_speed)}</div>
                       </div>
                     </div>
                   ) : (

@@ -3,6 +3,7 @@ import GlassCard from '../components/GlassCard';
 import SectionWrapper from '../components/SectionWrapper';
 import SEOHead from '../components/SEOHead';
 import { useCmsSection } from '../hooks/useCmsContent';
+import { DARCY_TEAM } from '../data/darcyContent';
 
 const ShieldIcon = () => (
   <svg className="w-10 h-10 text-gold" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -63,52 +64,13 @@ const values = [
   },
 ];
 
-// Default team members (shown if CMS has no team_ entries yet)
-const defaultTeam = [
-  { name: 'Brent Darcy', role: 'Founder & Chief Instructor', key: 'team_brent', bio: 'Brent founded Darcy Aviation with a vision to create a premier flight training environment in Connecticut.', photo: '' },
-  { name: 'John', role: 'Certified Flight Instructor', key: 'team_john', bio: 'Dedicated CFI known for patient instruction and helping students pass their checkrides with confidence.', photo: '' },
-  { name: 'Archana', role: 'Certified Flight Instructor', key: 'team_archana', bio: 'An exceptional CFI who brings enthusiasm and expertise to every lesson. A student favorite.', photo: '' },
-];
-
-// Extract team members from CMS data — any key starting with "team_" becomes a team card
-// CMS content format: key="team_firstname", content="bio text" or "Role | bio text"
-// Photo support: key="team_firstname_photo", content="/uploads/photo.jpg"
-function buildTeamFromCms(data: Record<string, string>) {
-  const teamKeys = Object.keys(data).filter(k => k.startsWith('team_') && !k.endsWith('_photo')).sort((a, b) => {
-    // Keep brent first, then alphabetical
-    if (a === 'team_brent') return -1;
-    if (b === 'team_brent') return 1;
-    return a.localeCompare(b);
-  });
-
-  if (teamKeys.length === 0) return defaultTeam;
-
-  return teamKeys.map(key => {
-    const rawName = key.replace('team_', '').replace(/_/g, ' ');
-    const name = rawName.replace(/\b\w/g, l => l.toUpperCase());
-    const content = data[key] || '';
-    const photo = data[`${key}_photo`] || '';
-    
-    // Support "Role | bio" format, otherwise default role
-    const pipeIdx = content.indexOf('|');
-    let role = 'Certified Flight Instructor';
-    let bio = content;
-    if (pipeIdx > 0 && pipeIdx < 60) {
-      role = content.slice(0, pipeIdx).trim();
-      bio = content.slice(pipeIdx + 1).trim();
-    }
-
-    // Special case for Brent
-    if (key === 'team_brent') role = 'Founder & Chief Instructor';
-
-    const fallback = defaultTeam.find(d => d.key === key);
-    return { name: fallback?.name || name, role: fallback?.role || role, key, bio: bio || fallback?.bio || '', photo };
-  });
-}
+// Hard-coded instructor snapshot, shown instantly and used if the CMS is unreachable or empty
+const SNAPSHOT_TEAM = DARCY_TEAM.filter((m) => m.is_active).map((m, i) => ({
+  name: m.name, role: m.role, bio: m.bio, photo: m.photo_url, key: 'snapshot-' + i,
+}));
 
 export default function About() {
-  const { data: aboutData, get: cms } = useCmsSection('about');
-  const cmsTeam = buildTeamFromCms(aboutData);
+  const { get: cms } = useCmsSection('about');
   
   // Fetch team from dedicated API (overrides CMS-based team if available)
   const [apiTeam, setApiTeam] = useState<{ name: string; role: string; bio: string; photo: string; key: string }[]>([]);
@@ -129,7 +91,7 @@ export default function About() {
       .catch(() => {});
   }, []);
   
-  const team = apiTeam.length > 0 ? apiTeam : cmsTeam;
+  const team = apiTeam.length > 0 ? apiTeam : SNAPSHOT_TEAM;
 
   return (
     <div className="pt-24">

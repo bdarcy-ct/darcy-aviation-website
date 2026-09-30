@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useToast } from '../../components/admin/Toast';
+import { resizeImage } from '../../utils/resizeImage';
 
 interface TeamMember {
   id: number;
@@ -40,7 +41,8 @@ const TeamManager: React.FC = () => {
 
   const handleCreate = () => {
     setEditingId(null);
-    setFormData({ name: '', role: 'Certified Flight Instructor', bio: '', sort_order: members.length, is_active: true, photo_url: '' });
+    const nextOrder = members.reduce((max, m) => Math.max(max, m.sort_order || 0), 0) + 1;
+    setFormData({ name: '', role: 'Certified Flight Instructor', bio: '', sort_order: nextOrder, is_active: true, photo_url: '' });
     setPhotoFile(null);
     setPhotoPreview('');
     setShowForm(true);
@@ -54,12 +56,12 @@ const TeamManager: React.FC = () => {
     setShowForm(true);
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    }
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const original = e.target.files?.[0];
+    if (!original) return;
+    const file = await resizeImage(original);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
   };
 
   const handleSave = async () => {
@@ -84,8 +86,8 @@ const TeamManager: React.FC = () => {
         setShowForm(false);
         await fetchMembers();
       } else {
-        const err = await res.json();
-        toast('error', err.error || 'Failed to save');
+        const err = await res.json().catch(() => ({}));
+        toast('error', err.error || 'Failed to save (' + res.status + ')');
       }
     } catch { toast('error', 'Error saving team member'); }
     finally { setSaving(false); }
@@ -98,6 +100,25 @@ const TeamManager: React.FC = () => {
       if (res.ok) { toast('success', 'Team member deleted'); await fetchMembers(); }
       else toast('error', 'Failed to delete');
     } catch { toast('error', 'Error deleting team member'); }
+  };
+
+  const moveMember = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= members.length) return;
+    const next = [...members];
+    [next[index], next[target]] = [next[target], next[index]];
+    setMembers(next.map((m, i) => ({ ...m, sort_order: i + 1 })));
+    try {
+      const res = await fetch('/api/admin/team/reorder', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: next.map((m) => m.id) }),
+      });
+      if (!res.ok) throw new Error('reorder failed');
+    } catch {
+      toast('error', 'Could not save the new order');
+      await fetchMembers();
+    }
   };
 
   const inputCls = 'w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-gold/50 transition-colors';
@@ -116,7 +137,7 @@ const TeamManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Team Manager</h1>
-          <p className="text-slate-300 text-sm sm:text-base">Manage instructors and staff — shown on the About page</p>
+          <p className="text-slate-300 text-sm sm:text-base">Instructors and staff on the About page. Use ▲▼ to set the order.</p>
         </div>
         <button onClick={handleCreate} className="bg-gold hover:bg-yellow-500 text-navy-900 px-4 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap">+ Add Team Member</button>
       </div>
@@ -126,8 +147,12 @@ const TeamManager: React.FC = () => {
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden">
           {members.length > 0 ? (
             <div className="divide-y divide-white/5">
-              {members.map((m) => (
+              {members.map((m, idx) => (
                 <div key={m.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors">
+                  <div className="flex flex-col gap-1 flex-shrink-0">
+                    <button onClick={() => moveMember(idx, -1)} disabled={idx === 0} title="Move up" aria-label={'Move ' + m.name + ' up'} className="w-7 h-6 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-xs disabled:opacity-25 disabled:cursor-not-allowed">▲</button>
+                    <button onClick={() => moveMember(idx, 1)} disabled={idx === members.length - 1} title="Move down" aria-label={'Move ' + m.name + ' down'} className="w-7 h-6 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-xs disabled:opacity-25 disabled:cursor-not-allowed">▼</button>
+                  </div>
                   {/* Photo */}
                   <div className="flex-shrink-0">
                     {m.photo_url ? (
@@ -205,7 +230,7 @@ const TeamManager: React.FC = () => {
                   >
                     📷 Upload Photo
                   </button>
-                  <p className="text-slate-500 text-xs mt-1">JPG, PNG, or WebP. Max 5MB.</p>
+                  <p className="text-slate-500 text-xs mt-1">JPG, PNG, or WebP — straight from your phone is fine, it's resized automatically.</p>
                 </div>
               </div>
             </div>

@@ -7,7 +7,7 @@ const router = express.Router();
 // Get all fleet aircraft (including unavailable)
 router.get('/', authenticateAdmin, (_req, res) => {
   try {
-    const fleet = db.prepare('SELECT * FROM fleet ORDER BY id').all();
+    const fleet = db.prepare('SELECT * FROM fleet ORDER BY sort_order ASC, id ASC').all();
     const parsed = (fleet as any[]).map((a: any) => ({ ...a, images: JSON.parse(a.images || '[]') }));
     res.json(parsed);
   } catch (error) {
@@ -26,8 +26,8 @@ router.post('/', authenticateAdmin, (req, res) => {
     }
 
     const stmt = db.prepare(`
-      INSERT INTO fleet (name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, images, available)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO fleet (name, type, engine, seats, horsepower, cruise_speed, range, description, image_url, images, available, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM fleet))
     `);
 
     const result = stmt.run(name, type || '', engine || '', seats || 0, horsepower || 0, cruise_speed || '', range || '', description || '', image_url || '', JSON.stringify(images || []), available ? 1 : 0);
@@ -61,6 +61,22 @@ router.put('/:id', authenticateAdmin, (req, res) => {
     res.json({ success: true, aircraft });
   } catch (error) {
     console.error('Error updating aircraft:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Reorder aircraft — body: { ids: number[] } in the desired display order
+router.post('/reorder', authenticateAdmin, (req, res) => {
+  try {
+    const ids = req.body?.ids;
+    if (!Array.isArray(ids) || ids.some((id) => !Number.isInteger(id))) {
+      return res.status(400).json({ error: 'ids must be an array of aircraft ids' });
+    }
+    const update = db.prepare('UPDATE fleet SET sort_order = ? WHERE id = ?');
+    db.transaction(() => { ids.forEach((id: number, i: number) => update.run(i + 1, id)); })();
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error reordering fleet:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

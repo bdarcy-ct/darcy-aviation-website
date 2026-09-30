@@ -3,12 +3,11 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import db from '../../database';
+import { uploadsDir } from '../../paths';
 import { authenticateAdmin } from '../../middleware/auth';
 
 const router = express.Router();
 
-// Use Railway volume (/data/uploads) if available, otherwise local
-const uploadsDir = fs.existsSync('/data') ? '/data/uploads' : path.join(__dirname, '../../../uploads');
 const staticUploadsDir = path.join(__dirname, '../../../../static/uploads');
 
 [uploadsDir, staticUploadsDir].forEach(dir => {
