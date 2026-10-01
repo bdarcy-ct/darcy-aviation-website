@@ -11,7 +11,7 @@ export default function NotFound() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
           </svg>
         </div>
-        <h1 className="text-7xl font-extrabold bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent mb-4">
+        <h1 className="text-7xl font-extrabold text-gold mb-4">
           404
         </h1>
         <h2 className="text-2xl font-bold text-white mb-4">Lost in the Clouds</h2>

@@ -112,7 +112,7 @@ export default function WeatherBadge() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 text-xs text-slate-300"
+        className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-white/10 hover:border-gold/40 transition-all duration-200 font-mono text-[11px] tracking-[0.06em] text-slate-300"
         title="Current weather at KDXR"
       >
         {/* Flight category dot */}
@@ -121,13 +121,14 @@ export default function WeatherBadge() {
           style={{ backgroundColor: catColor, boxShadow: `0 0 6px ${catColor}` }}
         />
         <ConditionIcon condition={weather.condition} size={14} />
+        <span className="text-slate-400">{weather.flight_category}</span>
         <span className="text-white font-medium">{tempF}°F</span>
         <span className="hidden sm:inline text-slate-400">{windLabel}</span>
       </button>
 
       {/* Expanded detail panel */}
       {expanded && (
-        <div className="absolute top-full right-0 mt-2 w-72 rounded-xl bg-navy-900/95 backdrop-blur-xl border border-white/15 shadow-2xl shadow-black/40 p-4 z-50 animate-fade-in">
+        <div className="absolute top-full right-0 mt-2 w-72 rounded-lg bg-navy-900/95 backdrop-blur-xl border border-white/15 shadow-2xl shadow-black/40 p-4 z-50 animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
             <span
               className="w-2.5 h-2.5 rounded-full"

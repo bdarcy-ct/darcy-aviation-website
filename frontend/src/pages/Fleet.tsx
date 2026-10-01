@@ -77,6 +77,22 @@ function getTypeIcon(type: string) {
   return <PlaneIcon />;
 }
 
+// Aircraft photo with a designed fallback — a missing/broken image never shows a broken-image icon
+function AircraftPhoto({ src, alt, type }: { src: string; alt: string; type: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className="absolute inset-0 chart-grid !bg-navy-800 flex flex-col items-center justify-center gap-3" style={{ maskImage: 'none', WebkitMaskImage: 'none' }}>
+        <div className="w-16 h-16 rounded-md border border-gold/30 bg-gold/[0.06] flex items-center justify-center text-gold">
+          {getTypeIcon(type)}
+        </div>
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-slate-500">Photo coming soon</span>
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} onError={() => setFailed(true)} className="absolute inset-0 w-full h-full object-cover" />;
+}
+
 export default function Fleet() {
   const { get: cms } = useCmsSection('fleet');
   const [fleet, setFleet] = useState<Aircraft[]>([]);
@@ -101,10 +117,11 @@ export default function Fleet() {
         path="/fleet"
       />
       <SectionWrapper>
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}>
+        <div className="page-header">
+          <div className="eyebrow">Fleet · KDXR</div>
+          <h1 className="page-title">
             Our{' '}
-            <span className="bg-gradient-to-r from-aviation-blue to-gold bg-clip-text text-transparent">Fleet</span>
+            <span className="text-gold">Fleet</span>
           </h1>
           <p className="section-subtitle">
             {cms('subheadline', 'Well-maintained aircraft and cutting-edge simulator for every stage of your training.')}
@@ -134,11 +151,11 @@ export default function Fleet() {
             {fleet.map((aircraft, i) => (
               <GlassCard key={aircraft.id} delay={i * 150} className="!p-0 overflow-hidden">
                 {/* Aircraft images with cycling */}
-                <div className="h-48 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative overflow-hidden">
+                <div className="h-56 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative overflow-hidden">
                   {(aircraft.images?.length > 0) ? (
                     <ImageCycler images={aircraft.images} alt={aircraft.name} />
                   ) : aircraft.image_url ? (
-                    <img src={aircraft.image_url} alt={aircraft.name} className="absolute inset-0 w-full h-full object-cover" />
+                    <AircraftPhoto src={aircraft.image_url} alt={aircraft.name} type={aircraft.type} />
                   ) : null}
                   <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
                   {!aircraft.images?.length && !aircraft.image_url && (
@@ -147,7 +164,7 @@ export default function Fleet() {
                     </div>
                   )}
                   <div className="absolute top-4 right-4 z-10">
-                    <span className="bg-aviation-blue/20 border border-aviation-blue/50 text-aviation-blue text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">
+                    <span className="bg-navy-900/70 border border-white/15 text-slate-200 font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-1 rounded backdrop-blur-sm">
                       {aircraft.type}
                     </span>
                   </div>
@@ -166,32 +183,32 @@ export default function Fleet() {
 
                   {/* Specs grid */}
                   {aircraft.type !== 'Simulator' ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y hairline">
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{aircraft.engine && aircraft.engine !== 'N/A' ? 'Engine' : 'Type'}</div>
+                        <div className="data-label mb-1.5">{aircraft.engine && aircraft.engine !== 'N/A' ? 'Engine' : 'Type'}</div>
                         <div className="text-white font-medium text-sm">{aircraft.engine && aircraft.engine !== 'N/A' ? aircraft.engine : aircraft.type}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Seats</div>
+                        <div className="data-label mb-1.5">Seats</div>
                         <div className="text-white font-medium text-sm">{aircraft.seats}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Power</div>
+                        <div className="data-label mb-1.5">Power</div>
                         <div className="text-white font-medium text-sm">{aircraft.horsepower} HP</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Cruise</div>
+                        <div className="data-label mb-1.5">Cruise</div>
                         <div className="text-white font-medium text-sm">{formatSpeed(aircraft.cruise_speed)}</div>
                       </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Type</div>
+                        <div className="data-label mb-1.5">Type</div>
                         <div className="text-white font-medium text-sm">AATD Certified</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Seats</div>
+                        <div className="data-label mb-1.5">Seats</div>
                         <div className="text-white font-medium text-sm">{aircraft.seats}</div>
                       </div>
                     </div>

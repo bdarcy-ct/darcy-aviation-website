@@ -127,12 +127,12 @@ export default function TrainingDetailPage({
       <SectionWrapper className="!pt-8">
         <div className="glass-card p-8 md:p-12">
           <div className="flex flex-col md:flex-row items-start gap-6">
-            <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <div className="flex-shrink-0 w-16 h-16 rounded-md border border-gold/30 bg-gold/[0.06] flex items-center justify-center">
               {heroIcon}
             </div>
             <div>
-              <p className="text-gold text-sm font-semibold uppercase tracking-wider mb-2">{subtitle}</p>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4">{title}</h1>
+              <div className="eyebrow mb-4">{subtitle}</div>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-5 leading-[1.04]">{title}</h1>
               <p className="text-slate-300 text-lg leading-relaxed max-w-3xl">{heroDescription}</p>
             </div>
           </div>

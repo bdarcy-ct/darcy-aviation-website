@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   Darcy Aviation — "Precision" design system
+   Deep instrument-panel navy, Darcy gold as the single accent, hairline
+   panels, expanded display type and cockpit-style mono labels.
+   ========================================================================== */
+
+:root {
+  --ink: #07101c;
+  --ink-2: #0c1828;
+  --line: rgba(148, 170, 200, 0.14);
+  --line-strong: rgba(148, 170, 200, 0.28);
+  --gold: #d4af37;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -9,17 +23,52 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(1200px 600px at 85% -10%, rgba(212, 175, 55, 0.07), transparent 60%),
+    radial-gradient(900px 700px at -10% 30%, rgba(80, 120, 170, 0.10), transparent 60%);
+  background-attachment: fixed;
   color: #ffffff;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+/* Public-site headings use the expanded display face; admin/tools keep their own look */
+#main-content h1,
+#main-content h2,
+#main-content h3 {
+  font-family: 'Archivo', 'Instrument Sans', system-ui, sans-serif;
+  font-stretch: 112%;
+  letter-spacing: -0.015em;
+}
+#main-content h1 {
+  font-stretch: 118%;
+  letter-spacing: -0.03em;
+}
+
+/* Desktop header = utility strip + bar; give inner pages matching clearance */
+@media (min-width: 1024px) {
+  #main-content > .pt-24 {
+    padding-top: 7.25rem;
+  }
+}
+
+/* Faint sectional-chart grid behind the whole public site */
+.chart-grid {
+  background-image:
+    linear-gradient(rgba(148, 170, 200, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 170, 200, 0.045) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 75%);
 }
 
 /* Dropdown option styling (dark bg for all selects) */
 select option {
-  background-color: #1e293b;
+  background-color: #0c1828;
   color: #ffffff;
 }
 
@@ -28,38 +77,99 @@ select option {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #050b14;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.5);
+  background: rgba(212, 175, 55, 0.35);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.8);
+  background: rgba(212, 175, 55, 0.6);
 }
 
-/* Glass card utility */
 @layer components {
+  /* Panels: solid, hairline-bordered, lightly frosted */
   .glass-card {
-    @apply bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl;
+    @apply rounded-xl border;
+    border-color: var(--line);
+    background: linear-gradient(180deg, rgba(22, 36, 58, 0.72) 0%, rgba(12, 24, 40, 0.72) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 20px 40px -24px rgba(0, 0, 0, 0.6);
   }
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:bg-white/15 hover:border-white/25 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1;
+    @apply glass-card transition-all duration-300;
+  }
+  .glass-card-hover:hover {
+    border-color: rgba(212, 175, 55, 0.45);
+    transform: translateY(-3px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 28px 50px -24px rgba(0, 0, 0, 0.75);
   }
   .glass-nav {
-    @apply bg-white/5 backdrop-blur-xl border-b border-white/10;
+    @apply border-b;
+    border-color: var(--line);
+    background: rgba(7, 16, 28, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
+
+  /* Buttons: crisp, rectangular, no bounce */
   .btn-gold {
-    @apply bg-gradient-to-r from-gold-dark via-gold to-gold-light text-navy-900 font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-gold/30 hover:scale-105 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-7 py-3 font-semibold text-navy-900 transition-all duration-200;
+    background: var(--gold);
+    letter-spacing: 0.01em;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 10px 24px -12px rgba(212, 175, 55, 0.55);
+  }
+  .btn-gold:hover {
+    background: #e7c965;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 14px 30px -12px rgba(212, 175, 55, 0.7);
+  }
+  .btn-gold:active {
+    transform: translateY(1px);
   }
   .btn-blue {
-    @apply bg-aviation-blue/20 border border-aviation-blue/50 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:bg-aviation-blue/30 hover:border-aviation-blue hover:shadow-lg hover:shadow-aviation-blue/20;
+    @apply inline-flex items-center justify-center gap-2 rounded-md border px-7 py-3 font-semibold text-white transition-all duration-200;
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.03);
+    letter-spacing: 0.01em;
+  }
+  .btn-blue:hover {
+    border-color: rgba(212, 175, 55, 0.7);
+    color: #e7c965;
+    background: rgba(212, 175, 55, 0.06);
+  }
+
+  /* Type */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 font-mono text-[11px] font-medium uppercase text-gold;
+    letter-spacing: 0.22em;
+  }
+  .eyebrow::before {
+    content: '';
+    @apply block h-px w-7 bg-gold/70;
   }
   .section-title {
-    @apply text-3xl md:text-4xl font-bold text-white mb-4;
+    @apply font-display text-3xl md:text-[2.6rem] font-bold text-white mb-4 leading-[1.08];
   }
   .section-subtitle {
-    @apply text-slate-400 text-lg max-w-2xl mx-auto;
+    @apply text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed;
+  }
+  .page-header {
+    @apply mb-14 border-b pb-10 text-left;
+    border-color: var(--line);
+  }
+  .page-header .section-subtitle {
+    @apply mx-0 max-w-2xl text-left;
+  }
+  .page-title {
+    @apply font-display text-[2.6rem] sm:text-5xl md:text-6xl font-extrabold text-white mt-5 mb-5 leading-[1.02];
+  }
+  .data-label {
+    @apply font-mono text-[10.5px] uppercase text-slate-500;
+    letter-spacing: 0.16em;
+  }
+  .hairline {
+    border-color: var(--line);
   }
 }
 
@@ -70,14 +180,30 @@ select option {
 
 /* Focus ring for keyboard navigation */
 *:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
+  outline: 2px solid #d4af37;
+  outline-offset: 3px;
   border-radius: 4px;
 }
 
 /* Smooth image loading */
 img {
   transition: opacity 0.3s ease;
+}
+
+/* Hero video grain for a filmic, less "stock" look */
+.film-grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Animated background blobs */
@@ -111,7 +237,7 @@ img {
 
 /* Timeline styles */
 .timeline-line {
-  background: linear-gradient(180deg, #3b82f6 0%, #d4af37 100%);
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.9) 0%, rgba(212, 175, 55, 0.15) 100%);
 }
 
 /* Weather background transitions */
@@ -188,13 +314,13 @@ a[href^="tel:"]:hover {
 
 /* Gradient text selection */
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(212, 175, 55, 0.35);
   color: #ffffff;
 }
 
 /* Better focus styles for forms */
 input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
 }
 
 /* Improve print styles */

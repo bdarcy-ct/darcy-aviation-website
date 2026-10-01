@@ -4,22 +4,34 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Deep instrument-panel navy (kept under the original names so every page inherits it)
         navy: {
-          900: '#0f172a',
-          800: '#1e293b',
-          700: '#334155',
+          950: '#050b14',
+          900: '#07101c',
+          800: '#0c1828',
+          700: '#16243a',
+        },
+        ink: {
+          950: '#050b14',
+          900: '#07101c',
+          800: '#0c1828',
+          700: '#16243a',
+          600: '#22334d',
         },
         gold: {
           DEFAULT: '#d4af37',
-          light: '#e6c850',
-          dark: '#b8962e',
+          light: '#e7c965',
+          dark: '#a8872a',
         },
         aviation: {
-          blue: '#3b82f6',
+          // Softer steel-sky accent instead of stock Tailwind blue
+          blue: '#8db4dc',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Instrument Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Archivo', '"Instrument Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       backdropBlur: {
         xl: '24px',
@@ -28,8 +40,9 @@ export default {
         'float': 'float 6s ease-in-out infinite',
         'float-delayed': 'float 8s ease-in-out 2s infinite',
         'fade-in': 'fadeIn 0.6s ease-out forwards',
-        'slide-up': 'slideUp 0.6s ease-out forwards',
+        'slide-up': 'slideUp 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards',
         'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+        'rise': 'rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both',
       },
       keyframes: {
         float: {
@@ -41,7 +54,11 @@ export default {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '0%': { opacity: '0', transform: 'translateY(18px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        rise: {
+          '0%': { opacity: '0', transform: 'translateY(24px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         pulseGlow: {
