@@ -48,6 +48,12 @@ body {
   font-stretch: 118%;
   letter-spacing: -0.03em;
 }
+/* Home hero headline keeps the original typeface (Inter, tracking-tight) */
+#main-content h1.hero-classic {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-stretch: 100%;
+  letter-spacing: -0.025em;
+}
 
 /* Desktop header = utility strip + bar; give inner pages matching clearance */
 @media (min-width: 1024px) {

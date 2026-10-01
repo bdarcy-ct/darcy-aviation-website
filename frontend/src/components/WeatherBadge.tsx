@@ -12,9 +12,12 @@ function cToF(c: number): number {
   return Math.round(c * 9 / 5 + 32);
 }
 
-function windDirLabel(deg: number): string {
+// METAR reports variable wind as "VRB" (no number), which used to render as "undefined"
+function windDirLabel(deg: number | string | null | undefined): string {
+  const n = typeof deg === 'string' && deg.trim() !== '' ? Number(deg) : deg;
+  if (typeof n !== 'number' || !Number.isFinite(n)) return 'VRB';
   const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  return dirs[Math.round(deg / 45) % 8];
+  return dirs[Math.round(n / 45) % 8];
 }
 
 function ConditionIcon({ condition, size = 16 }: { condition: string; size?: number }) {

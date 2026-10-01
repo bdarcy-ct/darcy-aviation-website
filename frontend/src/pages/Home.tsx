@@ -268,17 +268,22 @@ export default function Home() {
                   {cms('hero', 'badge_text', 'Now accepting students at KDXR — Danbury, CT')}
                 </span>
                 <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/[0.08] px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-gold">
-                  FAA Certified
+                  FAA-certified instructors
                 </span>
               </div>
 
-              <h1
-                className="mt-7 font-extrabold text-white leading-[0.94] text-[2.9rem] sm:text-6xl md:text-7xl xl:text-[5.4rem] animate-rise"
-                style={{ animationDelay: '180ms', textShadow: '0 10px 40px rgba(0,0,0,0.35)' }}
-              >
-                Take flight at
-                <span className="block text-gold">Darcy Aviation.</span>
-              </h1>
+              {/* Headline keeps the original typeface (Inter) and blue-to-gold gradient */}
+              <div className="mt-7 animate-rise" style={{ animationDelay: '180ms' }}>
+                <h1
+                  className="hero-classic text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight tracking-tight"
+                  style={{ background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(200,220,255,0.8), rgba(59,130,246,0.7), rgba(212,175,55,0.7))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 4px 12px rgba(255,255,255,0.3)) drop-shadow(0 0 20px rgba(59,130,246,0.2))" }}
+                >
+                  Take Flight at{' '}
+                  <span className="bg-gradient-to-r from-[#3b82f6] via-[#60a5fa] to-[#d4af37] bg-clip-text text-transparent">
+                    Darcy Aviation
+                  </span>
+                </h1>
+              </div>
 
               <p className="mt-7 max-w-xl text-lg md:text-xl text-slate-200/90 leading-relaxed animate-rise" style={{ animationDelay: '280ms' }}>
                 {cms('hero', 'subheadline', "Connecticut's premier flight training destination. Professional instruction, premium fleet, and unforgettable scenic tours at Danbury Municipal Airport.")}

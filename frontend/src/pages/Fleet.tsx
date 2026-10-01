@@ -79,7 +79,7 @@ function getTypeIcon(type: string) {
 
 // Aircraft photo with a designed fallback — a missing/broken image never shows a broken-image icon
 function AircraftPhoto({ src, alt, type }: { src: string; alt: string; type: string }) {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(!src);
   if (failed) {
     return (
       <div className="absolute inset-0 chart-grid !bg-navy-800 flex flex-col items-center justify-center gap-3" style={{ maskImage: 'none', WebkitMaskImage: 'none' }}>
@@ -154,15 +154,10 @@ export default function Fleet() {
                 <div className="h-56 bg-gradient-to-br from-navy-700/50 to-navy-900/50 flex items-center justify-center relative overflow-hidden">
                   {(aircraft.images?.length > 0) ? (
                     <ImageCycler images={aircraft.images} alt={aircraft.name} />
-                  ) : aircraft.image_url ? (
+                  ) : (
                     <AircraftPhoto src={aircraft.image_url} alt={aircraft.name} type={aircraft.type} />
-                  ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
-                  {!aircraft.images?.length && !aircraft.image_url && (
-                    <div className="relative z-10 w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-aviation-blue">
-                      {getTypeIcon(aircraft.type)}
-                    </div>
                   )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-900/80 to-transparent" />
                   <div className="absolute top-4 right-4 z-10">
                     <span className="bg-navy-900/70 border border-white/15 text-slate-200 font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-1 rounded backdrop-blur-sm">
                       {aircraft.type}
