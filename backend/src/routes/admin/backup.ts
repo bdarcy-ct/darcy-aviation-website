@@ -5,7 +5,7 @@ import multer from 'multer';
 import Database from 'better-sqlite3';
 import liveDb, { backupsDir, dataDir, dbPath, pendingRestorePath } from '../../database';
 import { authenticateAdmin } from '../../middleware/auth';
-import { uploadsDir } from '../../paths';
+import { uploadsDir, onRailway, volumeMountPath, storageIsEphemeral } from '../../paths';
 
 const router = express.Router();
 
@@ -113,7 +113,11 @@ router.get('/info', (_req, res) => {
       size: stats.size,
       sizeHuman: `${(stats.size / 1024).toFixed(1)} KB`,
       lastModified: stats.mtime.toISOString(),
-      path: dataDir === '/data' ? 'Railway Volume (/data)' : 'Local (./data)',
+      path: volumeMountPath ? `Railway Volume (${volumeMountPath})` : (onRailway ? 'Temporary container disk (no volume)' : 'Local (./data)'),
+      persistent: !storageIsEphemeral,
+      storageWarning: storageIsEphemeral
+        ? 'This site has no permanent Railway volume, so CMS changes and uploaded photos are erased every time the site is deployed. Add a volume to this service in Railway, then restore your latest backup.'
+        : null,
       wal: walStats ? {
         exists: true,
         size: walStats.size,
@@ -199,10 +203,11 @@ router.post('/restore', upload.single('backup'), async (req, res) => {
       restoredPhotos,
     });
 
-    // Give the response time to send, then restart
+    // Give the response time to send, then restart. Exit NON-zero: Railway's default
+    // ON_FAILURE policy only restarts crashed processes, so exit(0) left the site down.
     setTimeout(() => {
       console.log('🔄 Restarting server after backup restore...');
-      process.exit(0);
+      process.exit(1);
     }, 1000);
   } catch (error: any) {
     console.error('Restore error:', error?.message || error);

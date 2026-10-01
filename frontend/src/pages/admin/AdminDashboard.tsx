@@ -50,6 +50,16 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, [token]);
 
+  // Warn loudly if the server's storage would be wiped by the next deploy
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/admin/backup/info', { headers: { Authorization: 'Bearer ' + token } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((info) => setStorageWarning(info?.storageWarning || null))
+      .catch(() => setStorageWarning(null));
+  }, [token]);
+
   const downloadBackup = async () => {
     if (!token) {
       alert('Please log in again before downloading a backup.');
@@ -138,6 +148,13 @@ export default function AdminDashboard() {
 
   return (
     <div>
+      {storageWarning && (
+        <div role="alert" className="mb-6 rounded-xl border border-red-500/50 bg-red-500/10 p-4 text-sm text-red-200">
+          <p className="font-semibold text-red-100">⚠️ Storage is temporary</p>
+          <p className="mt-1">{storageWarning}</p>
+          <p className="mt-2 text-red-300">Until that's fixed, download a backup after every change.</p>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>

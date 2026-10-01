@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { initializeDatabase, startAutomaticBackups } from './database';
-import { uploadsDir, bundledUploadsDir } from './paths';
+import { uploadsDir, bundledUploadsDir, storageIsEphemeral } from './paths';
 import fleetRoutes from './routes/fleet';
 import testimonialRoutes from './routes/testimonials';
 // bookings and contact routes removed — bookings via FlightCircle, contact via email
@@ -63,6 +63,9 @@ setInterval(() => {
 // Initialize database
 initializeDatabase();
 startAutomaticBackups();
+if (storageIsEphemeral) {
+  console.warn('⚠️  NO RAILWAY VOLUME: the CMS database and uploads are on the container disk and will be ERASED on the next deploy. Attach a volume to this service.');
+}
 
 // Health check
 app.get('/api/health', (_req, res) => {
