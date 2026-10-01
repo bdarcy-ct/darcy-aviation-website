@@ -141,8 +141,19 @@ router.get('/info', (_req, res) => {
   }
 });
 
+// A restore onto a temporary container disk can't stick (the restart that applies
+// it may start from a wiped disk), so refuse until a Railway volume is attached.
+function requirePersistentStorage(_req: any, res: any, next: any) {
+  if (storageIsEphemeral) {
+    return res.status(409).json({
+      error: 'This site has no permanent storage yet, so a restore would not stick. Add a Railway volume (mount path /data) to this service, wait for it to redeploy, then restore again.',
+    });
+  }
+  next();
+}
+
 // Restore database from uploaded backup
-router.post('/restore', upload.single('backup'), async (req, res) => {
+router.post('/restore', requirePersistentStorage, upload.single('backup'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No backup file uploaded' });
